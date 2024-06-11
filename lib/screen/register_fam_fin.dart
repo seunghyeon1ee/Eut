@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:taba_app_proj/screen/register_fam_1.dart';
 import 'package:taba_app_proj/screen/register_fin.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'package:taba_app_proj/screen/stastics.dart';
 
 class MyApp3 extends StatelessWidget {
   @override
@@ -13,6 +19,8 @@ class MyApp3 extends StatelessWidget {
 }
 
 class RegisterFamTest extends StatefulWidget {
+  // final void Function(String phoneNumber) sendCodeCallback;
+
   const RegisterFamTest({super.key});
 
   @override
@@ -20,6 +28,9 @@ class RegisterFamTest extends StatefulWidget {
 }
 
 class _RegisterFamTest extends State<RegisterFamTest> {
+  final _phoneController = TextEditingController();
+
+
   @override
   Widget build(BuildContext context){
     return SafeArea(
@@ -67,6 +78,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   Color _buttonConfirmColor = Color(0xFFE2E2E2);
   Color _textColor = Color(0xFFAEAEAE);
   Color _textConfirmColor = Color(0xFFAEAEAE);
+
+
   void _toggleTextField() {
     if (_controller.text.length == 11 && _controller.text.runes.every((r) => r >= '0'.runes.first && r <= '9'.runes.first)) {
       setState(() {
@@ -83,6 +96,34 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     }
   }
 
+
+  late String _verificationId;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+
+  void sendCode() async {
+    await _auth.verifyPhoneNumber(
+      phoneNumber: '+82${_controller.text}',
+      timeout: const Duration(seconds: 60),
+      verificationCompleted: (PhoneAuthCredential credential) async {
+        // 자동 완성 가능성
+        await _auth.signInWithCredential(credential);
+      },
+      verificationFailed: (FirebaseAuthException e) {
+        // 에러 처리
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('휴대전화 인증 실패: ${e.message}')));
+      },
+      codeSent: (String verificationId, int? resendToken) {
+        // verificationId를 저장하여 나중에 사용
+        _verificationId = verificationId;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('인증번호 발송')));
+      },
+      codeAutoRetrievalTimeout: (String verificationId) {
+        _verificationId = verificationId;
+      },
+    );
+  }
+
   void _toggleTextFieldConfirm() {
     if (_confirmController.text.length == 6 && _confirmController.text.runes.every((r) => r >= '0'.runes.first && r <= '9'.runes.first)) {
       setState(() {
@@ -96,6 +137,162 @@ class _VerificationWidgetState extends State<VerificationWidget> {
       });
     }
   }
+
+  // 부양가족 회원가입을 처리하는 함수
+  Future<bool> registerChild(String phone, String email, String parentPhone) async {
+    var url = Uri.parse(
+        'http://54.180.229.143:8080/api/v1/join'); // API 엔드포인트 URL
+    // HTTP POST 요청을 보냄
+    var response = await http.post(url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8', // 콘텐츠 타입을 JSON으로 지정
+      },
+      body: jsonEncode(<String, String>{ // JSON 형태로 데이터 인코딩
+        'phone': _controller.text,
+        'email': email,
+        'parentPhone': parentPhone,
+        'type': 'C'
+      }),
+    );
+    print(response.statusCode);
+
+    if (response.statusCode == 200) {
+      Map<String, dynamic> decodedJson = jsonDecode(
+          utf8.decode(response.bodyBytes));
+      print(decodedJson);
+      print(decodedJson['message']);
+
+      if (decodedJson['message'] == 'SUCCESS') {
+        print('회원가입 완료 또는 이미 존재하는 회원입니다. 로그인 API 호출을 준비합니다.');
+
+        bool loginResult = await loginUser(_controller.text);
+        return loginResult;
+      } else {
+        print('회원가입은 성공했지만 예상치 못한 응답 메시지입니다: ${decodedJson['message']}');
+      }
+    } else if (response.statusCode == 400) {
+      Map<String, dynamic> errorResponse = jsonDecode(
+          utf8.decode(response.bodyBytes));
+      print('회원가입 실패 (잘못된 요청): ${errorResponse['message'] ??
+          'No error message provided'}');
+      if (errorResponse['message'].toString().contains('이미 존재하는 유저입니다')) {
+        // 여기서 로그인 API 호출
+        print('이미 존재하는 유저입니다. 로그인을 시도합니다.');
+
+        bool loginResult = await loginUser(_controller.text);
+        if (loginResult) {
+          print('로그인 성공');
+          return true;
+        } else {
+          print('로그인 실패');
+        }
+      }
+    } else {
+      print('회원가입 실패: ${response.body}');
+    }
+    return false;
+  }
+
+  Future<bool> loginUser(String phone) async {
+    var url = Uri.parse('http://54.180.229.143:8080/api/v1/login');
+    var response = await http.post(url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'phone': phone,
+      }),
+    );
+    print(response.body);
+    if (response.statusCode == 200) {
+      print('로그인 성공');
+      Map<String, dynamic> res = jsonDecode(response.body);
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('access_token', res['result']['access_token']);
+      return true;
+    } else {
+      var decodeResponse = utf8.decode(response.bodyBytes);
+      print('로그인 실패: $decodeResponse');
+      return false;
+    }
+  }
+
+  // JSON 응답을 처리하고 SharedPreferences에 데이터를 저장하는 함수
+  Future<bool> saveUserData(String jsonResponse) async {
+    // SharedPreferences 인스턴스를 가져옴
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // JSON 응답을 파싱
+    final responseData = jsonDecode(jsonResponse);
+
+    // API 응답에서 데이터를 추출
+    if (responseData['code'] == "0000" && responseData['message'] == "SUCCESS") {
+      String accessToken = responseData['result']['access_token'];
+      String refreshToken = responseData['result']['refresh_token'];
+      String phone = responseData['result']['phone'];
+      String memberType = responseData['result']['memberType'];
+
+      // SharedPreferences에 각 키와 값을 저장
+      await prefs.setString('access_token', accessToken);
+      await prefs.setString('refresh_token', refreshToken);
+      await prefs.setString('phone', phone);
+      await prefs.setString('member_type', memberType);
+
+      print('사용자 데이터 저장 성공');
+      return true;
+    } else {
+      print('사용자 데이터 저장 실패');
+      return false;
+    }
+  }
+
+// 저장된 사용자 데이터를 불러오는 함수
+  Future<void> loadUserData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    String? accessToken = prefs.getString('access_token');
+    String? refreshToken = prefs.getString('refresh_token');
+    String? phone = prefs.getString('phone');
+    String? memberType = prefs.getString('member_type');
+
+    print('Access Token: $accessToken');
+    print('Refresh Token: $refreshToken');
+    print('Phone: $phone');
+    print('Member Type: $memberType');
+  }
+
+  // Future<bool> loginUser(String phone) async {
+  //   var url = Uri.parse('http://54.180.229.143:8080/api/v1/login');
+  //   var response = await http.post(url,
+  //     headers: <String, String>{
+  //       'Content-Type': 'application/json; charset=UTF-8',
+  //     },
+  //     body: jsonEncode(<String, String>{
+  //       'phone': phone,
+  //     }),
+  //   );
+  //
+  //   if (response.statusCode == 200) {
+  //     print('로그인 성공');
+  //     // 응답 데이터를 JSON 형식으로 파싱
+  //     Map<String, dynamic> responseData = jsonDecode(utf8.decode(response.bodyBytes));
+  //     // 접근 토큰과 갱신 토큰 추출
+  //     String accessToken = responseData['result']['access_token'];
+  //     String refreshToken = responseData['result']['refresh_token'];
+  //     // 토큰을 콘솔에 출력
+  //     print('Access Token: $accessToken');
+  //     print('Refresh Token: $refreshToken');
+  //
+  //     // 안전하게 토큰을 저장하고 추가 사용자 정보를 처리하는 로직을 구현
+  //     // 예를 들어, 보안 저장소를 사용하거나 상태 관리 솔루션에 토큰을 저장
+  //     return true;  // 로그인 성공을 나타내는 true를 반환
+  //   } else {
+  //     // HTTP 상태 코드가 200이 아닌 경우, 로그인 실패로 간주
+  //     print('로그인 실패: ${response.body}');
+  //     return false;   // 로그인 실패를 나타내는 false를 반환
+  //   }
+  // }
+
 
   @override
   void initState() {
@@ -174,6 +371,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                             _isTextFieldVisible = !_isTextFieldVisible;
                             _buttonText = "재발송";
                           });
+                          sendCode();
                         }
                       },
                       style: OutlinedButton.styleFrom(
@@ -189,7 +387,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                 if (_isTextFieldVisible) SizedBox(height: 10),
                 if (_isTextFieldVisible) Column(
                   children: [
-                    SizedBox(width: 16, height: 20),
+                    SizedBox(width: 16, height: 15),
                     Container(
                         width: 350,
                         height: 52,
@@ -208,9 +406,60 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                     ),
                   ],
                 ),
-                SizedBox(height: 190),
+                SizedBox(height: 150),
                 TextButton(
-                  onPressed: _buttonConfirmColor == Color(0xFFEC295D) ? (){} : null,
+                  onPressed: _buttonConfirmColor == Color(0xFFEC295D) ? () async {
+                    // 사용자로부터 입력받은 인증번호와 Firebase에서 받은 verificationId 사용
+                    String smsCode = _confirmController.text;  // 사용자가 입력한 인증번호
+                    if (smsCode.isNotEmpty && _verificationId.isNotEmpty) {
+                      try {
+                        // 입력받은 인증번호로 PhoneAuthCredential 객체 생성
+                        PhoneAuthCredential credential = PhoneAuthProvider.credential(
+                            verificationId: _verificationId,
+                            smsCode: smsCode);
+
+                        // 생성된 credential로 로그인 시도
+                        final UserCredential userCredential =
+                            await FirebaseAuth.instance.signInWithCredential(credential);
+
+                        // 로그인 성공 시 User 객체 사용 가능
+                        User? user = userCredential.user;
+                        if (user != null && user.phoneNumber != null) {
+                          print("휴대전화 확인 및 로그인: ${user.uid}");
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('인증 완료')));
+
+                          // 회원가입 API 호출
+                          String email = 'user@example.com';  // 예시 값
+                          String parentPhone = 'parentPhoneNumber';  // 예시 값
+
+                          bool registrationResult = await registerChild(user.phoneNumber!, email, parentPhone);
+                          if (registrationResult) {
+                            print('회원가입 완료');
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("회원가입 및 로그인 성공")));
+
+                            // 로그인 성공 처리 로직 (홈 화면으로 이동)
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => StatisticsScreen()));
+
+                          } else {
+                            print("Registration failed, try again");
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("회원가입 실패, 다시 시도해주세요")));
+                            // 실패 처리 로직 (예: 입력 필드 초기화)
+                          }
+                        } else {
+                          print("Failed to verify phone number: User is null");
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("인증 실패: 사용자 정보가 없습니다.")));
+                        }
+                      } on FirebaseAuthException catch (e) {
+                        // 예외 처리: 인증 실패
+                        print("Failed to verify phone number: ${e.message}");
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("인증 실패: ${e.message}")));
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("인증번호를 입력하세요.")));
+                    }
+
+                  } : null,
+
                   style: TextButton.styleFrom(
                     minimumSize: Size(350, 52),
                     backgroundColor: _buttonConfirmColor,

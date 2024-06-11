@@ -5,20 +5,6 @@ import 'package:simple_ripple_animation/simple_ripple_animation.dart';
 import 'package:taba_app_proj/chatbot/greeting.dart';
 
 
-// RippleAnimation(
-// child: CircleAvatar(
-// minRadius: 75,
-// maxRadius: 75,
-// backgroundImage: NetworkImage(Constants.avtarUrl),
-// ),
-// color: Colors.deepOrange,
-// delay: const Duration(milliseconds: 300),
-// repeat: true,
-// minRadius: 75,
-// ripplesCount: 6,
-// duration: const Duration(milliseconds: 6 * 300),
-// )
-
 void main() {
   runApp(
     ChangeNotifierProvider(
@@ -78,9 +64,11 @@ class RippleEffectPage extends StatelessWidget {
           minRadius: 90,
           ripplesCount: 6,
           child: ClipOval(
-            child: SvgPicture.asset('assets/chatbot_test.svg',
+            child: SvgPicture.asset('assets/botboy.svg',
             width: 120, height: 120, fit: BoxFit.cover),
           ),
+          // duration: const Duration(milliseconds: 6 * 300),
+          // delay: const Duration(milliseconds: 300),
               ),
             ),
     );

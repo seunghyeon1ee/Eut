@@ -122,8 +122,8 @@ class _TextInputButtonState extends State<TextInputButton> {
           children: [
             SizedBox(height: 50),
             Row(
-              children: [ 
-                SizedBox(width: 5),
+              children: [
+                SizedBox(width: 10),
                 SvgPicture.asset('assets/icon_eut.svg'),
               ],
             ),
@@ -133,49 +133,73 @@ class _TextInputButtonState extends State<TextInputButton> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(height: 80),
-              Text('회원정보 입력', style: TextStyle(color: Colors.black,
-                  fontSize: 24,
-                  fontFamily: 'Noto Sans',
-                  fontWeight: FontWeight.w600,
-                  height: 0.06),
+              Row(
+                children: [
+                  SizedBox(width: 10),
+                  Text('회원정보 입력', style: TextStyle(color: Colors.black,
+                      fontSize: 24,
+                      fontFamily: 'Noto Sans',
+                      fontWeight: FontWeight.w600,
+                      height: 0.06),
+                  ),
+                ],
               ),
               SizedBox(height: 30.0),
-              Text('계정으로 사용되는 회원정보를 입력해주세요.',
-                textAlign: TextAlign.left,
-                style: TextStyle(color: Color(0xFF4D4D4D),
-                    fontSize: 14,
-                    fontFamily: 'Noto Sans',
-                    fontWeight: FontWeight.w500),
-              ),
-
-              SizedBox(height: 100),
-              _buildTextField(_registerController, '이메일'),
-              SizedBox(height: 20),
-              _buildTextField(_numberController, '부모 전화번호'),
-              SizedBox(height: 160),
-              TextButton(
-                onPressed: _isButtonEnabled ? () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => MyApp3()),
-                  );
-                } : null, // 버튼 활성화 여부에 따라 null을 반환하거나 함수를 실행
-                style: TextButton.styleFrom(
-                  minimumSize: Size(350, 52),
-                  backgroundColor: _nextButtonColor,
-                  foregroundColor: _nextTextColor,
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: BorderSide(width: 1, color: _nextButtonColor),
+              Row(
+                children: [
+                  SizedBox(width: 10),
+                  Text('계정으로 사용되는 회원정보를 입력해주세요.',
+                    textAlign: TextAlign.left,
+                    style: TextStyle(color: Color(0xFF4D4D4D),
+                        fontSize: 14,
+                        fontFamily: 'Noto Sans',
+                        fontWeight: FontWeight.w500),
                   ),
-                ),
-                child: Text('다음', style: TextStyle(color: _nextTextColor,
-                    fontSize: 18,
-                    fontFamily: 'Noto Sans',
-                    fontWeight: FontWeight.w600,
-                    height: 0.07),
-                ),
+                ],
+              ),
+              SizedBox(height: 100),
+              Row(
+                children: [
+                  SizedBox(width: 10),
+                  _buildTextField(_registerController, '이메일'),
+                ],
+              ),
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  SizedBox(width: 10),
+                  _buildTextField(_numberController, '부모 전화번호'),
+                ],
+              ),
+              SizedBox(height: 160),
+              Row(
+                children: [
+                  SizedBox(width: 10),
+                  TextButton(
+                    onPressed: _isButtonEnabled ? () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => MyApp3()),
+                      );
+                    } : null, // 버튼 활성화 여부에 따라 null을 반환하거나 함수를 실행
+                    style: TextButton.styleFrom(
+                      minimumSize: Size(350, 52),
+                      backgroundColor: _nextButtonColor,
+                      foregroundColor: _nextTextColor,
+                      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: BorderSide(width: 1, color: _nextButtonColor),
+                      ),
+                    ),
+                    child: Text('다음', style: TextStyle(color: _nextTextColor,
+                        fontSize: 18,
+                        fontFamily: 'Noto Sans',
+                        fontWeight: FontWeight.w600,
+                        height: 0.07),
+                    ),
+                  ),
+                ],
               ),
               ],
             ),

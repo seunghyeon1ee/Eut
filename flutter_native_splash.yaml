@@ -1,0 +1,11 @@
+flutter_native_splash:
+  # background_image: assets/gradient.png
+  color: "#EC295D"
+  image: assets/splash.png
+  android: true
+  ios: true
+  fullscreen: true
+
+  android_12:
+    color: "#EC295D"
+    image: assets/splash.png
