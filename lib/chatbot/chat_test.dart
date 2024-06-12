@@ -152,10 +152,12 @@ class _ChatTestState extends State<ChatTest> {
       if (response.statusCode == 200) {
         setState(() {
           _sttResult = result['result']['stt_result'];
+          greetingMessage = result['result']['gpt_response'];
         });
         // _sttResult를 잠깐 보여줌
         showTemporaryMessage(_sttResult);
-        textToSpeech(_sttResult); // Convert text to speech after transcription
+        textToSpeech(
+            greetingMessage); // Convert text to speech after transcription
       } else {
         setState(() {
           _sttResult = 'STT 작동 중 에러 발생';

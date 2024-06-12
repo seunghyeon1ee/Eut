@@ -12,9 +12,7 @@ import 'package:taba_app_proj/screen/stastics.dart';
 class MyApp3 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: RegisterFamTest(),
-    );
+    return const RegisterFamTest();
   }
 }
 
@@ -30,21 +28,26 @@ class RegisterFamTest extends StatefulWidget {
 class _RegisterFamTest extends State<RegisterFamTest> {
   final _phoneController = TextEditingController();
 
-
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: Text('회원가입',
-            style: TextStyle(color: Colors.black, fontSize: 18, fontFamily: 'Noto Sans',
+          title: Text(
+            '회원가입',
+            style: TextStyle(
+                color: Colors.black,
+                fontSize: 18,
+                fontFamily: 'Noto Sans',
                 fontWeight: FontWeight.w400,
                 height: 0.07),
           ),
           centerTitle: true,
           leading: InkWell(
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => RegisFam()),
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => RegisFam()),
               );
             },
             highlightColor: Colors.white30,
@@ -72,16 +75,19 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   bool _isTextFieldVisible = false;
   String _buttonText = '인증번호 발송';
 
-  final TextEditingController _controller = TextEditingController(); // 전화번호 입력 컨트롤러
-  final TextEditingController _confirmController = TextEditingController(); // 인증번호 입력 컨트롤러
+  final TextEditingController _controller =
+      TextEditingController(); // 전화번호 입력 컨트롤러
+  final TextEditingController _confirmController =
+      TextEditingController(); // 인증번호 입력 컨트롤러
   Color _buttonColor = Color(0xFFE2E2E2);
   Color _buttonConfirmColor = Color(0xFFE2E2E2);
   Color _textColor = Color(0xFFAEAEAE);
   Color _textConfirmColor = Color(0xFFAEAEAE);
 
-
   void _toggleTextField() {
-    if (_controller.text.length == 11 && _controller.text.runes.every((r) => r >= '0'.runes.first && r <= '9'.runes.first)) {
+    if (_controller.text.length == 11 &&
+        _controller.text.runes
+            .every((r) => r >= '0'.runes.first && r <= '9'.runes.first)) {
       setState(() {
         _buttonColor = Color(0xFFEC295D);
         _textColor = Color(0xFFEC295D);
@@ -96,10 +102,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     }
   }
 
-
   late String _verificationId;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
 
   void sendCode() async {
     await _auth.verifyPhoneNumber(
@@ -111,12 +115,14 @@ class _VerificationWidgetState extends State<VerificationWidget> {
       },
       verificationFailed: (FirebaseAuthException e) {
         // 에러 처리
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('휴대전화 인증 실패: ${e.message}')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('휴대전화 인증 실패: ${e.message}')));
       },
       codeSent: (String verificationId, int? resendToken) {
         // verificationId를 저장하여 나중에 사용
         _verificationId = verificationId;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('인증번호 발송')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('인증번호 발송')));
       },
       codeAutoRetrievalTimeout: (String verificationId) {
         _verificationId = verificationId;
@@ -125,7 +131,9 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   }
 
   void _toggleTextFieldConfirm() {
-    if (_confirmController.text.length == 6 && _confirmController.text.runes.every((r) => r >= '0'.runes.first && r <= '9'.runes.first)) {
+    if (_confirmController.text.length == 6 &&
+        _confirmController.text.runes
+            .every((r) => r >= '0'.runes.first && r <= '9'.runes.first)) {
       setState(() {
         _buttonConfirmColor = Color(0xFFEC295D);
         _textConfirmColor = Colors.white;
@@ -139,15 +147,18 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   }
 
   // 부양가족 회원가입을 처리하는 함수
-  Future<bool> registerChild(String phone, String email, String parentPhone) async {
-    var url = Uri.parse(
-        'http://54.180.229.143:8080/api/v1/join'); // API 엔드포인트 URL
+  Future<bool> registerChild(
+      String phone, String email, String parentPhone) async {
+    var url =
+        Uri.parse('http://54.180.229.143:8080/api/v1/join'); // API 엔드포인트 URL
     // HTTP POST 요청을 보냄
-    var response = await http.post(url,
+    var response = await http.post(
+      url,
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8', // 콘텐츠 타입을 JSON으로 지정
       },
-      body: jsonEncode(<String, String>{ // JSON 형태로 데이터 인코딩
+      body: jsonEncode(<String, String>{
+        // JSON 형태로 데이터 인코딩
         'phone': _controller.text,
         'email': email,
         'parentPhone': parentPhone,
@@ -157,8 +168,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     print(response.statusCode);
 
     if (response.statusCode == 200) {
-      Map<String, dynamic> decodedJson = jsonDecode(
-          utf8.decode(response.bodyBytes));
+      Map<String, dynamic> decodedJson =
+          jsonDecode(utf8.decode(response.bodyBytes));
       print(decodedJson);
       print(decodedJson['message']);
 
@@ -171,10 +182,10 @@ class _VerificationWidgetState extends State<VerificationWidget> {
         print('회원가입은 성공했지만 예상치 못한 응답 메시지입니다: ${decodedJson['message']}');
       }
     } else if (response.statusCode == 400) {
-      Map<String, dynamic> errorResponse = jsonDecode(
-          utf8.decode(response.bodyBytes));
-      print('회원가입 실패 (잘못된 요청): ${errorResponse['message'] ??
-          'No error message provided'}');
+      Map<String, dynamic> errorResponse =
+          jsonDecode(utf8.decode(response.bodyBytes));
+      print(
+          '회원가입 실패 (잘못된 요청): ${errorResponse['message'] ?? 'No error message provided'}');
       if (errorResponse['message'].toString().contains('이미 존재하는 유저입니다')) {
         // 여기서 로그인 API 호출
         print('이미 존재하는 유저입니다. 로그인을 시도합니다.');
@@ -195,7 +206,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
 
   Future<bool> loginUser(String phone) async {
     var url = Uri.parse('http://54.180.229.143:8080/api/v1/login');
-    var response = await http.post(url,
+    var response = await http.post(
+      url,
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -226,7 +238,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     final responseData = jsonDecode(jsonResponse);
 
     // API 응답에서 데이터를 추출
-    if (responseData['code'] == "0000" && responseData['message'] == "SUCCESS") {
+    if (responseData['code'] == "0000" &&
+        responseData['message'] == "SUCCESS") {
       String accessToken = responseData['result']['access_token'];
       String refreshToken = responseData['result']['refresh_token'];
       String phone = responseData['result']['phone'];
@@ -293,7 +306,6 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   //   }
   // }
 
-
   @override
   void initState() {
     super.initState();
@@ -310,172 +322,244 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 50),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                SizedBox(width: 10),
-                SvgPicture.asset('assets/icon_eut.svg'),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 50),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(width: 10),
+              SvgPicture.asset('assets/icon_eut.svg'),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
             child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-            SizedBox(height: 80),
-            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(width: 10),
-                Text('전화번호 인증하기', style: TextStyle(color: Colors.black, fontSize: 24, fontFamily: 'Noto Sans', fontWeight: FontWeight.w600, height: 0.06)),
-              ],
-            ),
-            SizedBox(height: 30.0),
-            Row(
-              children: [
-                SizedBox(width: 10),
-                Text('입력하신 전화번호로 인증번호가 발송됩니다.', textAlign: TextAlign.left, style: TextStyle(color: Color(0xFF4D4D4D), fontSize: 14, fontFamily: 'Noto Sans', fontWeight: FontWeight.w500)),
-              ],
-            ),
-
-            SizedBox(height: 100),
-            Column(
-              children: [
+                SizedBox(height: 80),
                 Row(
                   children: [
                     SizedBox(width: 10),
-                    Container(
-                      width: 195,
-                      height: 52,
-                      child: TextField(
-                        controller: _controller,
-                        textAlign: TextAlign.left,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-                          contentPadding: EdgeInsets.fromLTRB(18, 10, 20, 18),
-                          labelText: '전화번호 입력',
-                          labelStyle: TextStyle(color: Color(0xFF8F8F8F), fontSize: 18, fontFamily: 'Noto Sans', fontWeight: FontWeight.w400, height: 0.07),
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
-                    ),
-                    SizedBox(width: 16),
-                    OutlinedButton(
-                      onPressed: () {
-                        if (_controller.text.length == 11 && _controller.text.runes.every((r) => r >= '0'.runes.first && r <= '9'.runes.first)) {
-                          setState(() {
-                            _isTextFieldVisible = !_isTextFieldVisible;
-                            _buttonText = "재발송";
-                          });
-                          sendCode();
-                        }
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        minimumSize: Size(139, 52),
-                        side: BorderSide(width: 1, color: _buttonColor),
-                      ),
-                      child: Text(_buttonText, style: TextStyle(color: _textColor, fontSize: 18, fontFamily: 'Noto Sans', fontWeight: FontWeight.w400, height: 0.07)),
-                    ),
+                    Text('전화번호 인증하기',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 24,
+                            fontFamily: 'Noto Sans',
+                            fontWeight: FontWeight.w600,
+                            height: 0.06)),
                   ],
                 ),
-                if (_isTextFieldVisible) SizedBox(height: 10),
-                if (_isTextFieldVisible) Column(
+                SizedBox(height: 30.0),
+                Row(
                   children: [
-                    SizedBox(width: 16, height: 15),
-                    Container(
-                        width: 350,
-                        height: 52,
-                        child: TextField(
-                          controller: _confirmController,
-                          textAlign: TextAlign.left,
-                          decoration: InputDecoration(
-                              border: OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-                              contentPadding: EdgeInsets.fromLTRB(16, 10, 20, 16),
-                              labelText: '인증번호',
-                              labelStyle: TextStyle(color: Color(0xFF8F8F8F), fontSize: 18, fontFamily: 'Noto Sans', fontWeight: FontWeight.w400, height: 0.07),
-                              hintText: '6자리 숫자를 입력하세요'
-                          ),
-                          keyboardType: TextInputType.number,
-                        )
-                    ),
+                    SizedBox(width: 10),
+                    Text('입력하신 전화번호로 인증번호가 발송됩니다.',
+                        textAlign: TextAlign.left,
+                        style: TextStyle(
+                            color: Color(0xFF4D4D4D),
+                            fontSize: 14,
+                            fontFamily: 'Noto Sans',
+                            fontWeight: FontWeight.w500)),
                   ],
                 ),
-                SizedBox(height: 150),
-                TextButton(
-                  onPressed: _buttonConfirmColor == Color(0xFFEC295D) ? () async {
-                    // 사용자로부터 입력받은 인증번호와 Firebase에서 받은 verificationId 사용
-                    String smsCode = _confirmController.text;  // 사용자가 입력한 인증번호
-                    if (smsCode.isNotEmpty && _verificationId.isNotEmpty) {
-                      try {
-                        // 입력받은 인증번호로 PhoneAuthCredential 객체 생성
-                        PhoneAuthCredential credential = PhoneAuthProvider.credential(
-                            verificationId: _verificationId,
-                            smsCode: smsCode);
+                SizedBox(height: 100),
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        SizedBox(width: 10),
+                        Container(
+                          width: 195,
+                          height: 52,
+                          child: TextField(
+                            controller: _controller,
+                            textAlign: TextAlign.left,
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10))),
+                              contentPadding:
+                                  EdgeInsets.fromLTRB(18, 10, 20, 18),
+                              labelText: '전화번호 입력',
+                              labelStyle: TextStyle(
+                                  color: Color(0xFF8F8F8F),
+                                  fontSize: 18,
+                                  fontFamily: 'Noto Sans',
+                                  fontWeight: FontWeight.w400,
+                                  height: 0.07),
+                            ),
+                            keyboardType: TextInputType.number,
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        OutlinedButton(
+                          onPressed: () {
+                            if (_controller.text.length == 11 &&
+                                _controller.text.runes.every((r) =>
+                                    r >= '0'.runes.first &&
+                                    r <= '9'.runes.first)) {
+                              setState(() {
+                                _isTextFieldVisible = !_isTextFieldVisible;
+                                _buttonText = "재발송";
+                              });
+                              sendCode();
+                            }
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10)),
+                            minimumSize: Size(139, 52),
+                            side: BorderSide(width: 1, color: _buttonColor),
+                          ),
+                          child: Text(_buttonText,
+                              style: TextStyle(
+                                  color: _textColor,
+                                  fontSize: 18,
+                                  fontFamily: 'Noto Sans',
+                                  fontWeight: FontWeight.w400,
+                                  height: 0.07)),
+                        ),
+                      ],
+                    ),
+                    if (_isTextFieldVisible) SizedBox(height: 10),
+                    if (_isTextFieldVisible)
+                      Column(
+                        children: [
+                          SizedBox(width: 16, height: 15),
+                          Container(
+                              width: 350,
+                              height: 52,
+                              child: TextField(
+                                controller: _confirmController,
+                                textAlign: TextAlign.left,
+                                decoration: InputDecoration(
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(10))),
+                                    contentPadding:
+                                        EdgeInsets.fromLTRB(16, 10, 20, 16),
+                                    labelText: '인증번호',
+                                    labelStyle: TextStyle(
+                                        color: Color(0xFF8F8F8F),
+                                        fontSize: 18,
+                                        fontFamily: 'Noto Sans',
+                                        fontWeight: FontWeight.w400,
+                                        height: 0.07),
+                                    hintText: '6자리 숫자를 입력하세요'),
+                                keyboardType: TextInputType.number,
+                              )),
+                        ],
+                      ),
+                    SizedBox(height: 150),
+                    TextButton(
+                      onPressed: _buttonConfirmColor == Color(0xFFEC295D)
+                          ? () async {
+                              // 사용자로부터 입력받은 인증번호와 Firebase에서 받은 verificationId 사용
+                              String smsCode =
+                                  _confirmController.text; // 사용자가 입력한 인증번호
+                              if (smsCode.isNotEmpty &&
+                                  _verificationId.isNotEmpty) {
+                                try {
+                                  // 입력받은 인증번호로 PhoneAuthCredential 객체 생성
+                                  PhoneAuthCredential credential =
+                                      PhoneAuthProvider.credential(
+                                          verificationId: _verificationId,
+                                          smsCode: smsCode);
 
-                        // 생성된 credential로 로그인 시도
-                        final UserCredential userCredential =
-                            await FirebaseAuth.instance.signInWithCredential(credential);
+                                  // 생성된 credential로 로그인 시도
+                                  final UserCredential userCredential =
+                                      await FirebaseAuth.instance
+                                          .signInWithCredential(credential);
 
-                        // 로그인 성공 시 User 객체 사용 가능
-                        User? user = userCredential.user;
-                        if (user != null && user.phoneNumber != null) {
-                          print("휴대전화 확인 및 로그인: ${user.uid}");
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('인증 완료')));
+                                  // 로그인 성공 시 User 객체 사용 가능
+                                  User? user = userCredential.user;
+                                  if (user != null &&
+                                      user.phoneNumber != null) {
+                                    print("휴대전화 확인 및 로그인: ${user.uid}");
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('인증 완료')));
 
-                          // 회원가입 API 호출
-                          String email = 'user@example.com';  // 예시 값
-                          String parentPhone = 'parentPhoneNumber';  // 예시 값
+                                    // 회원가입 API 호출
+                                    String email = 'user@example.com'; // 예시 값
+                                    String parentPhone =
+                                        'parentPhoneNumber'; // 예시 값
 
-                          bool registrationResult = await registerChild(user.phoneNumber!, email, parentPhone);
-                          if (registrationResult) {
-                            print('회원가입 완료');
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("회원가입 및 로그인 성공")));
+                                    bool registrationResult =
+                                        await registerChild(user.phoneNumber!,
+                                            email, parentPhone);
+                                    if (registrationResult) {
+                                      print('회원가입 완료');
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              content: Text("회원가입 및 로그인 성공")));
 
-                            // 로그인 성공 처리 로직 (홈 화면으로 이동)
-                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => StatisticsScreen()));
-
-                          } else {
-                            print("Registration failed, try again");
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("회원가입 실패, 다시 시도해주세요")));
-                            // 실패 처리 로직 (예: 입력 필드 초기화)
-                          }
-                        } else {
-                          print("Failed to verify phone number: User is null");
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("인증 실패: 사용자 정보가 없습니다.")));
-                        }
-                      } on FirebaseAuthException catch (e) {
-                        // 예외 처리: 인증 실패
-                        print("Failed to verify phone number: ${e.message}");
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("인증 실패: ${e.message}")));
-                      }
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("인증번호를 입력하세요.")));
-                    }
-
-                  } : null,
-
-                  style: TextButton.styleFrom(
-                    minimumSize: Size(350, 52),
-                    backgroundColor: _buttonConfirmColor,
-                    foregroundColor: _textConfirmColor,
-                    padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: BorderSide(width: 1, color: _buttonConfirmColor)),
-                  ),
-                  child: Text('인증 완료', style: TextStyle(color: _textConfirmColor, fontSize: 18, fontFamily: 'Noto Sans', fontWeight: FontWeight.w600, height: 0.07)),
+                                      // 로그인 성공 처리 로직 (홈 화면으로 이동)
+                                      Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  StatisticsScreen()));
+                                    } else {
+                                      print("Registration failed, try again");
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              content:
+                                                  Text("회원가입 실패, 다시 시도해주세요")));
+                                      // 실패 처리 로직 (예: 입력 필드 초기화)
+                                    }
+                                  } else {
+                                    print(
+                                        "Failed to verify phone number: User is null");
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content:
+                                                Text("인증 실패: 사용자 정보가 없습니다.")));
+                                  }
+                                } on FirebaseAuthException catch (e) {
+                                  // 예외 처리: 인증 실패
+                                  print(
+                                      "Failed to verify phone number: ${e.message}");
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content:
+                                              Text("인증 실패: ${e.message}")));
+                                }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("인증번호를 입력하세요.")));
+                              }
+                            }
+                          : null,
+                      style: TextButton.styleFrom(
+                        minimumSize: Size(350, 52),
+                        backgroundColor: _buttonConfirmColor,
+                        foregroundColor: _textConfirmColor,
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            side: BorderSide(
+                                width: 1, color: _buttonConfirmColor)),
+                      ),
+                      child: Text('인증 완료',
+                          style: TextStyle(
+                              color: _textConfirmColor,
+                              fontSize: 18,
+                              fontFamily: 'Noto Sans',
+                              fontWeight: FontWeight.w600,
+                              height: 0.07)),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
-      ],
-        ),
     );
   }
 }

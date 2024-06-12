@@ -6,16 +6,15 @@ import 'package:taba_app_proj/screen/register_elder_fin.dart';
 class Authentic extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: LogInElder2(),
-    );
+    return const LogInElder2();
   }
 }
 
 class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  Future<void> verifyPhoneNumber(BuildContext context, String phoneNumber) async {
+  Future<void> verifyPhoneNumber(
+      BuildContext context, String phoneNumber) async {
     await _auth.verifyPhoneNumber(
       phoneNumber: phoneNumber,
       timeout: const Duration(seconds: 60),
@@ -23,10 +22,12 @@ class FirebaseAuthService {
         await _auth.signInWithCredential(credential);
       },
       verificationFailed: (FirebaseAuthException e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Failed to Verify Phone Number: ${e.message}")));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("Failed to Verify Phone Number: ${e.message}")));
       },
       codeSent: (String verificationId, int? resendToken) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Verification Code Sent")));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text("Verification Code Sent")));
       },
       codeAutoRetrievalTimeout: (String verificationId) {
         // Handle code auto retrieval timeout
@@ -34,4 +35,3 @@ class FirebaseAuthService {
     );
   }
 }
-

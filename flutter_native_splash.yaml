@@ -1,6 +1,6 @@
 flutter_native_splash:
-  background_image: assets/gradient.png
-#  color: "#EC295D"
+#  background_image: assets/gradient.png
+  color: "#EC295D"
   image: assets/splash.png
   android: true
   ios: true
