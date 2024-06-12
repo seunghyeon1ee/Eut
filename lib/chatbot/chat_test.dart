@@ -18,7 +18,6 @@ import 'dart:io';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:http_parser/http_parser.dart';
 
-
 class ChatTest extends StatefulWidget {
   const ChatTest({super.key});
 
@@ -32,19 +31,22 @@ class _ChatTestState extends State<ChatTest> {
   bool _isRecording = false;
   String greetingMessage = 'Loading...';
   String _sttResult = '녹음 버튼을 누르세요.';
-  String _sttApiUrl = 'http://54.180.229.143:8080/api/v1/chat/stt';  // STT API 맞는지 모르겠음
-  String _ttsApiUrl = 'https://api.elevenlabs.io/v1/text-to-speech/X3a8D7z1JopHxCpjvug1';
-  String _apiKey = 'cef4d9cb6ac0ca3bf613183df847472c'; // 이 API가 맞는지 모르겠음 ('your_api_key'; // Actual API key)
+  final String _sttApiUrl =
+      'http://54.180.229.143:8080/api/v1/chat/stt'; // STT API 맞는지 모르겠음
+  final String _ttsApiUrl =
+      'https://api.elevenlabs.io/v1/text-to-speech/X3a8D7z1JopHxCpjvug1';
+  final String _apiKey =
+      'cef4d9cb6ac0ca3bf613183df847472c'; // 이 API가 맞는지 모르겠음 ('your_api_key'; // Actual API key)
 
   @override
   void initState() {
-     super.initState();
-     _initRecorder();
-     fetchGreeting();
-     _player.openAudioSession();
-   }
+    super.initState();
+    _initRecorder();
+    fetchGreeting();
+    _player.openAudioSession();
+  }
 
-   Future<void> fetchGreeting() async {
+  Future<void> fetchGreeting() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
     final response = await http.post(
@@ -54,41 +56,47 @@ class _ChatTestState extends State<ChatTest> {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
-        'text': '독거노인이 관심있을법한 대화주제로 말을 걸어줘', // todo 앱 시작 시 챗봇에게 시킬 프롬프트 작성 ex) 독거노인이 관심있을법한 대화주제로 말을 걸어줘
-      })
-    );
-
+          'text':
+              '독거노인이 관심있을법한 대화주제', // todo 앱 시작 시 챗봇에게 시킬 프롬프트 작성 ex) 독거노인이 관심있을법한 대화주제로 말을 걸어줘
+        }));
+    print('response: ${utf8.decode(response.bodyBytes)}');
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       print(jsonResponse);
-      if (jsonResponse['code'] == '0000' && jsonResponse['message'] == 'SUCCESS') {
+      if (jsonResponse['code'] == '0000' &&
+          jsonResponse['message'] == 'SUCCESS') {
         setState(() {
           greetingMessage = jsonResponse['result']['response'];
         });
+
+        /// todo 나중에 주석 해제
+        textToSpeech(greetingMessage);
       }
     } else {
       setState(() {
         greetingMessage = '환영 메시지 로드 실패';
       });
     }
-   }
+  }
 
-   Future<void> _initRecorder() async {
-     final status = await Permission.microphone.request();
-     if (status != PermissionStatus.granted) {
-       throw RecordingPermissionException('녹음 권한 허용되지 않음');
-     }
-     await _recorder.startRecorder();
-   }
+  Future<void> _initRecorder() async {
+    await _recorder.openAudioSession();
 
-   @override
-   void dispose() {
-     _recorder.stopRecorder();
-     _player.closeAudioSession();
-     super.dispose();
-   }
+    final status = await Permission.microphone.request();
+    if (status != PermissionStatus.granted) {
+      throw RecordingPermissionException('녹음 권한 허용되지 않음');
+    }
+    // _toggleRecording();
+  }
 
-   // 원래 코드
+  @override
+  void dispose() {
+    _recorder.stopRecorder();
+    _player.closeAudioSession();
+    super.dispose();
+  }
+
+  // 원래 코드
   // void _toggleRecording() async {
   //  if (!_isRecording) {
   //    await _recorder.startRecorder(toFile: 'audio.mp4');
@@ -106,7 +114,10 @@ class _ChatTestState extends State<ChatTest> {
 
   void _toggleRecording() async {
     if (!_isRecording) {
-      await _recorder.startRecorder(toFile: 'audio.mp3');
+      await _recorder.startRecorder(
+        toFile: 'why.mp4',
+        codec: Codec.aacMP4,
+      );
       setState(() {
         _isRecording = true;
       });
@@ -120,6 +131,8 @@ class _ChatTestState extends State<ChatTest> {
   }
 
   void _sendAudioFileForTranscription(String path) async {
+    print('Sending audio file for transcription...');
+    print('path: $path');
     File audioFile = File(path);
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
@@ -131,19 +144,18 @@ class _ChatTestState extends State<ChatTest> {
         })
         ..files.add(await http.MultipartFile.fromPath(
             'voiceFile', audioFile.path,
-            contentType: MediaType('audio', 'mp3')
-        ));
+            contentType: MediaType('audio', 'mp3')));
       var response = await request.send();
+      var responseData = await response.stream.toBytes();
+      var result = json.decode(utf8.decode(responseData));
+      print(result);
       if (response.statusCode == 200) {
-        var responseData = await response.stream.toBytes();
-        var result = json.decode(utf8.decode(responseData));
         setState(() {
           _sttResult = result['result']['stt_result'];
         });
         // _sttResult를 잠깐 보여줌
         showTemporaryMessage(_sttResult);
-        textToSpeech(_sttResult);  // Convert text to speech after transcription
-
+        textToSpeech(_sttResult); // Convert text to speech after transcription
       } else {
         setState(() {
           _sttResult = 'STT 작동 중 에러 발생';
@@ -163,7 +175,6 @@ class _ChatTestState extends State<ChatTest> {
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
-
 
   Future<void> textToSpeech(String text) async {
     try {
@@ -209,7 +220,8 @@ class _ChatTestState extends State<ChatTest> {
 
   @override
   Widget build(BuildContext context) {
-    String imagePath = _isRecording ? 'assets/record_stop_icon.svg' : 'assets/record_icon.svg';
+    String imagePath =
+        _isRecording ? 'assets/record_stop_icon.svg' : 'assets/record_icon.svg';
     // final siricontroller = IOS7SiriWaveformController(
     //   amplitude: 0.8,
     //   color: Colors.redAccent,
@@ -225,29 +237,34 @@ class _ChatTestState extends State<ChatTest> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(height: 40),
-              Text(greetingMessage,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.black, fontSize: 22, fontFamily: 'Noto Sans',
-                      fontWeight: FontWeight.w600,),
+              Text(
+                greetingMessage,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 22,
+                  fontFamily: 'Noto Sans',
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               SizedBox(height: 80),
               // Row(
               //  mainAxisAlignment: MainAxisAlignment.center,
               //  children: [
-                  // Consumer<GreetingProvider> (
-                  //  builder: (context, provider, child) {
-                  //    return Text(provider.greeting,
-                  //      textAlign: TextAlign.center,
-                  //      style: TextStyle(color: Colors.black, fontSize: 30,
-                  //          fontFamily: 'Noto Sans', fontWeight: FontWeight.w600, height: 0.06),);
-                  //  },
-                  // ),
-                  // Text('안녕하세요',
-                  //   textAlign: TextAlign.center,
-                  //   style: TextStyle(color: Colors.black, fontSize: 30,
-                  //       fontFamily: 'Noto Sans', fontWeight: FontWeight.w600, height: 0.06),
-                  // ),
-                // ],
+              // Consumer<GreetingProvider> (
+              //  builder: (context, provider, child) {
+              //    return Text(provider.greeting,
+              //      textAlign: TextAlign.center,
+              //      style: TextStyle(color: Colors.black, fontSize: 30,
+              //          fontFamily: 'Noto Sans', fontWeight: FontWeight.w600, height: 0.06),);
+              //  },
+              // ),
+              // Text('안녕하세요',
+              //   textAlign: TextAlign.center,
+              //   style: TextStyle(color: Colors.black, fontSize: 30,
+              //       fontFamily: 'Noto Sans', fontWeight: FontWeight.w600, height: 0.06),
+              // ),
+              // ],
               // ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -266,7 +283,6 @@ class _ChatTestState extends State<ChatTest> {
                   ),
                 ],
               ),
-
 
               // AvatarGlow(
               //   startDelay: const Duration(milliseconds: 1000),
@@ -287,32 +303,35 @@ class _ChatTestState extends State<ChatTest> {
               // ),
               SizedBox(height: 50),
 
-              IconButton(
-                  icon: SvgPicture.asset(imagePath, width: 110, height: 110,),
-                  onPressed: _toggleRecording,
-                  iconSize: 64.0,),
-
               // SizedBox(height: 50),
               // Text(_sttResult, style: TextStyle(fontSize: 20)),
 
-
-
-
-      //       SiriWaveform.ios7(
-      //         controller: siricontroller,
-      //       options: IOS7SiriWaveformOptions(
-      //       height: 100,
-      //   width: 400,
-      // ),
-      //   ),
+              //       SiriWaveform.ios7(
+              //         controller: siricontroller,
+              //       options: IOS7SiriWaveformOptions(
+              //       height: 100,
+              //   width: 400,
+              // ),
+              //   ),
 
               // SizedBox(height: 70),
               // SvgPicture.asset('assets/record_icon.svg'),
-           ],
-                ),
-              ),
+            ],
+          ),
+        ),
+        floatingActionButton: Align(
+          alignment: Alignment.bottomCenter,
+          child: IconButton(
+            icon: SvgPicture.asset(
+              imagePath,
+              width: 110,
+              height: 110,
+            ),
+            onPressed: _toggleRecording,
+            iconSize: 64.0,
+          ),
+        ),
       ),
-                                    );
+    );
   }
 }
-

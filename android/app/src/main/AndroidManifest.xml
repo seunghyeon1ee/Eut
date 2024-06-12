@@ -2,10 +2,12 @@
 
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
 
 
     <application
-        android:label="taba_app_proj"
+        android:label="이웃"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
