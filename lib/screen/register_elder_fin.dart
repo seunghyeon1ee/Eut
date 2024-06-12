@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:taba_app_proj/chatbot/chat_test.dart';
 import 'package:taba_app_proj/firebase_test.dart';
 import 'package:taba_app_proj/screen/home_screen.dart';
 import 'package:taba_app_proj/screen/register_fin.dart';
@@ -9,6 +10,7 @@ import 'package:taba_app_proj/screen/authentication_screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class MyApp2 extends StatelessWidget {
@@ -31,6 +33,7 @@ class LogInElder2 extends StatefulWidget {
 class _LogInElder2State extends State<LogInElder2> {
   final _phoneController = TextEditingController();
 
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -131,6 +134,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   }
 
 
+
+
   // 인증번호 입력 상태 변경
   void _toggleTextFieldConfirm() {
     if (_confirmController.text.length == 6 && _confirmController.text.runes.every((r) => r >= '0'.runes.first && r <= '9'.runes.first)) {
@@ -170,8 +175,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
       Map<String, dynamic> decodedJson = jsonDecode(
           utf8.decode(response.bodyBytes));
       print(decodedJson);
-      print(
-          decodedJson['message']); // success 인 경우 회원가입이 성공했으니 로그인 API 호출 (응답 메시지 로깅)
+      print(decodedJson['message']); // success 인 경우 회원가입이 성공했으니 로그인 API 호출 (응답 메시지 로깅)
       // 또는 이미 존재하는 회원입니다. -> 로그인 API 호출
 
       if (decodedJson['message'] == 'SUCCESS') {
@@ -187,11 +191,21 @@ class _VerificationWidgetState extends State<VerificationWidget> {
         Map<String, dynamic> errorResponse = jsonDecode(utf8.decode(response.bodyBytes));
         print('회원가입 실패 (잘못된 요청): ${errorResponse['error'] ?? 'No error message provided'}');
         // 적절한 UI 피드백을 제공할 수 있는 코드 추가 예정
+        if (errorResponse['message'].toString().contains('이미 존재하는 유저입니다')) {
+          // 여기서 로그인 API 호출
+          print('이미 존재하는 유저입니다. 로그인을 시도합니다.');
+
+          bool loginResult = await loginUser(_controller.text);
+          if (loginResult) {
+            print('로그인 성공');
+            return true;
+          } else {
+            print('로그인 실패');
+          }
+        }
     } else {
       print('회원가입 실패: ${response.body}');
     }
-
-
     return false;  // 기본적으로 false 반환, 회원가입 또는 로그인 실패 시
   }
 
@@ -205,14 +219,62 @@ class _VerificationWidgetState extends State<VerificationWidget> {
         'phone': phone,
       }),
     );
-
+    print(response.body);
     if (response.statusCode == 200) {
       print('로그인 성공');
+      Map<String, dynamic> res = jsonDecode(response.body);
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('access_token', res['result']['access_token']);
       return true;
     } else {
-      print('로그인 실패: ${response.body}');
+      var decodeResponse = utf8.decode(response.bodyBytes);
+      print('로그인 실패: $decodeResponse');
       return false;
     }
+  }
+
+  // JSON 응답을 처리하고 SharedPreferences에 데이터를 저장하는 함수
+  Future<bool> saveUserData(String jsonResponse) async {
+    // SharedPreferences 인스턴스를 가져옴
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // JSON 응답을 파싱
+    final responseData = jsonDecode(jsonResponse);
+
+    // API 응답에서 데이터를 추출
+    if (responseData['code'] == "0000" && responseData['message'] == "SUCCESS") {
+      String accessToken = responseData['result']['access_token'];
+      String refreshToken = responseData['result']['refresh_token'];
+      String phone = responseData['result']['phone'];
+      String memberType = responseData['result']['memberType'];
+
+      // SharedPreferences에 각 키와 값을 저장
+      await prefs.setString('access_token', accessToken);
+      await prefs.setString('refresh_token', refreshToken);
+      await prefs.setString('phone', phone);
+      await prefs.setString('member_type', memberType);
+
+      print('사용자 데이터 저장 성공');
+      return true;
+    } else {
+      print('사용자 데이터 저장 실패');
+      return false;
+    }
+  }
+
+// 저장된 사용자 데이터를 불러오는 함수
+  Future<void> loadUserData() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    String? accessToken = prefs.getString('access_token');
+    String? refreshToken = prefs.getString('refresh_token');
+    String? phone = prefs.getString('phone');
+    String? memberType = prefs.getString('member_type');
+
+    print('Access Token: $accessToken');
+    print('Refresh Token: $refreshToken');
+    print('Phone: $phone');
+    print('Member Type: $memberType');
   }
 
   @override
@@ -357,7 +419,10 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                           if (registrationResult) {
                             print('회원가입 완료');
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("회원가입 및 로그인 성공")));
+
                             // 로그인 성공 처리 로직 (홈 화면으로 이동)
+                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ChatTest()));
+
                           } else {
                             print("Registration failed, try again");
                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("회원가입 실패, 다시 시도해주세요")));
