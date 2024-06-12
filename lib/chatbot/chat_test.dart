@@ -333,9 +333,7 @@ class _ChatTestState extends State<ChatTest> {
             ],
           ),
         ),
-        floatingActionButton: Align(
-          alignment: Alignment.bottomCenter,
-          child: IconButton(
+        floatingActionButton: IconButton(
             icon: SvgPicture.asset(
               imagePath,
               width: 110,
@@ -344,8 +342,8 @@ class _ChatTestState extends State<ChatTest> {
             onPressed: _toggleRecording,
             iconSize: 64.0,
           ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         ),
-      ),
     );
   }
 }
