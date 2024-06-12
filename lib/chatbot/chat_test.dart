@@ -5,10 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taba_app_proj/chatbot/greeting.dart';
 import 'package:taba_app_proj/chatbot/greeting.dart';
-// import 'package:avatar_glow/avatar_glow.dart';
 import 'package:simple_ripple_animation/simple_ripple_animation.dart';
-// import 'package:siri_wave/siri_wave.dart';
-// import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:http/http.dart' as http;
@@ -32,11 +29,22 @@ class _ChatTestState extends State<ChatTest> {
   String greetingMessage = 'Loading...';
   String _sttResult = '녹음 버튼을 누르세요.';
   final String _sttApiUrl =
-      'http://54.180.229.143:8080/api/v1/chat/stt'; // STT API 맞는지 모르겠음
+      'http://54.180.229.143:8080/api/v1/chat/stt';
   final String _ttsApiUrl =
       'https://api.elevenlabs.io/v1/text-to-speech/X3a8D7z1JopHxCpjvug1';
   final String _apiKey =
-      'cef4d9cb6ac0ca3bf613183df847472c'; // 이 API가 맞는지 모르겠음 ('your_api_key'; // Actual API key)
+      'cef4d9cb6ac0ca3bf613183df847472c';
+  String topEmotion = 'neutral';
+  final Map<String, String> emotionImages = {
+    '슬픔': 'assets/sad.png',
+    '분노': 'assets/angry.png',
+    '당황': 'assets/confused.png',
+    '불안': 'assets/anxious.png',
+    '행복': 'assets/happy.png',
+    '중립': 'assets/neutral.png',
+    '혐오': 'assets/disgusted.png',
+  };
+
 
   @override
   void initState() {
@@ -144,7 +152,7 @@ class _ChatTestState extends State<ChatTest> {
         })
         ..files.add(await http.MultipartFile.fromPath(
             'voiceFile', audioFile.path,
-            contentType: MediaType('audio', 'mp4')));
+            contentType: MediaType('audio', 'mp3')));
       var response = await request.send();
       var responseData = await response.stream.toBytes();
       var result = json.decode(utf8.decode(responseData));
@@ -152,12 +160,14 @@ class _ChatTestState extends State<ChatTest> {
       if (response.statusCode == 200) {
         setState(() {
           _sttResult = result['result']['stt_result'];
-          greetingMessage = result['result']['gpt_response'];
+          // 가장 높은 score의 label 추출
+          topEmotion = result['result']['sentiment_analysis'].reduce((a, b) => a['score'] > b['score'] ? a : b)['label'];
         });
         // _sttResult를 잠깐 보여줌
         showTemporaryMessage(_sttResult);
-        textToSpeech(
-            greetingMessage); // Convert text to speech after transcription
+        // todo 감정 받는 변수 만들고 표정 변화 (result의 sentiment_analysis 중 score가 가장 높은 것을 temp 변수에 넣고 각 label에 맞는 표정으로 나타내기)
+        // negativeRatio
+        textToSpeech(_sttResult); // Convert text to speech after transcription
       } else {
         setState(() {
           _sttResult = 'STT 작동 중 에러 발생';
@@ -220,11 +230,13 @@ class _ChatTestState extends State<ChatTest> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     String imagePath =
         _isRecording ? 'assets/record_stop_icon.svg' : 'assets/record_icon.svg';
-    // final siricontroller = IOS7SiriWaveformController(
+    String emotionImagePath = emotionImages[topEmotion] ?? 'assets/neutral.png'; // topEmotion에 따라 이미지 변경
+     // final siricontroller = IOS7SiriWaveformController(
     //   amplitude: 0.8,
     //   color: Colors.redAccent,
     //   frequency: 10,
