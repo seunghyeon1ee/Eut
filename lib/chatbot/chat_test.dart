@@ -144,7 +144,7 @@ class _ChatTestState extends State<ChatTest> {
         })
         ..files.add(await http.MultipartFile.fromPath(
             'voiceFile', audioFile.path,
-            contentType: MediaType('audio', 'mp3')));
+            contentType: MediaType('audio', 'mp4')));
       var response = await request.send();
       var responseData = await response.stream.toBytes();
       var result = json.decode(utf8.decode(responseData));
