@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  intl: ^0.17.0
  # flutter_native_splash: ^2.4.0
   expandable: ^5.0.1
   expansion_tile_card: ^3.0.0

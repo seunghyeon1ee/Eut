@@ -4,9 +4,10 @@ import 'package:taba_app_proj/chatbot/chat_test.dart';
 import 'package:taba_app_proj/screen/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:taba_app_proj/screen/stastics.dart';
-// import 'package:taba_app_proj/screentime.dart';
+import 'package:taba_app_proj/screentime.dart';
 import 'firebase_options.dart';
-// import 'package:taba_app_proj/screentime.dart';
+import 'package:taba_app_proj/screentime.dart';
+
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -29,3 +30,6 @@ class App extends StatelessWidget {
     );
   }
 }
+
+
+
