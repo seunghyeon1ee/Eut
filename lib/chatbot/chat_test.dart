@@ -15,6 +15,8 @@ import 'dart:io';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:http_parser/http_parser.dart';
 
+import '../controller/fcm_controller.dart';
+
 class ChatTest extends StatefulWidget {
   const ChatTest({super.key});
 
@@ -46,6 +48,7 @@ class _ChatTestState extends State<ChatTest> {
   @override
   void initState() {
     super.initState();
+    FcmController.instance.initializeNotification();
     _initRecorder();
     fetchGreeting();
     _player.openAudioSession();

@@ -47,7 +47,7 @@
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
-            android:resource="@drawable/splash" />
+            android:resource="@drawable/app_icon" />
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

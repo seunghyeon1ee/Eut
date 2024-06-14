@@ -5,8 +5,8 @@ import 'package:taba_app_proj/screen/register_fam_1.dart';
 import 'package:taba_app_proj/screen/register_fam_fin.dart';
 
 class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
+  const HomeScreen({super.key, this.accessToken});
+  final String? accessToken;
   @override
   Widget build(BuildContext context) {
     return SafeArea(
