@@ -28,12 +28,10 @@ class _ChatTestState extends State<ChatTest> {
   bool _isRecording = false;
   String greetingMessage = 'Loading...';
   String _sttResult = '녹음 버튼을 누르세요.';
-  final String _sttApiUrl =
-      'http://54.180.229.143:8080/api/v1/chat/stt';
+  final String _sttApiUrl = 'http://54.180.229.143:8080/api/v1/chat/stt';
   final String _ttsApiUrl =
       'https://api.elevenlabs.io/v1/text-to-speech/X3a8D7z1JopHxCpjvug1';
-  final String _apiKey =
-      'cef4d9cb6ac0ca3bf613183df847472c';
+  final String _apiKey = 'cef4d9cb6ac0ca3bf613183df847472c';
   String topEmotion = 'neutral';
   final Map<String, String> emotionImages = {
     '슬픔': 'assets/sad.png',
@@ -44,7 +42,6 @@ class _ChatTestState extends State<ChatTest> {
     '중립': 'assets/neutral.png',
     '혐오': 'assets/disgusted.png',
   };
-
 
   @override
   void initState() {
@@ -65,7 +62,7 @@ class _ChatTestState extends State<ChatTest> {
         },
         body: jsonEncode({
           'text':
-              '독거노인이 관심있을법한 대화주제', // todo 앱 시작 시 챗봇에게 시킬 프롬프트 작성 ex) 독거노인이 관심있을법한 대화주제로 말을 걸어줘
+              '독거노인에게 안부를 물어보는 말을 걸어줘', // todo 앱 시작 시 챗봇에게 시킬 프롬프트 작성 ex) 독거노인이 관심있을법한 대화주제로 말을 걸어줘
         }));
     print('response: ${utf8.decode(response.bodyBytes)}');
     if (response.statusCode == 200) {
@@ -120,6 +117,7 @@ class _ChatTestState extends State<ChatTest> {
   //  });
   // }
 
+  /// 녹음 버튼 클릭
   void _toggleRecording() async {
     if (!_isRecording) {
       await _recorder.startRecorder(
@@ -138,6 +136,7 @@ class _ChatTestState extends State<ChatTest> {
     }
   }
 
+  /// 녹음 완료 후 stt api로 전송
   void _sendAudioFileForTranscription(String path) async {
     print('Sending audio file for transcription...');
     print('path: $path');
@@ -161,13 +160,16 @@ class _ChatTestState extends State<ChatTest> {
         setState(() {
           _sttResult = result['result']['stt_result'];
           // 가장 높은 score의 label 추출
-          topEmotion = result['result']['sentiment_analysis'].reduce((a, b) => a['score'] > b['score'] ? a : b)['label'];
+          topEmotion = result['result']['sentiment_analysis']
+              .reduce((a, b) => a['score'] > b['score'] ? a : b)['label'];
+          greetingMessage = result['result']['gpt_response'];
         });
         // _sttResult를 잠깐 보여줌
         showTemporaryMessage(_sttResult);
         // todo 감정 받는 변수 만들고 표정 변화 (result의 sentiment_analysis 중 score가 가장 높은 것을 temp 변수에 넣고 각 label에 맞는 표정으로 나타내기)
         // negativeRatio
-        textToSpeech(_sttResult); // Convert text to speech after transcription
+        textToSpeech(
+            greetingMessage); // Convert text to speech after transcription
       } else {
         setState(() {
           _sttResult = 'STT 작동 중 에러 발생';
@@ -188,6 +190,7 @@ class _ChatTestState extends State<ChatTest> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  /// 챗봇의 응답을 음성으로 변환
   Future<void> textToSpeech(String text) async {
     try {
       var response = await http.post(
@@ -221,6 +224,7 @@ class _ChatTestState extends State<ChatTest> {
     return filePath;
   }
 
+  /// 오디오 파일 재생
   void _playAudio(String filePath) {
     _player.startPlayer(
       fromURI: filePath,
@@ -230,13 +234,13 @@ class _ChatTestState extends State<ChatTest> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     String imagePath =
         _isRecording ? 'assets/record_stop_icon.svg' : 'assets/record_icon.svg';
-    String emotionImagePath = emotionImages[topEmotion] ?? 'assets/neutral.png'; // topEmotion에 따라 이미지 변경
-     // final siricontroller = IOS7SiriWaveformController(
+    String emotionImagePath = emotionImages[topEmotion] ??
+        'assets/neutral.png'; // topEmotion에 따라 이미지 변경
+    // final siricontroller = IOS7SiriWaveformController(
     //   amplitude: 0.8,
     //   color: Colors.redAccent,
     //   frequency: 10,
@@ -289,8 +293,11 @@ class _ChatTestState extends State<ChatTest> {
                     minRadius: 90,
                     ripplesCount: 6,
                     child: ClipOval(
-                      child: Image.asset('assets/neutral.png',
-                          width: 350, height: 350, fit: BoxFit.cover),
+                      child: Image.asset(
+                          emotionImages[topEmotion] ?? 'assets/neutral.png',
+                          width: 350,
+                          height: 350,
+                          fit: BoxFit.cover),
                     ),
                     // duration: const Duration(milliseconds: 6 * 300),
                     // delay: const Duration(milliseconds: 300),
@@ -334,16 +341,16 @@ class _ChatTestState extends State<ChatTest> {
           ),
         ),
         floatingActionButton: IconButton(
-            icon: SvgPicture.asset(
-              imagePath,
-              width: 110,
-              height: 110,
-            ),
-            onPressed: _toggleRecording,
-            iconSize: 64.0,
+          icon: SvgPicture.asset(
+            imagePath,
+            width: 110,
+            height: 110,
           ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          onPressed: _toggleRecording,
+          iconSize: 64.0,
         ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      ),
     );
   }
 }

@@ -8,7 +8,6 @@ import 'package:taba_app_proj/screentime.dart';
 import 'firebase_options.dart';
 import 'package:taba_app_proj/screentime.dart';
 
-
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   // FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
@@ -26,10 +25,8 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: StatisticsScreen(),
+      // home: StatisticsScreen(),
+      home: HomeScreen(),
     );
   }
 }
-
-
-
