@@ -800,6 +800,7 @@ class _WeekViewState extends State<WeekView> {
 
 
 // --------------------------------------------------------------------------
+
 class MonthView extends StatefulWidget {
   @override
   _MonthViewState createState() => _MonthViewState();
@@ -818,25 +819,23 @@ class _MonthViewState extends State<MonthView> {
     fetchMonthlyData();
   }
 
-
   Future<void> fetchMonthlyData() async {
-    String date = startOfMonth.toIso8601String().split('T')[0]; // 'yyyy-mm-dd' 형식으로 날짜를 얻음
+    String date = startOfMonth.toIso8601String().split('T')[0];
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? accessToken = prefs.getString('access_token');  // 액세스 토큰은 안전하게 관리하고 있어야 합니다.
+    String? accessToken = prefs.getString('access_token');
 
     final response = await http.get(
       Uri.parse('http://54.180.229.143:8080/api/v1/stat/monthly?date=$date'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Accept': 'application/json',
-        'Authorization': 'Bearer $accessToken',  // Authorization 헤더 추가
+        'Authorization': 'Bearer $accessToken',
       },
     );
 
     if (response.statusCode == 200) {
       final responseBody = json.decode(response.body);
       if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
-        // 데이터 처리
         setState(() {
           monthlyData = responseBody['result'];
         });
@@ -848,47 +847,36 @@ class _MonthViewState extends State<MonthView> {
     }
   }
 
-  Color getMarkerColor(String emotion) {
-    return emotion == '행복' || emotion == '당황' || emotion == '중립' ? Color(0x60FF7672) : Color(0xFFEC295D);
-  }
-
-  double _convertSecondsToHours(double seconds) {
-    return seconds / 3600;
-  }
-
-  String _formatHoursAndMinutes(double hours) {
-    int h = hours.floor();
-    int m = ((hours - h) * 60).round();
-    return "$h시간 $m분";
-  }
-
-
   @override
   Widget build(BuildContext context) {
     if (monthlyData == null) {
       return Center(child: CircularProgressIndicator());
     }
 
-    int avgUsageTimeSecond = monthlyData!['avgUsageTimeSecond'];
-    int changeUsageTimeSecond = monthlyData!['changeUsageTimeSecond'];
+    int avgUsageTimeSecond = monthlyData!['avgUsageTimeSecond'] ?? 0;
+    int changeUsageTimeSecond = monthlyData!['changeUsageTimeSecond'] ?? 0;
 
-    double avgHours = avgUsageTimeSecond / 7200; // 2시간을 초로 표현
-    double prevMonthAvgHours = (avgUsageTimeSecond - changeUsageTimeSecond) /
-        3600; // 2시간 30분을 초로 표현
+    double avgHours = avgUsageTimeSecond / 3600.0;
+    double prevMonthAvgHours = (avgUsageTimeSecond - changeUsageTimeSecond) / 3600.0;
     double difference = avgHours - prevMonthAvgHours;
     String differenceText = difference > 0 ? '더 대화했어요.' : '덜 대화했어요.';
 
+    List<double> screenTimeMonthlyInHours = [];
+    if (monthlyData!['screenTimeMonthly'] != null) {
+      screenTimeMonthlyInHours = (monthlyData!['screenTimeMonthly'] as Map<String, dynamic>).values
+          .map((e) => e is num ? e.toDouble() / 3600.0 : 0.0)
+          .toList();
+    }
 
-    List<double> screenTimeMonthlyInHours = monthlyData!['screenTimeMonthly']
-        .map((e) => e as Map<String, dynamic>).map((key,
-        value) => value as double)
-        .toList();
-    List<double> negativeExpRate = monthlyData!['negativeExpRate'].values.map<
-        double>((rate) => rate.toDouble()).toList();
-    Map<String, dynamic> avgEmotion = monthlyData!['avgEmotion'];
-    String topEmotion = avgEmotion.entries
-        .reduce((a, b) => a.value > b.value ? a : b)
-        .key;
+    List<double> negativeExpRate = [];
+    if (monthlyData!['negativeExpRate'] != null) {
+      negativeExpRate = (monthlyData!['negativeExpRate'] as Map<String, dynamic>).values
+          .map((e) => e is num ? e.toDouble() : 0.0)
+          .toList();
+    }
+
+    Map<String, dynamic> avgEmotion = monthlyData!['avgEmotion'] as Map<String, dynamic>? ?? {};
+    String topEmotion = avgEmotion['maxScore']?.keys?.first ?? '';
 
     final Map<String, String> emotionImages = {
       '걱정': 'assets/worried.png',
@@ -908,8 +896,7 @@ class _MonthViewState extends State<MonthView> {
             Padding(
               padding: EdgeInsets.all(16.0),
               child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
                 child: Column(
                   children: [
                     Row(
@@ -917,11 +904,11 @@ class _MonthViewState extends State<MonthView> {
                         Padding(
                           padding: const EdgeInsets.all(16.0),
                           child: Container(
-                            width: 80, // Specify the width of the image
-                            height: 80, // Specify the height of the image
+                            width: 80,
+                            height: 80,
                             child: ClipOval(
                               child: Image.asset(
-                                emotionImages[topEmotion]!,
+                                emotionImages[topEmotion] ?? 'assets/neutral.png',
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -982,12 +969,12 @@ class _MonthViewState extends State<MonthView> {
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
                       ),
                       TextSpan(
-                        text: '을 대화하셨습니다.\n이번달은 지난달 보다 ${difference.abs().toStringAsFixed(1)}시간 ',
+                        text: '을 대화하셨습니다.\n',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                       ),
                       TextSpan(
-                        text: differenceText,
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: difference > 0 ? Colors.green : Colors.red),
+                        text: '이번달은 지난달 보다 ${difference.abs().toStringAsFixed(1)}시간 ${differenceText}',
+                        style: TextStyle(fontSize:12, color:Colors.grey),
                       ),
                     ],
                   ),
@@ -1001,7 +988,7 @@ class _MonthViewState extends State<MonthView> {
                   Colors.orange.withOpacity(0.5),
                   Colors.orange.withOpacity(0.0)
                 ],
-                isWeekly: false, // 월간 그래프로 설정
+                isWeekly: false,
               ),
             ),
             Padding(
@@ -1020,7 +1007,6 @@ class _MonthViewState extends State<MonthView> {
     );
   }
 }
-
 
 //------------------------------------------------------------------------
 
@@ -1903,7 +1889,7 @@ class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConvers
   DateTime? _selectedDay;
   Map<int, bool> _expandedStates = {};  // 확장 상태를 관리하는 맵
 
-  List<Map<String, dynamic>> dailyNegativityRatioList=[];
+  List<Map<String, dynamic>> dailyNegativityRatioList = [];
 
   @override
   void initState() {
@@ -1929,7 +1915,7 @@ class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConvers
       if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
         // 데이터 처리
         setState(() {
-          dailyNegativityRatioList = responseBody['result']['dailyNegativityRatioList'];
+          dailyNegativityRatioList = List<Map<String, dynamic>>.from(responseBody['result']['dailyNegativityRatioList']);
         });
       } else {
         throw Exception('Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
@@ -1954,8 +1940,10 @@ class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConvers
 
   @override
   Widget build(BuildContext context) {
-    //widget.emotionData.sort((a, b) => b['percentage'].compareTo(a['percentage']));
-    String topEmotion = widget.emotionData[0]['emotion'];
+    // Null 체크 및 기본값 설정
+    String topEmotion = (widget.emotionData['maxScore'] != null && widget.emotionData['maxScore'].isNotEmpty)
+        ? widget.emotionData['maxScore'].keys.first
+        : 'neutral';
 
     return Scaffold(
       appBar: PreferredSize(
@@ -2025,7 +2013,7 @@ class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConvers
                 todayDecoration: BoxDecoration(
                   color: Colors.transparent,
                   shape: BoxShape.circle,  // 달력에서의 오늘을 날짜에 대한 데이터
-                  border:Border.all(color: Colors.pinkAccent, width: 2), // 핑크색 테두리
+                  border: Border.all(color: Colors.pinkAccent, width: 2), // 핑크색 테두리
                 ),
                 selectedDecoration: BoxDecoration(
                   color: Colors.pinkAccent,
@@ -2035,7 +2023,7 @@ class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConvers
               calendarBuilders: CalendarBuilders(
                 markerBuilder: (context, date, events) {
                   if (events.isNotEmpty) {
-                    String topEmotion = '행복'; // 이게 예시로 적용된건가?? 혹시
+                    String topEmotion = 'neutral'; // 기본값 설정
                     topEmotion = events
                         .map((event) => (event as Map<String, dynamic>)['details'] as String)
                         .reduce((value, element) => value.length > element.length ? value : element);
@@ -2044,7 +2032,7 @@ class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConvers
                       height: 10,
                       margin: const EdgeInsets.symmetric(horizontal: 0.3),
                       decoration: BoxDecoration(
-                        color: (topEmotion == '행복' || topEmotion =='중립' || topEmotion == '당황')? Color(0x60FF7672) : Color(0xFFEC295D),
+                        color: (topEmotion == '행복' || topEmotion == '중립' || topEmotion == '당황') ? Color(0x60FF7672) : Color(0xFFEC295D),
                         shape: BoxShape.circle,
                       ),
                     );
@@ -2074,7 +2062,7 @@ class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConvers
                     title: event['title']!, // 이벤트 제목
                     date: event['date']!, // 이벤트 날짜
                     duration: event['duration']!, // 이벤트 지속 시간
-                    details: event['details'] ?? '', // 이벤트 세부 내용 (없으면 빈 문자열)
+                    details: List<String>.from(event['details'] ?? []), // 이벤트 세부 내용 (없으면 빈 리스트)
                     isExpanded: _expandedStates[index] ?? false, // 확장 상태
                     onTap: () => _toggleExpanded(index), // 카드 탭 시 확장/축소 상태 변경 함수 호출
                   ),

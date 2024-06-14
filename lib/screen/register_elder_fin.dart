@@ -86,6 +86,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
 
   late String _verificationId;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  Timer? _timer;
+  int _remainingTime = 300; // 5분 = 300초
 
 
 
@@ -107,6 +109,9 @@ class _VerificationWidgetState extends State<VerificationWidget> {
         _verificationId = verificationId;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('인증번호 발송')));
         startTimer();
+        setState(() {
+          _isTextFieldVisible = true;
+        });
       },
       codeAutoRetrievalTimeout: (String verificationId) {
         _verificationId = verificationId;
