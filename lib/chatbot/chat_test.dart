@@ -32,7 +32,7 @@ class _ChatTestState extends State<ChatTest> {
   String _sttResult = '녹음 버튼을 누르세요.';
   final String _sttApiUrl = 'http://54.180.229.143:8080/api/v1/chat/stt';
   final String _ttsApiUrl =
-      'https://api.elevenlabs.io/v1/text-to-speech/X3a8D7z1JopHxCpjvug1';
+      'https://api.elevenlabs.io/v1/text-to-speech/VDHVV8QN47SSt26Po3BA';
   final String _apiKey = 'cef4d9cb6ac0ca3bf613183df847472c';
   String topEmotion = 'neutral';
   final Map<String, String> emotionImages = {
