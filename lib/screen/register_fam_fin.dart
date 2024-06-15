@@ -119,6 +119,10 @@ class _VerificationWidgetState extends State<VerificationWidget> {
         // verificationId를 저장하여 나중에 사용
         _verificationId = verificationId;
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('인증번호 발송')));
+        startTimer();
+        setState(() {
+          _isTextFieldVisible = true;
+        });
       },
       codeAutoRetrievalTimeout: (String verificationId) {
         _verificationId = verificationId;
@@ -434,7 +438,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                               child: Center(
                                 child: Text(
                                 timerText,
-                                style: TextStyle(color: _remainingTime > 0 ? Colors.black : Colors.red,
+                                style: TextStyle(color: _remainingTime > 0 ? Colors.grey : Colors.red,
                                 fontSize: 16, fontFamily: 'Noto Sans', fontWeight: FontWeight.w400,
                                 ),
                                 ),

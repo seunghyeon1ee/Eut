@@ -49,7 +49,7 @@ class StatisticsScreen extends StatelessWidget {
               ),
               bottom: TabBar(
                 labelColor: Colors.black,
-                indicatorColor: Color(0xFF8F8F8F),
+                indicatorColor: Colors.pinkAccent,
                 labelStyle: TextStyle(fontWeight: FontWeight.bold),
                 unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
                 tabs: [
@@ -410,11 +410,11 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
                         margin: 8,
                         interval: 30,
                         getTitles: (double value) {
-                          if (value == 0) return '0분';
-                          if (value == 30) return '30분';
-                          if (value == 60) return '60분';
-                          if (value == 90) return '90분';
-                          if (value == 120) return '120분';
+                          if (value == 0) return '0';
+                          if (value == 30) return '30';
+                          if (value == 60) return '60';
+                          if (value == 90) return '90';
+                          if (value == 120) return '120';
                           return '';
                         },
                       ),
@@ -800,7 +800,6 @@ class _WeekViewState extends State<WeekView> {
 
 
 // --------------------------------------------------------------------------
-
 class MonthView extends StatefulWidget {
   @override
   _MonthViewState createState() => _MonthViewState();
@@ -853,8 +852,8 @@ class _MonthViewState extends State<MonthView> {
       return Center(child: CircularProgressIndicator());
     }
 
-    int avgUsageTimeSecond = monthlyData!['avgUsageTimeSecond'] ?? 0;
-    int changeUsageTimeSecond = monthlyData!['changeUsageTimeSecond'] ?? 0;
+    int avgUsageTimeSecond = monthlyData?['avgUsageTimeSecond'] ?? 0;
+    int changeUsageTimeSecond = monthlyData?['changeUsageTimeSecond'] ?? 0;
 
     double avgHours = avgUsageTimeSecond / 3600.0;
     double prevMonthAvgHours = (avgUsageTimeSecond - changeUsageTimeSecond) / 3600.0;
@@ -862,20 +861,20 @@ class _MonthViewState extends State<MonthView> {
     String differenceText = difference > 0 ? '더 대화했어요.' : '덜 대화했어요.';
 
     List<double> screenTimeMonthlyInHours = [];
-    if (monthlyData!['screenTimeMonthly'] != null) {
-      screenTimeMonthlyInHours = (monthlyData!['screenTimeMonthly'] as Map<String, dynamic>).values
+    if (monthlyData?['screenTimeMonthly'] != null) {
+      screenTimeMonthlyInHours = (monthlyData?['screenTimeMonthly'] as Map<String, dynamic>).values
           .map((e) => e is num ? e.toDouble() / 3600.0 : 0.0)
           .toList();
     }
 
     List<double> negativeExpRate = [];
-    if (monthlyData!['negativeExpRate'] != null) {
-      negativeExpRate = (monthlyData!['negativeExpRate'] as Map<String, dynamic>).values
+    if (monthlyData?['negativeExpRate'] != null) {
+      negativeExpRate = (monthlyData?['negativeExpRate'] as Map<String, dynamic>).values
           .map((e) => e is num ? e.toDouble() : 0.0)
           .toList();
     }
 
-    Map<String, dynamic> avgEmotion = monthlyData!['avgEmotion'] as Map<String, dynamic>? ?? {};
+    Map<String, dynamic> avgEmotion = monthlyData?['avgEmotion'] as Map<String, dynamic>? ?? {};
     String topEmotion = avgEmotion['maxScore']?.keys?.first ?? '';
 
     final Map<String, String> emotionImages = {
@@ -999,6 +998,9 @@ class _MonthViewState extends State<MonthView> {
                 xLabels: ['1주', '2주', '3주', '4주', '5주'],
                 yInterval: 30,
                 yMax: 100,
+                showGradient: true,
+                gradientColors: [Colors.orange.withOpacity(0.5), Colors.orange.withOpacity(0.0)],
+                isWeekly: false,
               ),
             ),
           ],
@@ -1007,7 +1009,6 @@ class _MonthViewState extends State<MonthView> {
     );
   }
 }
-
 //------------------------------------------------------------------------
 
 class ConversationSummaryWidget extends StatefulWidget {
@@ -1690,7 +1691,6 @@ class StatCard extends StatelessWidget {
 }
 
 //-------------------------------------------------------------------------------
-
 class LineChartWidget extends StatelessWidget {
   final Text title;
   final List<double> data;
@@ -1740,7 +1740,7 @@ class LineChartWidget extends StatelessWidget {
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.all(16.0), // 그래프 내부에 패딩 추가
+              padding: const EdgeInsets.all(16.0),
               child: SizedBox(
                 height: 150,
                 child: LineChart(
@@ -1829,7 +1829,7 @@ class LineChartWidget extends StatelessWidget {
                         getTooltipItems: (List<LineBarSpot> touchedSpots) {
                           return touchedSpots.map((touchedSpot) {
                             return LineTooltipItem(
-                              touchedSpot.y.toString(),
+                              touchedSpot.y.toStringAsFixed(1),  // 소수점 첫째 자리까지 표시
                               TextStyle(color: Colors.pinkAccent, fontSize: 12),
                             );
                           }).toList();
@@ -1871,7 +1871,6 @@ class LineChartWidget extends StatelessWidget {
     );
   }
 }
-
 //--------------------------------------------------------------------------
 
 class DetailedMonthlyConversationView extends StatefulWidget {

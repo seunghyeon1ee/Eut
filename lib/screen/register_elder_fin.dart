@@ -418,7 +418,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                                     child: Center(
                                       child: Text(
                                         timerText,
-                                        style: TextStyle(color: _remainingTime > 0 ? Colors.black : Colors.red,
+                                        style: TextStyle(color: _remainingTime > 0 ? Colors.grey : Colors.red,
                                           fontSize: 16, fontFamily: 'Noto Sans', fontWeight: FontWeight.w400,
                                 ),
                               ),
