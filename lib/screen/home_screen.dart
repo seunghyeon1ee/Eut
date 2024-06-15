@@ -1,12 +1,30 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:get/get.dart';
+import 'package:taba_app_proj/chatbot/chat_test.dart';
 import 'package:taba_app_proj/screen/register_elder_fin.dart';
 import 'package:taba_app_proj/screen/register_fam_1.dart';
 import 'package:taba_app_proj/screen/register_fam_fin.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.accessToken});
   final String? accessToken;
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      Get.to(ChatTest());
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(

@@ -11,6 +11,7 @@ import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../chatbot/chat_test.dart';
 import '../main.dart';
 
 class FcmController extends GetxController {
@@ -116,6 +117,7 @@ class FcmController extends GetxController {
   ///FCM 푸시 클릭 핸들링
   void _handleMessage(RemoteMessage message) async {
     debugPrint("in handleMessage : ${message.toMap()}");
+    Get.to(ChatTest());
     if (message.data['pushType'] != null &&
         message.data['pushType'].toString().isNotEmpty) {
       // if (message.data['referenceValue'] != null) {
