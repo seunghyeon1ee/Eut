@@ -58,7 +58,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // home: StatisticsScreen(),
-      home: HomeScreen(accessToken: accessToken),
+      home: StatisticsScreen()//HomeScreen(accessToken: accessToken),
     );
   }
 }

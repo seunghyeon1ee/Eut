@@ -708,7 +708,7 @@ class _WeekViewState extends State<WeekView> {
                                   topEmotion.isNotEmpty
                                       ? "$topEmotion한 한 주를 보내셨습니다!"
                                       : "감정 데이터를 불러오지 못했습니다.",
-                                  style: TextStyle(fontSize: 14, color: Colors.pinkAccent),
+                                  style: TextStyle(fontSize: 14, color: Colors.pinkAccent, fontFamily: 'NotoSansKR'),
                                 ),
                                 GestureDetector(
                                   onTap: () {
@@ -924,7 +924,7 @@ class _MonthViewState extends State<MonthView> {
                                 ),
                                 Text(
                                   "$topEmotion 한 한달을 보내셨습니다!",
-                                  style: TextStyle(fontSize: 14, color: Colors.pinkAccent),
+                                  style: TextStyle(fontSize: 14, color: Colors.pinkAccent,fontFamily: 'NotoSansKR'),
                                 ),
                                 GestureDetector(
                                   onTap: () {
@@ -1294,11 +1294,12 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text('상세 감정통계')), // 제목 가운데 정렬
+        title: Text('상세 감정통계'),
+        centerTitle: true, // 타이틀을 AppBar 중앙에 정렬
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(25.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1333,7 +1334,7 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
                     textColor = Color(0xFFEC295D);
                   }
                   return EmotionWidget(
-                    percentage: (data['percentage'] as num).toInt(), // double 타입을 int로 변환
+                    percentage: (data['percentage'] as num).toInt(),
                     emotion: data['emotion'],
                     imagePath: emotionImages[data['emotion']]!, // 이미지 경로 설정
                     textColor: textColor,
@@ -1352,43 +1353,13 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
 
   List<Widget> _buildEmotionBars() {
     return emotionData.map((data) {
-      Color boxColor = getMarkerColor(data['emotion']);
-      return Container(
-        margin: EdgeInsets.symmetric(vertical: 4),
-        padding: EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: boxColor.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              data['emotion'],
-              style: TextStyle(fontSize: 14, color: Colors.black),
-            ),
-            Text(
-              '${data['percentage']}%',
-              style: TextStyle(fontSize: 14, color: Colors.black),
-            ),
-          ],
-        ),
+      return EmotionBar(
+        emotion: data['emotion'],
+        percentage: (data['percentage'] as num).toInt(),
       );
     }).toList();
   }
 }
-
- // List<Widget> _buildEmotionBars(){
- //     return emotionData.map((data){
- //       return EmotionBar(
- //         emotion: data['emotion'],
- //         percentage: data['percentage'],
- //       );
- //     }).toList();
- // }
-
-
-//----------------------------------------------------------------------------
 
 class EmotionBar extends StatelessWidget {
   final String emotion;
@@ -1398,7 +1369,7 @@ class EmotionBar extends StatelessWidget {
 
   Color _getColorForEmotion(String emotion) {
     if (emotion == '행복' || emotion == '당황' || emotion == '중립') {
-      return Color(0x60FF7672);
+      return Color(0xFFEC295D);
     } else {
       return Color(0xFFEC295D);
     }
@@ -1406,24 +1377,26 @@ class EmotionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color barColor = _getColorForEmotion(emotion);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 20.0), // EmotionBar들 간 간격 조정
       child: Row(
         children: [
-          Text(emotion, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold,color: Color(0xFFEC295D))),
-          SizedBox(width: 19),
+          Text(emotion, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFEC295D))),
+          SizedBox(width: 10),
           Expanded(
-            child: SizedBox(
-              height: 19, // 두께 조정
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
               child: LinearProgressIndicator(
                 value: percentage / 100.0,
                 backgroundColor: Colors.grey[300],
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.pinkAccent), //bar 컬러
+                valueColor: AlwaysStoppedAnimation<Color>(barColor),
+                minHeight: 15.0, // 막대의 세로 길이를 20픽셀로 설정
               ),
             ),
           ),
           SizedBox(width: 10),
-          Text('$percentage%', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFEC295D))),
+          Text('$percentage%', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFEC295D))),
         ],
       ),
     );
@@ -1465,7 +1438,7 @@ class _DetailedWeeklyConversationViewState extends State<DetailedWeeklyConversat
     );
 
     if (response.statusCode == 200) {
-      final responseBody = json.decode(response.body);
+      final responseBody = json.decode(utf8.decode(response.bodyBytes));
       if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
         setState(() {
           weeklyConversations = parseWeeklyConversations(responseBody['result']['weeklyConversations']);
@@ -1912,7 +1885,7 @@ class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConvers
     );
 
     if (response.statusCode == 200) {
-      final responseBody = json.decode(response.body);
+      final responseBody = json.decode(utf8.decode(response.bodyBytes));
       if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
         // 데이터 처리
         setState(() {
@@ -1964,7 +1937,7 @@ class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConvers
                     children: [
                       SizedBox(width: 10),
                       IconButton(
-                        icon: SvgPicture.asset('assets/img/icon.svg', height: 80),
+                        icon: SvgPicture.asset('assets/icon_eut.svg', height: 80),
                         onPressed: () {
                           Navigator.pop(context);
                         },
@@ -2016,6 +1989,10 @@ class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConvers
                   shape: BoxShape.circle,  // 달력에서의 오늘을 날짜에 대한 데이터
                   border: Border.all(color: Colors.pinkAccent, width: 2), // 핑크색 테두리
                 ),
+                todayTextStyle: TextStyle(
+                  color: Colors.black,
+                  fontWeight:FontWeight.bold,
+                ),
                 selectedDecoration: BoxDecoration(
                   color: Colors.pinkAccent,
                   shape: BoxShape.circle,  // 달력에서의 내가 선택한 날짜 데이터
@@ -2023,17 +2000,21 @@ class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConvers
               ),
               calendarBuilders: CalendarBuilders(
                 markerBuilder: (context, date, events) {
+                  // print('events : ${events}');
+                  // print('events indx  z : ${events[0]}');
+
                   if (events.isNotEmpty) {
                     String topEmotion = 'neutral'; // 기본값 설정
-                    topEmotion = events
-                        .map((event) => (event as Map<String, dynamic>)['details'] as String)
-                        .reduce((value, element) => value.length > element.length ? value : element);
+                    // topEmotion = events
+                    //     .map((event) => (event as Map<String, dynamic>)['details'] as String)
+                    //     .reduce((value, element) => value.length > element.length ? value : element);
+                    final ratio = (events[0] as Map<String, dynamic>)['negativityRatio'] as double;
                     return Container(
                       width: 10,
                       height: 10,
                       margin: const EdgeInsets.symmetric(horizontal: 0.3),
                       decoration: BoxDecoration(
-                        color: (topEmotion == '행복' || topEmotion == '중립' || topEmotion == '당황') ? Color(0x60FF7672) : Color(0xFFEC295D),
+                        color: ( ratio > 50) ? Color(0x60FF7672) : Color(0xFFEC295D),
                         shape: BoxShape.circle,
                       ),
                     );
@@ -2060,10 +2041,10 @@ class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConvers
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // 수직 8.0, 수평 16.0 패딩 추가
                   child: ConversationCard(
-                    title: event['title']!, // 이벤트 제목
-                    date: event['date']!, // 이벤트 날짜
-                    duration: event['duration']!, // 이벤트 지속 시간
-                    details: List<String>.from(event['details'] ?? []), // 이벤트 세부 내용 (없으면 빈 리스트)
+                    title: event['title'] ?? '', // 이벤트 제목
+                    // date: event['date']!, // 이벤트 날짜
+                    // duration: event['duration']!, // 이벤트 지속 시간
+                    // events: List<String>.from(event['details'] ?? []), // 이벤트 세부 내용 (없으면 빈 리스트)
                     isExpanded: _expandedStates[index] ?? false, // 확장 상태
                     onTap: () => _toggleExpanded(index), // 카드 탭 시 확장/축소 상태 변경 함수 호출
                   ),
@@ -2079,18 +2060,18 @@ class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConvers
 
 class ConversationCard extends StatelessWidget {
   final String title;
-  final String date;
-  final String duration;
-  final List<String> details; // 수정된 부분
+  // final String date;
+  // final String duration;
+  // final List<String> details; // 수정된 부분
   final bool isExpanded;
   final VoidCallback onTap;
 
   const ConversationCard({
     Key? key,
     required this.title,
-    required this.date,
-    required this.duration,
-    required this.details,
+    // required this.date,
+    // required this.duration,
+    // required this.details,
     required this.isExpanded,
     required this.onTap,
   }) : super(key: key);
@@ -2106,13 +2087,13 @@ class ConversationCard extends StatelessWidget {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(date),
+                // Text(date),
                 SizedBox(height: 4),
                 Row(
                   children: [
                     Icon(Icons.access_time, size: 14),
                     SizedBox(width: 4),
-                    Text(duration),
+                    // Text(duration),
                   ],
                 ),
               ],
@@ -2125,7 +2106,7 @@ class ConversationCard extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: details.map((detail) => Text(detail)).toList(),
+                // children: details.map((detail) => Text(detail)).toList(),
               ),
             ),
         ],

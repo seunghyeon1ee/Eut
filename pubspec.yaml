@@ -7,10 +7,19 @@ version: 1.0.0+1
 environment:
   sdk: '>=3.4.0 <4.0.0'
 
+
+
+
 dependencies:
   flutter:
     sdk: flutter
   intl: ^0.17.0
+
+#  fonts:
+#    -family: NotoSansKR
+#     fonts:
+#       -asset: fonts/NotoSansKR-Regular.otf
+
  # flutter_native_splash: ^2.4.0
   expandable: ^5.0.1
   expansion_tile_card: ^3.0.0
@@ -72,7 +81,12 @@ flutter_launcher_icons:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
-flutter:
+  flutter:
+    fonts:
+      - family: NotoSansKR
+        fonts:
+          - asset: fonts/NotoSansKR-Regular.otf
+
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
