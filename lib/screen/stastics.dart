@@ -29,7 +29,6 @@ class StatisticsScreen extends StatelessWidget {
         },
         child: Scaffold(
           appBar: PreferredSize(
-
             preferredSize: Size.fromHeight(140.0),
             child: AppBar(
               automaticallyImplyLeading: false,
@@ -1009,6 +1008,7 @@ class _MonthViewState extends State<MonthView> {
     );
   }
 }
+
 //------------------------------------------------------------------------
 
 class ConversationSummaryWidget extends StatefulWidget {
@@ -1691,6 +1691,7 @@ class StatCard extends StatelessWidget {
 }
 
 //-------------------------------------------------------------------------------
+
 class LineChartWidget extends StatelessWidget {
   final Text title;
   final List<double> data;
@@ -1871,6 +1872,7 @@ class LineChartWidget extends StatelessWidget {
     );
   }
 }
+
 //--------------------------------------------------------------------------
 
 class DetailedMonthlyConversationView extends StatefulWidget {
