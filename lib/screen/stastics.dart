@@ -441,29 +441,29 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
                       ),
                     ),
                     gridData: FlGridData(
-                        show: true,
-                        drawVerticalLine: true, // 세로선 그리기
-                        horizontalInterval: 30, // 수평선 간격
-                        // verticalInterval: 1,
-                        getDrawingHorizontalLine: (value) => FlLine(
-                          color: Colors.grey,
-                          strokeWidth: 1,
-                        ),
-                        getDrawingVerticalLine: (value) {
-                          if (value.toInt() == 0 || value.toInt() == 3 || value
-                              .toInt() == 6 || value.toInt() == 9) {
-                            return FlLine(
-                              color: Colors.grey,
-                              strokeWidth: 1,
-                              dashArray: [5, 5], // 세로선 점선
-                            );
-                            } else {
-                              return FlLine(
-                                color: Colors.transparent,
-                                strokeWidth: 0,
-                              );
-                          }
-                        },
+                      show: true,
+                      drawVerticalLine: true, // 세로선 그리기
+                      drawHorizontalLine: true, // 가로선 그리기
+                      horizontalInterval: 30, // 수평선 간격
+                      getDrawingHorizontalLine: (value) => FlLine(
+                        color: Colors.grey,
+                        strokeWidth: 1,
+                        dashArray: [5, 5], // 가로선을 점선으로 변경
+                      ),
+                      getDrawingVerticalLine: (value) {
+                        if (value.toInt() == 0 || value.toInt() == 3 || value.toInt() == 6 || value.toInt() == 9) {
+                          return FlLine(
+                            color: Colors.grey,
+                            strokeWidth: 2,
+                            // dashArray: [5, 5], // 세로선을 점선으로 변경
+                          );
+                        } else {
+                          return FlLine(
+                            color: Colors.transparent,
+                            strokeWidth: 0,
+                          );
+                        }
+                      },
                     ),
 
                     borderData: FlBorderData(show: false),
@@ -628,6 +628,9 @@ class _WeekViewState extends State<WeekView> {
       return Center(child: CircularProgressIndicator());
     }
 
+    String topEmotion = weeklyData?['avgEmotion']['maxScore']?.keys.first ?? '중립';
+    String emotionDescription = topEmotion + '한 한 주를 보내셨습니다!';
+    String imagePath = emotionImages[topEmotion] ?? 'assets/neutral.png';
     List<String> xLabels = _generateWeekDays();
 
     List<double> screenTimeWeekly = [];
@@ -1721,14 +1724,18 @@ class LineChartWidget extends StatelessWidget {
                   LineChartData(
                     gridData: FlGridData(
                       show: true,
-                      drawVerticalLine: true,
-                      drawHorizontalLine: false,
+                      drawVerticalLine: true, // 세로선 그리기
+                      drawHorizontalLine: true, // 가로선 그리기
                       horizontalInterval: yInterval,
-                      getDrawingVerticalLine: (value) =>
-                          FlLine(
-                            color: Colors.grey,
-                            strokeWidth: 1,
-                          ),
+                      getDrawingHorizontalLine: (value) => FlLine(
+                        color: Colors.grey.withAlpha(70), // 옅은 회색으로 색상 변경
+                        strokeWidth: 0.7, // 선의 두께를 0.5로 설정
+                        dashArray: [5, 3], // 점선 패턴을 5픽셀 그리고 3픽셀 띄우기
+                      ),
+                      getDrawingVerticalLine: (value) => FlLine(
+                        color: Colors.grey, // 세로선 색상
+                        strokeWidth: 0.7, // 세로선 두께
+                      ),
                     ),
                     titlesData: FlTitlesData(
                       leftTitles: SideTitles(
