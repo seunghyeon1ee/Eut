@@ -48,7 +48,7 @@ class _ChatTestState extends State<ChatTest> {
   @override
   void initState() {
     super.initState();
-    FcmController.instance.initializeNotification();
+    FcmController.instance.saveToken();
     _initRecorder();
     fetchGreeting();
     _player.openAudioSession();
@@ -65,7 +65,7 @@ class _ChatTestState extends State<ChatTest> {
         },
         body: jsonEncode({
           'text':
-              '독거노인에게 안부를 물어보는 말을 걸어줘', // todo 앱 시작 시 챗봇에게 시킬 프롬프트 작성 ex) 독거노인이 관심있을법한 대화주제로 말을 걸어줘
+              '독거노인에게 안부를 물어보는 말을 걸어줘. 날씨 얘기는 가급적 하지마', // todo 앱 시작 시 챗봇에게 시킬 프롬프트 작성 ex) 독거노인이 관심있을법한 대화주제로 말을 걸어줘
         }));
     print('response: ${utf8.decode(response.bodyBytes)}');
     if (response.statusCode == 200) {

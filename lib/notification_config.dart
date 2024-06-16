@@ -51,7 +51,7 @@ void onSelectNotification(NotificationResponse notificationResponse) async {
   /// 로컬 푸시가 클릭됨
   /// 여기서 페이로드는 로컬 푸시 띄울 때 등록한 페이로드
   debugPrint('push notification clicked!');
-
+  Get.to(ChatTest());
   if (notificationResponse.payload != null &&
       notificationResponse.payload.toString().isNotEmpty) {
     final Map<String, dynamic> payload =

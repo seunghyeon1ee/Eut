@@ -1,11 +1,16 @@
+import 'dart:convert';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:taba_app_proj/chatbot/chat_test.dart';
 import 'package:taba_app_proj/screen/register_elder_fin.dart';
 import 'package:taba_app_proj/screen/register_fam_1.dart';
 import 'package:taba_app_proj/screen/register_fam_fin.dart';
+
+import '../controller/fcm_controller.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key, this.accessToken});
@@ -19,10 +24,31 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     // TODO: implement initState
+    FcmController.instance.initializeNotification();
     super.initState();
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      Get.to(ChatTest());
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
+      debugPrint('A new onMessageOpenedApp event was published!');
+      await Get.to(ChatTest());
     });
+  }
+
+  /// 앱 종료시 로컬 푸시를 클릭해 앱을 켰는지 체크
+  Future<void> _listenerWithTerminated() async {
+    FlutterLocalNotificationsPlugin localNotification =
+        FlutterLocalNotificationsPlugin();
+
+    NotificationAppLaunchDetails? details =
+        await localNotification.getNotificationAppLaunchDetails();
+    if (details != null) {
+      if (details.didNotificationLaunchApp) {
+        debugPrint(
+            'did Notification Launch App: ${details.notificationResponse?.payload}');
+
+        Get.to(ChatTest());
+
+        if (details.notificationResponse?.payload != null) {}
+      }
+    }
   }
 
   @override

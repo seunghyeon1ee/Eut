@@ -55,7 +55,7 @@ class App extends StatelessWidget {
   final String? accessToken;
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       // home: StatisticsScreen(),
       home: HomeScreen(accessToken: accessToken),

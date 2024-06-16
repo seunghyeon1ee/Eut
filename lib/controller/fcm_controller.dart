@@ -51,31 +51,17 @@ class FcmController extends GetxController {
         // FCM 토큰을 서버에 저장 👈👈👈👈👈👈👈👈👈👈👈
         // if(token != null) m.updateFcmToken(l.getUser().value.uid, token);
         this.token = token;
-        final refs = await SharedPreferences.getInstance();
-        String? accessToken = refs.getString('access_token');
-        print('accessToken: $accessToken');
-
-        var url = Uri.parse(
-            'http://54.180.229.143:8080/api/v1/push/register'); // API 엔드포인트 URL
-        var response = await http.post(
-          url,
-          headers: <String, String>{
-            'Content-Type': 'application/json; charset=UTF-8',
-            'Authorization': 'Bearer $accessToken',
-          },
-          body: jsonEncode(<String, String>{'fcmToken': token}),
-        );
-
-        print(response.body);
+        // saveToken(token);
       }
       // client.post(Uri.parse(Constants.API + 'booster/v1/fcm-token'), body: jsonEncode({ 'fcmToken': "$token" }));
     });
 
     // 토큰 리프레시 리스너 등록
-    _tokenRefreshSubscription = fcm.onTokenRefresh.listen((newToken) {
+    _tokenRefreshSubscription = fcm.onTokenRefresh.listen((newToken) async {
       debugPrint("on refresh FCM token : $newToken");
       // TODO: If necessary send token to application server.
       token = newToken;
+      // saveToken(newToken);
       // Note: This callback is fired at each app startup and whenever a new
       // token is generated.
     }, onDone: () {
@@ -83,6 +69,25 @@ class FcmController extends GetxController {
     }, onError: (e) {});
     // 포어그라운드 푸시 리스너 등록
     await _firebaseMessagingForegroundHandler();
+  }
+
+  Future<void> saveToken() async {
+    final refs = await SharedPreferences.getInstance();
+    String? accessToken = refs.getString('access_token');
+    print('accessToken: $accessToken');
+
+    var url = Uri.parse(
+        'http://54.180.229.143:8080/api/v1/push/register'); // API 엔드포인트 URL
+    var response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode(<String, String>{'fcmToken': token ?? ''}),
+    );
+
+    print(response.body);
   }
 
   /// 포어 그라운드 푸시 알림 처리
