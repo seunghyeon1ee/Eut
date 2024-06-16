@@ -46,7 +46,7 @@ class StatisticsScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              bottom: TabBar(
+              bottom: const TabBar(
                 labelColor: Colors.black,
                 indicatorColor: Colors.pinkAccent,
                 labelStyle: TextStyle(fontWeight: FontWeight.bold),
@@ -75,6 +75,8 @@ class StatisticsScreen extends StatelessWidget {
 // -----------------------------------------------------------------------------
 
 class DayView extends StatefulWidget {
+  const DayView({super.key});
+
   @override
   _DayViewState createState() => _DayViewState();
 }
@@ -129,7 +131,7 @@ class _DayViewState extends State<DayView> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     List<String> morningConversations =
@@ -152,7 +154,7 @@ class _DayViewState extends State<DayView> {
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: "정우정 님의",
+                        text: "부모님의",
                         style: TextStyle(
                             fontSize: 13, fontWeight: FontWeight.bold),
                       ),
@@ -265,7 +267,7 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
     );
 
     if (response.statusCode == 200) {
-      final responseBody = json.decode(response.body);
+      final responseBody = json.decode(utf8.decode(response.bodyBytes));
       if (responseBody['code'] == "0000" &&
           responseBody['message'] == "SUCCESS") {
         // 데이터 처리
@@ -588,7 +590,7 @@ class _WeekViewState extends State<WeekView> {
         });
 
     if (response.statusCode == 200) {
-      final responseBody = json.decode(response.body);
+      final responseBody = json.decode(utf8.decode(response.bodyBytes));
       if (responseBody['code'] == "0000" &&
           responseBody['message'] == "SUCCESS") {
         setState(() {
@@ -651,6 +653,8 @@ class _WeekViewState extends State<WeekView> {
 
     String topEmotion =
         weeklyData?['avgEmotion']['maxScore']?.keys.first ?? '중립';
+    print('topEmotion: ${weeklyData?['avgEmotion']['maxScore']}');
+    print('topEmotion: ${weeklyData}');
     String emotionDescription = topEmotion + '한 한 주를 보내셨습니다!';
     String imagePath = emotionImages[topEmotion] ?? 'assets/neutral.png';
     List<String> xLabels = _generateWeekDays();
@@ -896,7 +900,7 @@ class _MonthViewState extends State<MonthView> {
     );
 
     if (response.statusCode == 200) {
-      final responseBody = json.decode(response.body);
+      final responseBody = json.decode(utf8.decode(response.bodyBytes));
       if (responseBody['code'] == "0000" &&
           responseBody['message'] == "SUCCESS") {
         setState(() {
@@ -1147,13 +1151,13 @@ class _ConversationSummaryWidgetState extends State<ConversationSummaryWidget> {
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('widget.date'),
               SizedBox(height: 4),
               Row(
                 children: [
                   Icon(Icons.access_time, size: 14),
                   SizedBox(width: 4),
-                  Text('widget.time'),
+                  Text(widget.title.contains('오전') ? '0시 ~ 12시' : '12시 ~ 24시',
+                      style: TextStyle(color: defaultTextColor)),
                 ],
               ),
             ],
@@ -1166,8 +1170,11 @@ class _ConversationSummaryWidgetState extends State<ConversationSummaryWidget> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  SizedBox(
+                    width: double.infinity,
+                  ),
                   Text(
-                    "상세 대화내용",
+                    widget.details.isEmpty ? '대화 내용이 없습니다' : "상세 대화내용",
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -1180,22 +1187,6 @@ class _ConversationSummaryWidgetState extends State<ConversationSummaryWidget> {
                           style: TextStyle(color: defaultTextColor)))
                       .toList(),
                   SizedBox(height: 10), // 간격 추가
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('widget.date',
-                          style: TextStyle(color: defaultTextColor)),
-                      SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.access_time, size: 14),
-                          SizedBox(width: 4),
-                          Text('widget.time',
-                              style: TextStyle(color: defaultTextColor)),
-                        ],
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
@@ -1562,33 +1553,38 @@ class _DetailedWeeklyConversationViewState
   DateTime selectedDay = DateTime.now();
 
   List<List<Map<String, dynamic>>> weeklyConversations = [];
-
+  List<String> morningConversations = [];
+  List<String> eveningConversations = [];
   @override
   void initState() {
     super.initState();
-    fetchWeeklyData();
+    // fetchWeeklyData();
+    fetchDate();
   }
 
-  Future<void> fetchWeeklyData() async {
+  /// 선택된 날짜의 하루 통계를 가져오고 대화 요약 내용만 가져옴
+  Future<void> fetchDate() async {
     String date = selectedDay.toIso8601String().split('T')[0];
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token');
 
     final response = await http.get(
-        Uri.parse('http://54.180.229.143:8080/api/v1/stat/weekly?date=$date'),
+        Uri.parse('http://54.180.229.143:8080/api/v1/stat/daily?date=$date'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json; charset=UTF-8',
         });
-
+    print('response: ${json.decode(utf8.decode(response.bodyBytes))}');
     if (response.statusCode == 200) {
       final responseBody = json.decode(utf8.decode(response.bodyBytes));
       if (responseBody['code'] == "0000" &&
           responseBody['message'] == "SUCCESS") {
         setState(() {
-          weeklyConversations = parseWeeklyConversations(
-              responseBody['result']['weeklyConversations']);
+          morningConversations =
+              List<String>.from(responseBody['result']['summaryDay']);
+          eveningConversations =
+              List<String>.from(responseBody['result']['summaryEvening']);
         });
       } else {
         throw Exception(
@@ -1599,6 +1595,37 @@ class _DetailedWeeklyConversationViewState
           'Failed to load weekly data, status code: ${response.statusCode}');
     }
   }
+
+  // Future<void> fetchWeeklyData() async {
+  //   String date = selectedDay.toIso8601String().split('T')[0];
+  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String? accessToken = prefs.getString('access_token');
+  //
+  //   final response = await http.get(
+  //       Uri.parse('http://54.180.229.143:8080/api/v1/stat/weekly?date=$date'),
+  //       headers: {
+  //         'Accept': 'application/json',
+  //         'Authorization': 'Bearer $accessToken',
+  //         'Content-Type': 'application/json; charset=UTF-8',
+  //       });
+  //
+  //   if (response.statusCode == 200) {
+  //     final responseBody = json.decode(utf8.decode(response.bodyBytes));
+  //     if (responseBody['code'] == "0000" &&
+  //         responseBody['message'] == "SUCCESS") {
+  //       setState(() {
+  //         weeklyConversations = parseWeeklyConversations(
+  //             responseBody['result']['weeklyConversations']);
+  //       });
+  //     } else {
+  //       throw Exception(
+  //           'Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
+  //     }
+  //   } else {
+  //     throw Exception(
+  //         'Failed to load weekly data, status code: ${response.statusCode}');
+  //   }
+  // }
 
   List<List<Map<String, dynamic>>> parseWeeklyConversations(
       Map<String, dynamic> data) {
@@ -1686,11 +1713,12 @@ class _DetailedWeeklyConversationViewState
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: List.generate(7, (index) {
                   return GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       setState(() {
                         selectedDayIndex = index;
                         selectedDay = weekDays[index];
                       });
+                      await fetchDate();
                     },
                     child: Column(
                       children: [
@@ -1788,18 +1816,22 @@ class _DetailedWeeklyConversationViewState
                     ),
                   ),
                   SizedBox(height: 10),
-                  Column(
-                    children:
-                        getConversationsForSelectedDay().map((conversation) {
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: ConversationSummaryWidget(
-                          title: conversation['title'],
-                          details: List<String>.from(conversation['details']),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+                  Column(children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: ConversationSummaryWidget(
+                        title: '오전 대화내용',
+                        details: morningConversations,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: ConversationSummaryWidget(
+                        title: '오후 대화내용',
+                        details: eveningConversations,
+                      ),
+                    ),
+                  ]),
                 ],
               ),
             ),
@@ -2050,15 +2082,57 @@ class DetailedMonthlyConversationView extends StatefulWidget {
 class _DetailedMonthlyConversationViewState
     extends State<DetailedMonthlyConversationView> {
   DateTime _focusedDay = DateTime.now();
-  DateTime? _selectedDay;
+  DateTime _selectedDay = DateTime.now();
   Map<int, bool> _expandedStates = {}; // 확장 상태를 관리하는 맵
 
   List<Map<String, dynamic>> dailyNegativityRatioList = [];
+
+  List<String> morningConversations = [];
+  List<String> eveningConversations = [];
 
   @override
   void initState() {
     super.initState();
     fetchMonthlyData();
+    fetchDate();
+  }
+
+  /// 선택된 날짜의 하루 통계를 가져오고 대화 요약 내용만 가져옴
+  Future<void> fetchDate() async {
+    String date = _selectedDay.toIso8601String().split('T')[0];
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? accessToken = prefs.getString('access_token');
+
+    final response = await http.get(
+        Uri.parse('http://54.180.229.143:8080/api/v1/stat/daily?date=$date'),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json; charset=UTF-8',
+        });
+    print('response: ${response.body}');
+    if (response.statusCode == 200) {
+      final responseBody = json.decode(utf8.decode(response.bodyBytes));
+      if (responseBody['code'] == "0000" &&
+          responseBody['message'] == "SUCCESS") {
+        setState(() {
+          morningConversations =
+              List<String>.from(responseBody['result']['summaryDay']);
+          eveningConversations =
+              List<String>.from(responseBody['result']['summaryEvening']);
+        });
+      } else {
+        throw Exception(
+            'Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
+      }
+    } else {
+      setState(() {
+        morningConversations = [];
+        eveningConversations = [];
+      });
+      throw Exception(
+          'Failed to load daily data, status code: ${response.statusCode}');
+    }
   }
 
   void fetchMonthlyData() async {
@@ -2089,6 +2163,9 @@ class _DetailedMonthlyConversationViewState
             'Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
       }
     } else {
+      setState(() {
+        dailyNegativityRatioList = [];
+      });
       throw Exception(
           'Failed to load monthly data, status code: ${response.statusCode}');
     }
@@ -2161,69 +2238,80 @@ class _DetailedMonthlyConversationViewState
       body: SingleChildScrollView(
         child: Column(
           children: [
-            TableCalendar(
-              firstDay: DateTime.utc(2020, 1, 1),
-              lastDay: DateTime.utc(2030, 12, 31),
-              focusedDay: _focusedDay,
-              selectedDayPredicate: (day) {
-                return isSameDay(_selectedDay, day);
-              },
-              onDaySelected: (selectedDay, focusedDay) {
-                setState(() {
-                  _selectedDay = selectedDay;
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TableCalendar(
+                firstDay: DateTime.utc(2020, 1, 1),
+                lastDay: DateTime.utc(2030, 12, 31),
+                focusedDay: _focusedDay,
+                onPageChanged: (focusedDay) {
+                  print('onPageChanged: $focusedDay');
                   _focusedDay = focusedDay;
-                  _expandedStates.clear(); // 새로운 날짜를 선택할 때 확장 상태 초기화
-                });
-              },
-              calendarFormat: CalendarFormat.month,
-              eventLoader: _getEventsForDay,
-              headerStyle: HeaderStyle(
-                formatButtonVisible:
-                    false, // TableCalendar 위젯의 헤더에 있는 포맷 변경 버튼의 가시성을 제어
-                titleCentered: true,
-              ),
-              calendarStyle: CalendarStyle(
-                todayDecoration: BoxDecoration(
-                  color: Colors.transparent,
-                  shape: BoxShape.circle, // 달력에서의 오늘을 날짜에 대한 데이터
-                  border:
-                      Border.all(color: Colors.pinkAccent, width: 2), // 핑크색 테두리
-                ),
-                todayTextStyle: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
-                selectedDecoration: BoxDecoration(
-                  color: Colors.pinkAccent,
-                  shape: BoxShape.circle, // 달력에서의 내가 선택한 날짜 데이터
-                ),
-              ),
-              calendarBuilders: CalendarBuilders(
-                markerBuilder: (context, date, events) {
-                  // print('events : ${events}');
-                  // print('events indx  z : ${events[0]}');
-
-                  if (events.isNotEmpty) {
-                    String topEmotion = 'neutral'; // 기본값 설정
-                    // topEmotion = events
-                    //     .map((event) => (event as Map<String, dynamic>)['details'] as String)
-                    //     .reduce((value, element) => value.length > element.length ? value : element);
-                    final ratio = (events[0]
-                        as Map<String, dynamic>)['negativityRatio'] as double;
-                    return Container(
-                      width: 10,
-                      height: 10,
-                      margin: const EdgeInsets.symmetric(horizontal: 0.3),
-                      decoration: BoxDecoration(
-                        color: (ratio > 50)
-                            ? Color(0x60FF7672)
-                            : Color(0xFFEC295D),
-                        shape: BoxShape.circle,
-                      ),
-                    );
-                  }
-                  return Container();
+                  fetchMonthlyData();
                 },
+                selectedDayPredicate: (day) {
+                  return isSameDay(_selectedDay, day);
+                },
+                onDaySelected: (selectedDay, focusedDay) {
+                  setState(() {
+                    _selectedDay = selectedDay;
+                    _focusedDay = focusedDay;
+                    _expandedStates.clear(); // 새로운 날짜를 선택할 때 확장 상태 초기화
+                    fetchDate();
+                  });
+                },
+                calendarFormat: CalendarFormat.month,
+                eventLoader: _getEventsForDay,
+                headerStyle: const HeaderStyle(
+                  formatButtonVisible:
+                      false, // TableCalendar 위젯의 헤더에 있는 포맷 변경 버튼의 가시성을 제어
+                  titleCentered: true,
+                ),
+                calendarStyle: CalendarStyle(
+                  todayDecoration: BoxDecoration(
+                    color: Colors.transparent,
+                    shape: BoxShape.circle, // 달력에서의 오늘을 날짜에 대한 데이터
+                    border: Border.all(
+                        color: Colors.pinkAccent, width: 2), // 핑크색 테두리
+                  ),
+                  todayTextStyle: const TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  selectedDecoration: const BoxDecoration(
+                    color: Colors.pinkAccent,
+                    shape: BoxShape.circle, // 달력에서의 내가 선택한 날짜 데이터
+                  ),
+                ),
+                calendarBuilders: CalendarBuilders(
+                  markerBuilder: (context, date, events) {
+                    // print('today: ${date}events : ${events}');
+                    // print('events indx  z : ${events[0]}');
+                    if (date.month != _focusedDay.month) {
+                      return Container();
+                    }
+                    if (events.isNotEmpty) {
+                      String topEmotion = 'neutral'; // 기본값 설정
+                      // topEmotion = events
+                      //     .map((event) => (event as Map<String, dynamic>)['details'] as String)
+                      //     .reduce((value, element) => value.length > element.length ? value : element);
+                      final ratio = (events[0]
+                          as Map<String, dynamic>)['negativityRatio'] as double;
+                      return Container(
+                        width: 10,
+                        height: 10,
+                        margin: const EdgeInsets.symmetric(horizontal: 0.3),
+                        decoration: BoxDecoration(
+                          color: (ratio > 50)
+                              ? Color(0x60FF7672)
+                              : Color(0xFFEC295D),
+                          shape: BoxShape.circle,
+                        ),
+                      );
+                    }
+                    return Container();
+                  },
+                ),
               ),
             ),
             const SizedBox(height: 8.0),
@@ -2241,24 +2329,39 @@ class _DetailedMonthlyConversationViewState
                   ),
                 ),
               ),
-              ..._getEventsForDay(_selectedDay!).asMap().entries.map((entry) {
-                // 선택된 날짜의 이벤트를 가져와서 맵핑
-                int index = entry.key; // 현재 이벤트의 인덱스
-                var event = entry.value; // 현재 이벤트 데이터
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 8.0, horizontal: 16.0), // 수직 8.0, 수평 16.0 패딩 추가
-                  child: ConversationCard(
-                    title: event['title'] ?? '', // 이벤트 제목
-                    // date: event['date']!, // 이벤트 날짜
-                    // duration: event['duration']!, // 이벤트 지속 시간
-                    // events: List<String>.from(event['details'] ?? []), // 이벤트 세부 내용 (없으면 빈 리스트)
-                    isExpanded: _expandedStates[index] ?? false, // 확장 상태
-                    onTap: () =>
-                        _toggleExpanded(index), // 카드 탭 시 확장/축소 상태 변경 함수 호출
-                  ),
-                );
-              }).toList(), // 맵핑된 이벤트 리스트를 반환
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    ConversationSummaryWidget(
+                      title: '오전 대화내용',
+                      details: morningConversations,
+                    ),
+                    ConversationSummaryWidget(
+                      title: '오후 대화내용',
+                      details: eveningConversations,
+                    ),
+                  ],
+                ),
+              ),
+              // ..._getEventsForDay(_selectedDay!).asMap().entries.map((entry) {
+              //   // 선택된 날짜의 이벤트를 가져와서 맵핑
+              //   int index = entry.key; // 현재 이벤트의 인덱스
+              //   var event = entry.value; // 현재 이벤트 데이터
+              //   return Padding(
+              //     padding: const EdgeInsets.symmetric(
+              //         vertical: 8.0, horizontal: 16.0), // 수직 8.0, 수평 16.0 패딩 추가
+              //     child: ConversationCard(
+              //       title: event['title'] ?? '', // 이벤트 제목
+              //       // date: event['date']!, // 이벤트 날짜
+              //       // duration: event['duration']!, // 이벤트 지속 시간
+              //       // events: List<String>.from(event['details'] ?? []), // 이벤트 세부 내용 (없으면 빈 리스트)
+              //       isExpanded: _expandedStates[index] ?? false, // 확장 상태
+              //       onTap: () =>
+              //           _toggleExpanded(index), // 카드 탭 시 확장/축소 상태 변경 함수 호출
+              //     ),
+              //   );
+              // }).toList(), // 맵핑된 이벤트 리스트를 반환
             ],
           ],
         ),
