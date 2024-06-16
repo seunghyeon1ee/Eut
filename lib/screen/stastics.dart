@@ -1,5 +1,4 @@
 import 'package:expandable_page_view/expandable_page_view.dart';
-import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -12,7 +11,7 @@ import 'package:intl/intl.dart';
 class Statistics extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StatisticsScreen();
+    return const StatisticsScreen();
   }
 }
 
@@ -29,18 +28,18 @@ class StatisticsScreen extends StatelessWidget {
         },
         child: Scaffold(
           appBar: PreferredSize(
-            preferredSize: Size.fromHeight(140.0),
+            preferredSize: const Size.fromHeight(140.0),
             child: AppBar(
               automaticallyImplyLeading: false,
               backgroundColor: Colors.white,
               elevation: 0,
               flexibleSpace: Padding(
-                padding: EdgeInsets.only(top: 30),
+                padding: const EdgeInsets.only(top: 30),
                 child: Align(
                   alignment: Alignment.topLeft,
                   child: Row(
                     children: [
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       SvgPicture.asset('assets/icon_eut.svg', height: 80),
                     ],
                   ),
@@ -61,7 +60,7 @@ class StatisticsScreen extends StatelessWidget {
           ),
           body: TabBarView(
             children: [
-              DayView(),
+              const DayView(),
               WeekView(),
               MonthView(),
             ],
@@ -186,12 +185,12 @@ class _DayViewState extends State<DayView> {
                         details: conversations));
               },
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(2, (index) {
                 return Container(
-                  margin: EdgeInsets.symmetric(horizontal: 3.0),
+                  margin: const EdgeInsets.symmetric(horizontal: 3.0),
                   width: 8.0,
                   height: 8.0,
                   decoration: BoxDecoration(
@@ -202,12 +201,12 @@ class _DayViewState extends State<DayView> {
                 );
               }),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: ScreenTimeSummary(today: today),
             ),
-            SizedBox(height: 3),
+            const SizedBox(height: 3),
             MoodRanking(),
           ],
         ),
@@ -315,7 +314,7 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     double totalHours = totalScreenTimeSecond / 3600; // 총 스크린 타임을 시간 단위로 변환
@@ -337,39 +336,44 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 "총 스크린 타임",
                 style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
                     "${totalHours.floor()}시간 ${((totalHours - totalHours.floor()) * 60).round()}분",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    margin: EdgeInsets.only(top: 8), // 위쪽에 8 픽셀의 여백 추가
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    margin: const EdgeInsets.only(top: 8), // 위쪽에 8 픽셀의 여백 추가
                     decoration: ShapeDecoration(
                       color: Colors.transparent, // 배경색을 투명으로 설정
                       shape: RoundedRectangleBorder(
-                        side: BorderSide(width: 1, color: Colors.pinkAccent),
+                        side: const BorderSide(
+                            width: 1, color: Colors.pinkAccent),
                         borderRadius: BorderRadius.circular(30),
                       ),
                     ),
                     child: Text(
                       "오늘, ${widget.today.month}월 ${widget.today.day}일",
-                      style: TextStyle(fontSize: 14, color: Colors.pinkAccent),
+                      style: const TextStyle(
+                          fontSize: 14, color: Colors.pinkAccent),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               if (selectedTime != null)
                 Container(
-                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                   decoration: BoxDecoration(
                     color: Colors.transparent, // 배경색을 투명으로 설정
                     borderRadius: BorderRadius.circular(10),
@@ -380,11 +384,11 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
                   ),
                   child: Text(
                     selectedTime!,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 14, color: Colors.grey), // 텍스트 색상을 회색으로 설정
                   ),
                 ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Container(
                 height: 100,
                 child: BarChart(
@@ -648,15 +652,14 @@ class _WeekViewState extends State<WeekView> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     String topEmotion =
-        weeklyData?['avgEmotion']['maxScore']?.keys.first ?? '중립';
+        weeklyData?['avgEmotion']['maxScore']?.keys.first ?? '평범';
     print('topEmotion: ${weeklyData?['avgEmotion']['maxScore']}');
     print('topEmotion: ${weeklyData}');
     String emotionDescription = topEmotion + '한 한 주를 보내셨습니다!';
-    String imagePath = emotionImages[topEmotion] ?? 'assets/neutral.png';
     List<String> xLabels = _generateWeekDays();
 
     List<double> screenTimeWeekly = [];
@@ -714,7 +717,7 @@ class _WeekViewState extends State<WeekView> {
         child: Column(
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Card(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15.0)),
@@ -744,7 +747,7 @@ class _WeekViewState extends State<WeekView> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   "부모 님은",
                                   style: TextStyle(
                                       fontSize: 16,
@@ -752,9 +755,11 @@ class _WeekViewState extends State<WeekView> {
                                 ),
                                 Text(
                                   topEmotion.isNotEmpty
-                                      ? "$topEmotion한 한 주를 보내셨습니다!"
+                                      ? topEmotion.contains('중립')
+                                          ? '평범한 한 주를 보내셨습니다.'
+                                          : '$topEmotion 한 한 주를 보내셨습니다.'
                                       : "감정 데이터를 불러오지 못했습니다.",
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.pinkAccent,
                                       fontFamily: 'NotoSansKR'),
@@ -771,7 +776,7 @@ class _WeekViewState extends State<WeekView> {
                                                       'avgEmotion'])),
                                     );
                                   },
-                                  child: Text(
+                                  child: const Text(
                                     "대화내용을 확인해보세요. >>",
                                     style: TextStyle(
                                         fontSize: 13, color: Colors.grey),
@@ -788,14 +793,14 @@ class _WeekViewState extends State<WeekView> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(4.0),
+              padding: const EdgeInsets.all(4.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   RichText(
                     text: TextSpan(
                       children: [
-                        TextSpan(
+                        const TextSpan(
                           text: '최근 7일 동안 하루 평균 ',
                           style: TextStyle(
                               fontSize: 16,
@@ -804,12 +809,12 @@ class _WeekViewState extends State<WeekView> {
                         ),
                         TextSpan(
                           text: '${formatHours(avgHours)}시간',
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                               color: Colors.red),
                         ),
-                        TextSpan(
+                        const TextSpan(
                           text: '을 대화하셨습니다.',
                           style: TextStyle(
                               fontSize: 16,
@@ -819,18 +824,18 @@ class _WeekViewState extends State<WeekView> {
                       ],
                     ),
                   ),
-                  SizedBox(height: 1),
+                  const SizedBox(height: 1),
                   Text(
                     '이번주는 지난주보다 ${formatHours(changeHours)}시간 더 대화하셨어요.',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(4.0),
+              padding: const EdgeInsets.all(4.0),
               child: LineChartWidget(
-                title: Text(' '),
+                title: const Text(' '),
                 data: screenTimeWeekly,
                 xLabels: xLabels,
                 yInterval: 2,
@@ -843,9 +848,9 @@ class _WeekViewState extends State<WeekView> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(12.0),
+              padding: const EdgeInsets.all(12.0),
               child: LineChartWidget(
-                title: Text('이번주 부정 표현 사용 비율입니다.'),
+                title: const Text('이번주 부정 표현 사용 비율입니다.'),
                 data: negativeExpRate,
                 xLabels: xLabels,
                 yInterval: 30,
@@ -919,7 +924,7 @@ class _MonthViewState extends State<MonthView> {
   @override
   Widget build(BuildContext context) {
     if (monthlyData == null) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     }
 
     int avgUsageTimeSecond = monthlyData?['avgUsageTimeSecond'] ?? 0;
@@ -969,7 +974,7 @@ class _MonthViewState extends State<MonthView> {
         child: Column(
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: Card(
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15.0)),
@@ -997,7 +1002,7 @@ class _MonthViewState extends State<MonthView> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
+                                const Text(
                                   "부모 님은",
                                   style: TextStyle(
                                       fontSize: 16,
@@ -1005,7 +1010,7 @@ class _MonthViewState extends State<MonthView> {
                                 ),
                                 Text(
                                   "$topEmotion 한 한달을 보내셨습니다!",
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.pinkAccent,
                                       fontFamily: 'NotoSansKR'),
@@ -1022,7 +1027,7 @@ class _MonthViewState extends State<MonthView> {
                                                       emotionImages)),
                                     );
                                   },
-                                  child: Text(
+                                  child: const Text(
                                     "대화내용을 확인해보세요.",
                                     style: TextStyle(
                                         fontSize: 13, color: Colors.grey),
@@ -1039,12 +1044,12 @@ class _MonthViewState extends State<MonthView> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16.0),
               child: LineChartWidget(
                 title: Text.rich(
                   TextSpan(
                     children: [
-                      TextSpan(
+                      const TextSpan(
                         text: '이번달 동안 하루 평균 ',
                         style: TextStyle(
                             fontSize: 16,
@@ -1053,12 +1058,12 @@ class _MonthViewState extends State<MonthView> {
                       ),
                       TextSpan(
                         text: '${avgHours.toStringAsFixed(1)}시간',
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Colors.red),
                       ),
-                      TextSpan(
+                      const TextSpan(
                         text: '을 대화하셨습니다.\n',
                         style: TextStyle(
                             fontSize: 16,
@@ -1068,7 +1073,8 @@ class _MonthViewState extends State<MonthView> {
                       TextSpan(
                         text:
                             '이번달은 지난달 보다 ${difference.abs().toStringAsFixed(1)}시간 ${differenceText}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -1086,9 +1092,9 @@ class _MonthViewState extends State<MonthView> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.all(4.0),
+              padding: const EdgeInsets.all(4.0),
               child: LineChartWidget(
-                title: Text('부정표현 사용 비율',
+                title: const Text('부정표현 사용 비율',
                     style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -1146,16 +1152,16 @@ class _ConversationSummaryWidgetState extends State<ConversationSummaryWidget> {
         title: ListTile(
           title: Text(
             widget.title,
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 4),
+              const SizedBox(height: 4),
               Row(
                 children: [
-                  Icon(Icons.access_time, size: 14),
-                  SizedBox(width: 4),
+                  const Icon(Icons.access_time, size: 14),
+                  const SizedBox(width: 4),
                   Text(widget.title.contains('오전') ? '0시 ~ 12시' : '12시 ~ 24시',
                       style: TextStyle(color: defaultTextColor)),
                 ],
@@ -1170,7 +1176,7 @@ class _ConversationSummaryWidgetState extends State<ConversationSummaryWidget> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
+                  const SizedBox(
                     width: double.infinity,
                   ),
                   Text(
@@ -1181,12 +1187,12 @@ class _ConversationSummaryWidgetState extends State<ConversationSummaryWidget> {
                       color: defaultTextColor, // 기본 색상 사용
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   ...widget.details
                       .map((detail) => Text("• $detail",
                           style: TextStyle(color: defaultTextColor)))
                       .toList(),
-                  SizedBox(height: 10), // 간격 추가
+                  const SizedBox(height: 10), // 간격 추가
                 ],
               ),
             ),
@@ -1249,8 +1255,8 @@ class MoodRanking extends StatelessWidget {
 
   Color getMarkerColor(String emotion) {
     return (emotion == '행복' || emotion == '중립' || emotion == '당황')
-        ? Color(0x60FF7672)
-        : Color(0xFFEC295D);
+        ? const Color(0x60FF7672)
+        : const Color(0xFFEC295D);
   }
 
   @override
@@ -1259,11 +1265,11 @@ class MoodRanking extends StatelessWidget {
       future: fetchEmotionData(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError) {
           return Center(child: Text('Error: ${snapshot.error}'));
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No data available'));
+          return const Center(child: Text('No data available'));
         }
 
         List<Map<String, dynamic>> emotionData = snapshot.data!;
@@ -1278,7 +1284,7 @@ class MoodRanking extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
+                  const Text(
                     '기분을 확인해보세요!',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
@@ -1294,25 +1300,25 @@ class MoodRanking extends StatelessWidget {
                         ),
                       );
                     },
-                    child: Text(
+                    child: const Text(
                       '더 알아보기 >',
                       style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: topThreeEmotions.map((data) {
-                    Color boxColor = Color(0xFFEC295D);
+                    Color boxColor = const Color(0xFFEC295D);
                     Color textColor = Colors.white;
                     if (data['emotion'] == '행복' ||
                         data['emotion'] == '중립' ||
                         data['emotion'] == '당황') {
-                      boxColor = Color(0x60FF7672);
-                      textColor = Color(0xFFEC295D);
+                      boxColor = const Color(0x60FF7672);
+                      textColor = const Color(0xFFEC295D);
                     }
                     return Padding(
                       padding: const EdgeInsets.symmetric(
@@ -1362,16 +1368,16 @@ class EmotionWidget extends StatelessWidget {
         children: [
           Text(
             '$percentage%',
-            style: TextStyle(
+            style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.pinkAccent),
           ),
-          SizedBox(height: 5),
+          const SizedBox(height: 5),
           Image.asset(imagePath, height: 80), // PNG 이미지 로드
-          SizedBox(height: 5),
+          const SizedBox(height: 5),
           Container(
-            padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
             decoration: BoxDecoration(
               color: boxColor,
               borderRadius: BorderRadius.circular(10),
@@ -1396,8 +1402,8 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
 
   Color getMarkerColor(String emotion) {
     return (emotion == '행복' || emotion == '중립' || emotion == '당황')
-        ? Color(0x60FF7672)
-        : Color(0xFFEC295D);
+        ? const Color(0x60FF7672)
+        : const Color(0xFFEC295D);
   }
 
   @override
@@ -1407,7 +1413,7 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('상세 감정통계'),
+        title: const Text('상세 감정통계'),
         centerTitle: true, // 타이틀을 AppBar 중앙에 정렬
       ),
       body: SingleChildScrollView(
@@ -1416,11 +1422,11 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 32), // 제목과 텍스트 사이 간격 조정
+              const SizedBox(height: 32), // 제목과 텍스트 사이 간격 조정
               RichText(
                 text: TextSpan(
                   children: [
-                    TextSpan(
+                    const TextSpan(
                       text: '오늘 하루 ',
                       style: TextStyle(
                           fontSize: 20,
@@ -1429,12 +1435,12 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
                     ),
                     TextSpan(
                       text: '$topEmotion',
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.pinkAccent),
                     ),
-                    TextSpan(
+                    const TextSpan(
                       text: '이 많으셨네요.\n전화통화를 추천드려요!',
                       style: TextStyle(
                           fontSize: 20,
@@ -1445,7 +1451,7 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
                 ),
                 textAlign: TextAlign.left,
               ),
-              SizedBox(height: 32), // 텍스트와 순위 사이 간격 조정
+              const SizedBox(height: 32), // 텍스트와 순위 사이 간격 조정
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: emotionData.take(3).map((data) {
@@ -1454,8 +1460,8 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
                   if (data['emotion'] == '행복' ||
                       data['emotion'] == '중립' ||
                       data['emotion'] == '당황') {
-                    boxColor = Color(0x60FF7672);
-                    textColor = Color(0xFFEC295D);
+                    boxColor = const Color(0x60FF7672);
+                    textColor = const Color(0xFFEC295D);
                   }
                   return EmotionWidget(
                     percentage: (data['percentage'] as num).toInt(),
@@ -1466,7 +1472,7 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 32), // 순위와 EmotionBar 사이 간격 조정
+              const SizedBox(height: 32), // 순위와 EmotionBar 사이 간격 조정
               ..._buildEmotionBars(),
             ],
           ),
@@ -1494,9 +1500,9 @@ class EmotionBar extends StatelessWidget {
 
   Color _getColorForEmotion(String emotion) {
     if (emotion == '행복' || emotion == '당황' || emotion == '중립') {
-      return Color(0xFFEC295D);
+      return const Color(0xFFEC295D);
     } else {
-      return Color(0xFFEC295D);
+      return const Color(0xFFEC295D);
     }
   }
 
@@ -1509,11 +1515,11 @@ class EmotionBar extends StatelessWidget {
       child: Row(
         children: [
           Text(emotion,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFEC295D))),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
@@ -1525,9 +1531,9 @@ class EmotionBar extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Text('$percentage%',
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFEC295D))),
@@ -1664,7 +1670,7 @@ class _DetailedWeeklyConversationViewState
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(160.0),
+        preferredSize: const Size.fromHeight(160.0),
         child: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
@@ -1673,12 +1679,12 @@ class _DetailedWeeklyConversationViewState
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
-                padding: EdgeInsets.only(top: 30),
+                padding: const EdgeInsets.only(top: 30),
                 child: Align(
                   alignment: Alignment.topLeft,
                   child: Row(
                     children: [
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       GestureDetector(
                         onTap: () {
                           Navigator.pop(context);
@@ -1690,8 +1696,8 @@ class _DetailedWeeklyConversationViewState
                   ),
                 ),
               ),
-              SizedBox(height: 10),
-              Text(
+              const SizedBox(height: 10),
+              const Text(
                 '주간 내용 요약',
                 style: TextStyle(
                   color: Colors.black,
@@ -1699,7 +1705,7 @@ class _DetailedWeeklyConversationViewState
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
             ],
           ),
         ),
@@ -1724,12 +1730,12 @@ class _DetailedWeeklyConversationViewState
                       children: [
                         Text(
                           ['월', '화', '수', '목', '금', '토', '일'][index],
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Container(
                           width: 40,
                           height: 40,
@@ -1783,8 +1789,8 @@ class _DetailedWeeklyConversationViewState
                                                   ? value
                                                   : element)
                                           .contains(emotion))
-                                  ? Color(0x60FF7672)
-                                  : Color(0xFFEC295D),
+                                  ? const Color(0x60FF7672)
+                                  : const Color(0xFFEC295D),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -1794,7 +1800,7 @@ class _DetailedWeeklyConversationViewState
                 }),
               ),
             ),
-            Divider(),
+            const Divider(),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -1810,12 +1816,12 @@ class _DetailedWeeklyConversationViewState
                       '토',
                       '일'
                     ][selectedDayIndex]})',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Column(children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -1857,13 +1863,13 @@ class StatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin:
-          EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // 카드의 외부 여백 설정
+      margin: const EdgeInsets.symmetric(
+          horizontal: 16.0, vertical: 8.0), // 카드의 외부 여백 설정
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: color, // 원형 아바타의 배경색 설정
           child: Text('$percentage%',
-              style: TextStyle(color: Colors.white)), // 백분율 텍스트 표시
+              style: const TextStyle(color: Colors.white)), // 백분율 텍스트 표시
         ),
         title: Text(label), // 카드의 제목 텍스트 설정
         subtitle: Padding(
@@ -1911,7 +1917,7 @@ class LineChartWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           title,
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Container(
             width: 350,
             height: 200,
@@ -1920,7 +1926,7 @@ class LineChartWidget extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              shadows: [
+              shadows: const [
                 BoxShadow(
                   color: Color(0x0F000000),
                   blurRadius: 4.50,
@@ -2006,8 +2012,8 @@ class LineChartWidget extends StatelessWidget {
                             ? BarAreaData(
                                 show: true,
                                 gradientColorStops: [0.2, 1],
-                                gradientFrom: Offset(0, 0),
-                                gradientTo: Offset(0, 1),
+                                gradientFrom: const Offset(0, 0),
+                                gradientTo: const Offset(0, 1),
                                 colors: gradientColors,
                               )
                             : BarAreaData(show: false),
@@ -2023,7 +2029,8 @@ class LineChartWidget extends StatelessWidget {
                             return LineTooltipItem(
                               touchedSpot.y
                                   .toStringAsFixed(1), // 소수점 첫째 자리까지 표시
-                              TextStyle(color: Colors.pinkAccent, fontSize: 12),
+                              const TextStyle(
+                                  color: Colors.pinkAccent, fontSize: 12),
                             );
                           }).toList();
                         },
@@ -2195,7 +2202,7 @@ class _DetailedMonthlyConversationViewState
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(160.0), // AppBar 높이 조정
+        preferredSize: const Size.fromHeight(160.0), // AppBar 높이 조정
         child: AppBar(
           backgroundColor: Colors.white,
           elevation: 0,
@@ -2204,12 +2211,12 @@ class _DetailedMonthlyConversationViewState
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Padding(
-                padding: EdgeInsets.only(top: 30),
+                padding: const EdgeInsets.only(top: 30),
                 child: Align(
                   alignment: Alignment.topLeft,
                   child: Row(
                     children: [
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       IconButton(
                         icon:
                             SvgPicture.asset('assets/icon_eut.svg', height: 80),
@@ -2217,8 +2224,8 @@ class _DetailedMonthlyConversationViewState
                           Navigator.pop(context);
                         },
                       ),
-                      SizedBox(width: 10),
-                      Text(
+                      const SizedBox(width: 10),
+                      const Text(
                         '월간 요약 정보',
                         style: TextStyle(
                           color: Colors.black,
@@ -2230,7 +2237,7 @@ class _DetailedMonthlyConversationViewState
                   ),
                 ),
               ),
-              SizedBox(height: 10), // 상단 크기 조절을 위한 SizedBox
+              const SizedBox(height: 10), // 상단 크기 조절을 위한 SizedBox
             ],
           ),
         ),
@@ -2303,8 +2310,8 @@ class _DetailedMonthlyConversationViewState
                         margin: const EdgeInsets.symmetric(horizontal: 0.3),
                         decoration: BoxDecoration(
                           color: (ratio > 50)
-                              ? Color(0x60FF7672)
-                              : Color(0xFFEC295D),
+                              ? const Color(0x60FF7672)
+                              : const Color(0xFFEC295D),
                           shape: BoxShape.circle,
                         ),
                       );
@@ -2323,7 +2330,7 @@ class _DetailedMonthlyConversationViewState
                   alignment: Alignment.centerLeft, // 왼쪽 정렬
                   child: Text(
                     '${_selectedDay!.year}년 ${_selectedDay!.month}월 ${_selectedDay!.day}일', // 선택된 날짜를 표시
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold), // 텍스트 스타일 설정
                   ),
@@ -2391,12 +2398,13 @@ class ConversationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: Column(
         children: [
           ListTile(
-            title: Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Column(
+            title: Text(title,
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Text(date),
@@ -2414,8 +2422,8 @@ class ConversationCard extends StatelessWidget {
             onTap: onTap,
           ),
           if (isExpanded)
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+            const Padding(
+              padding: EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 // children: details.map((detail) => Text(detail)).toList(),
