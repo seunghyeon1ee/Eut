@@ -48,7 +48,7 @@ class StatisticsScreen extends StatelessWidget {
               ),
               bottom: TabBar(
                 labelColor: Colors.black,
-                indicatorColor: Color(0xFF8F8F8F),
+                indicatorColor: Colors.pinkAccent,
                 labelStyle: TextStyle(fontWeight: FontWeight.bold),
                 unselectedLabelStyle: TextStyle(fontWeight: FontWeight.normal),
                 tabs: [
@@ -74,6 +74,7 @@ class StatisticsScreen extends StatelessWidget {
 
 // -----------------------------------------------------------------------------
 
+
 class DayView extends StatefulWidget {
   @override
   _DayViewState createState() => _DayViewState();
@@ -89,15 +90,14 @@ class _DayViewState extends State<DayView> {
     String date = today.toIso8601String().split('T')[0];
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    String? accessToken =
-        prefs.getString('access_token'); // 액세스 토큰은 안전하게 관리하고 있어야 합니다.
+    String? accessToken = prefs.getString('access_token');  // 액세스 토큰은 안전하게 관리하고 있어야 합니다.
     print('today: $date');
     final response = await http.get(
       Uri.parse('http://54.180.229.143:8080/api/v1/stat/daily?date=$date'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Accept': 'application/json',
-        'Authorization': 'Bearer $accessToken', // Authorization 헤더 추가
+        'Authorization': 'Bearer $accessToken',  // Authorization 헤더 추가
       },
     );
 
@@ -105,21 +105,18 @@ class _DayViewState extends State<DayView> {
 
     if (response.statusCode == 200) {
       final responseData = json.decode(utf8.decode(response.bodyBytes));
-      if (responseData['code'] == "0000" &&
-          responseData['message'] == "SUCCESS") {
+      if (responseData['code'] == "0000" && responseData['message'] == "SUCCESS") {
         setState(() {
           apiData = responseData['result'];
           isLoading = false;
         });
       } else {
-        throw Exception(
-            'Data fetch was successful but returned an unexpected code or message');
+        throw Exception('Data fetch was successful but returned an unexpected code or message');
       }
     } else {
       throw Exception('Failed to load data');
     }
   }
-
   @override
   void initState() {
     super.initState();
@@ -132,11 +129,10 @@ class _DayViewState extends State<DayView> {
       return Center(child: CircularProgressIndicator());
     }
 
-    List<String> morningConversations =
-        List<String>.from(apiData['summaryDay']);
+    List<String> morningConversations = List<String>.from(apiData['summaryDay']);
 
-    List<String> afternoonConversations =
-        List<String>.from(apiData['summaryEvening']);
+
+    List<String> afternoonConversations = List<String>.from(apiData['summaryEvening']);
 
     int _currentPage = 0;
 
@@ -153,13 +149,11 @@ class _DayViewState extends State<DayView> {
                     children: [
                       TextSpan(
                         text: "정우정 님의",
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.bold),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                       ),
                       TextSpan(
                         text: "\n하루를 요약 해드릴게요!",
-                        style: TextStyle(
-                            fontSize: 13, fontWeight: FontWeight.normal),
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.normal),
                       ),
                     ],
                   ),
@@ -175,13 +169,14 @@ class _DayViewState extends State<DayView> {
                 });
               },
               itemBuilder: (context, index) {
-                List<String> conversations =
-                    index == 0 ? morningConversations : afternoonConversations;
+                List<String> conversations = index == 0 ? morningConversations : afternoonConversations;
                 return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                    child: ConversationSummaryWidget(
-                        title: index == 0 ? '오전에 나눈 대화' : '오후에 나눈 대화',
-                        details: conversations));
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: ConversationSummaryWidget(
+                      title: index == 0 ? '오전에 나눈 대화' : '오후에 나눈 대화',
+                      details: conversations
+                  )
+                );
               },
             ),
             SizedBox(height: 10),
@@ -194,8 +189,7 @@ class _DayViewState extends State<DayView> {
                   height: 8.0,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color:
-                        _currentPage == index ? Colors.pinkAccent : Colors.grey,
+                    color: _currentPage == index ? Colors.pinkAccent : Colors.grey,
                   ),
                 );
               }),
@@ -203,7 +197,7 @@ class _DayViewState extends State<DayView> {
             SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: ScreenTimeSummary(today: today),
+              child:ScreenTimeSummary(today:today),
             ),
             SizedBox(height: 3),
             MoodRanking(),
@@ -230,9 +224,9 @@ class ScreenTimeSummary extends StatefulWidget {
     "t16_18": 2760, // 더 높은 사용량을 위한 업데이트된 값 (46분)
     "t18_20": 3600, // 더 높은 사용량을 위한 업데이트된 값 (60분)
     "t20_22": 3900, // 더 높은 사용량을 위한 업데이트된 값 (65분)
-    "t22_24": 7740 // 더 높은 사용량을 위한 업데이트된 값 (129분)
+    "t22_24": 7740  // 더 높은 사용량을 위한 업데이트된 값 (129분)
   };
-  final int totalScreenTimeSecond = 24000; // 더 높은 총 사용량을 위한 업데이트
+  final int totalScreenTimeSecond =24000; // 더 높은 총 사용량을 위한 업데이트
 
   ScreenTimeSummary({required this.today});
 
@@ -252,37 +246,31 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
     String date = widget.today.toIso8601String().split('T')[0];
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    String? accessToken =
-        prefs.getString('access_token'); // 액세스 토큰은 안전하게 관리하고 있어야 합니다.
+    String? accessToken = prefs.getString('access_token');  // 액세스 토큰은 안전하게 관리하고 있어야 합니다.
 
     final response = await http.get(
       Uri.parse('http://54.180.229.143:8080/api/v1/stat/daily?date=$date'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Accept': 'application/json',
-        'Authorization': 'Bearer $accessToken', // Authorization 헤더 추가
+        'Authorization': 'Bearer $accessToken',  // Authorization 헤더 추가
       },
     );
 
     if (response.statusCode == 200) {
       final responseBody = json.decode(response.body);
-      if (responseBody['code'] == "0000" &&
-          responseBody['message'] == "SUCCESS") {
+      if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
         // 데이터 처리
         setState(() {
-          dailyScreenTime =
-              Map<String, int>.from(responseBody['result']['dailyScreenTime']);
-          totalScreenTimeSecond =
-              responseBody['result']['totalScreenTimeSecond'];
+          dailyScreenTime = Map<String, int>.from(responseBody['result']['dailyScreenTime']);
+          totalScreenTimeSecond = responseBody['result']['totalScreenTimeSecond'];
           isLoading = false;
         });
       } else {
-        throw Exception(
-            'Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
+        throw Exception('Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
       }
     } else {
-      throw Exception(
-          'Failed to load data, status code: ${response.statusCode}');
+      throw Exception('Failed to load data, status code: ${response.statusCode}');
     }
   }
 
@@ -316,9 +304,8 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
       return Center(child: CircularProgressIndicator());
     }
 
-    double totalHours = totalScreenTimeSecond / 3600; // 총 스크린 타임을 시간 단위로 변환
-    List<double> screenTimes =
-        dailyScreenTime.values.map((e) => e / 60).toList(); // 초를 분으로 변환
+    double totalHours = totalScreenTimeSecond / 3600;  // 총 스크린 타임을 시간 단위로 변환
+    List<double> screenTimes = dailyScreenTime.values.map((e) => e / 60).toList();  // 초를 분으로 변환
 
     return GestureDetector(
       onTap: () {
@@ -349,7 +336,7 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
                   ),
                   Container(
                     padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                    margin: EdgeInsets.only(top: 8), // 위쪽에 8 픽셀의 여백 추가
+                    margin: EdgeInsets.only(top:8), // 위쪽에 8 픽셀의 여백 추가
                     decoration: ShapeDecoration(
                       color: Colors.transparent, // 배경색을 투명으로 설정
                       shape: RoundedRectangleBorder(
@@ -378,8 +365,7 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
                   ),
                   child: Text(
                     selectedTime!,
-                    style: TextStyle(
-                        fontSize: 14, color: Colors.grey), // 텍스트 색상을 회색으로 설정
+                    style: TextStyle(fontSize: 14, color: Colors.grey), // 텍스트 색상을 회색으로 설정
                   ),
                 ),
               SizedBox(height: 16),
@@ -392,8 +378,7 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
                     barTouchData: BarTouchData(
                       enabled: true,
                       touchCallback: (barTouchResponse) {
-                        if (barTouchResponse != null &&
-                            barTouchResponse.spot != null) {
+                        if (barTouchResponse != null && barTouchResponse.spot != null) {
                           final spot = barTouchResponse.spot!;
                           final index = spot.touchedBarGroupIndex;
                           final timeLabel = _getTimeLabel(index);
@@ -412,12 +397,10 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
                       ),
                     ),
                     titlesData: FlTitlesData(
-                      leftTitles: SideTitles(
-                        // 왼쪽 타이틀 비활성화
+                      leftTitles: SideTitles( // 왼쪽 타이틀 비활성화
                         showTitles: false,
                       ),
-                      rightTitles: SideTitles(
-                        // 오른쪽 타이틀
+                      rightTitles: SideTitles( // 오른쪽 타이틀
                         showTitles: true,
                         getTextStyles: (value) => const TextStyle(
                           color: Colors.black,
@@ -426,16 +409,15 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
                         margin: 8,
                         interval: 30,
                         getTitles: (double value) {
-                          if (value == 0) return '0분';
-                          if (value == 30) return '30분';
-                          if (value == 60) return '60분';
-                          if (value == 90) return '90분';
-                          if (value == 120) return '120분';
+                          if (value == 0) return '0';
+                          if (value == 30) return '30';
+                          if (value == 60) return '60';
+                          if (value == 90) return '90';
+                          if (value == 120) return '120';
                           return '';
                         },
                       ),
-                      bottomTitles: SideTitles(
-                        // 아래쪽 타이틀
+                      bottomTitles: SideTitles( // 아래쪽 타이틀
                         showTitles: true,
                         getTextStyles: (value) => const TextStyle(
                           color: Colors.black,
@@ -461,21 +443,19 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
                     gridData: FlGridData(
                       show: true,
                       drawVerticalLine: true, // 세로선 그리기
+                      drawHorizontalLine: true, // 가로선 그리기
                       horizontalInterval: 30, // 수평선 간격
-                      // verticalInterval: 1,
                       getDrawingHorizontalLine: (value) => FlLine(
                         color: Colors.grey,
                         strokeWidth: 1,
+                        dashArray: [5, 5], // 가로선을 점선으로 변경
                       ),
                       getDrawingVerticalLine: (value) {
-                        if (value.toInt() == 0 ||
-                            value.toInt() == 3 ||
-                            value.toInt() == 6 ||
-                            value.toInt() == 9) {
+                        if (value.toInt() == 0 || value.toInt() == 3 || value.toInt() == 6 || value.toInt() == 9) {
                           return FlLine(
                             color: Colors.grey,
-                            strokeWidth: 1,
-                            dashArray: [5, 5], // 세로선 점선
+                            strokeWidth: 2,
+                            // dashArray: [5, 5], // 세로선을 점선으로 변경
                           );
                         } else {
                           return FlLine(
@@ -485,21 +465,22 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
                         }
                       },
                     ),
+
                     borderData: FlBorderData(show: false),
                     barGroups: screenTimes
                         .asMap()
                         .entries
                         .map(
                           (entry) => BarChartGroupData(
-                            x: entry.key,
-                            barRods: [
-                              BarChartRodData(
-                                y: entry.value,
-                                colors: [Colors.redAccent],
-                              ),
-                            ],
+                        x: entry.key,
+                        barRods: [
+                          BarChartRodData(
+                            y: entry.value,
+                            colors: [Colors.redAccent],
                           ),
-                        )
+                        ],
+                      ),
+                    )
                         .toList(),
                   ),
                 ),
@@ -584,25 +565,24 @@ class _WeekViewState extends State<WeekView> {
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json; charset=UTF-8',
-        });
+        }
+    );
 
     if (response.statusCode == 200) {
-      final responseBody = json.decode(utf8.decode(response.bodyBytes));
-      if (responseBody['code'] == "0000" &&
-          responseBody['message'] == "SUCCESS") {
+      final responseBody = json.decode(response.body);
+      if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
         setState(() {
           weeklyData = responseBody['result'];
           isLoading = false;
         });
       } else {
-        throw Exception(
-            'Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
+        throw Exception('Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
       }
     } else {
-      throw Exception(
-          'Failed to load weekly data, status code: ${response.statusCode}');
+      throw Exception('Failed to load weekly data, status code: ${response.statusCode}');
     }
   }
+
 
   List<String> _generateWeekDays() {
     List<String> weekDays = [];
@@ -648,6 +628,9 @@ class _WeekViewState extends State<WeekView> {
       return Center(child: CircularProgressIndicator());
     }
 
+    String topEmotion = weeklyData?['avgEmotion']['maxScore']?.keys.first ?? '중립';
+    String emotionDescription = topEmotion + '한 한 주를 보내셨습니다!';
+    String imagePath = emotionImages[topEmotion] ?? 'assets/neutral.png';
     List<String> xLabels = _generateWeekDays();
 
     List<double> screenTimeWeekly = [];
@@ -658,45 +641,32 @@ class _WeekViewState extends State<WeekView> {
     double changeHours = 0.0;
 
     if (weeklyData != null) {
-      if (weeklyData!['screenTimeWeekly'] != null &&
-          weeklyData!['screenTimeWeekly'] is Map<String, dynamic>) {
-        screenTimeWeekly =
-            (weeklyData!['screenTimeWeekly'] as Map<String, dynamic>)
-                .values
-                .map((e) => e is num ? (e / 3600.0).toDouble() : 0.0)
-                .map((hours) => double.parse(hours.toStringAsFixed(1)))
-                .toList();
+      if (weeklyData!['screenTimeWeekly'] != null && weeklyData!['screenTimeWeekly'] is Map<String, dynamic>) {
+        screenTimeWeekly = (weeklyData!['screenTimeWeekly'] as Map<String, dynamic>)
+            .values
+            .map((e) => e is num ? (e / 3600.0).toDouble() : 0.0)
+            .map((hours) =>double.parse(hours.toStringAsFixed(1)))
+            .toList();
       }
 
-      if (weeklyData!['negativeExpRate'] != null &&
-          weeklyData!['negativeExpRate'] is Map<String, dynamic>) {
-        negativeExpRate =
-            (weeklyData!['negativeExpRate'] as Map<String, dynamic>)
-                .values
-                .map((e) => e is num ? e.toDouble() : 0.0)
-                .toList();
+      if (weeklyData!['negativeExpRate'] != null && weeklyData!['negativeExpRate'] is Map<String, dynamic>) {
+        negativeExpRate = (weeklyData!['negativeExpRate'] as Map<String, dynamic>)
+            .values
+            .map((e) => e is num ? e.toDouble() : 0.0)
+            .toList();
       }
 
-      if (weeklyData!['avgUsageTimeSecond'] != null &&
-          weeklyData!['avgUsageTimeSecond'] is num) {
+      if (weeklyData!['avgUsageTimeSecond'] != null && weeklyData!['avgUsageTimeSecond'] is num) {
         avgHours = (weeklyData!['avgUsageTimeSecond'] as num) / 3600.0;
       }
 
-      if (weeklyData!['changeUsageTimeSecond'] != null &&
-          weeklyData!['changeUsageTimeSecond'] is num) {
+      if (weeklyData!['changeUsageTimeSecond'] != null && weeklyData!['changeUsageTimeSecond'] is num) {
         changeHours = (weeklyData!['changeUsageTimeSecond'] as num) / 3600.0;
       }
 
-      if (weeklyData!['avgEmotion'] != null &&
-          weeklyData!['avgEmotion']['maxScore'] != null &&
-          weeklyData!['avgEmotion']['maxScore'] is Map) {
-        topEmotion =
-            (weeklyData!['avgEmotion']['maxScore'] as Map<String, dynamic>)
-                .keys
-                .first;
-        topEmotionScore =
-            (weeklyData!['avgEmotion']['maxScore'][topEmotion] as num)
-                .toDouble();
+      if (weeklyData!['avgEmotion'] != null && weeklyData!['avgEmotion']['maxScore'] != null && weeklyData!['avgEmotion']['maxScore'] is Map) {
+        topEmotion = (weeklyData!['avgEmotion']['maxScore'] as Map<String, dynamic>).keys.first;
+        topEmotionScore = (weeklyData!['avgEmotion']['maxScore'][topEmotion] as num).toDouble();
       }
     }
 
@@ -707,8 +677,7 @@ class _WeekViewState extends State<WeekView> {
             Padding(
               padding: EdgeInsets.all(16.0),
               child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
                 child: Column(
                   children: [
                     Row(
@@ -720,8 +689,7 @@ class _WeekViewState extends State<WeekView> {
                             height: 80, // Specify the height of the image
                             child: ClipOval(
                               child: Image.asset(
-                                topEmotion.isNotEmpty &&
-                                        emotionImages.containsKey(topEmotion)
+                                topEmotion.isNotEmpty && emotionImages.containsKey(topEmotion)
                                     ? emotionImages[topEmotion]!
                                     : 'assets/neutral.png',
                                 fit: BoxFit.cover,
@@ -737,16 +705,13 @@ class _WeekViewState extends State<WeekView> {
                               children: [
                                 Text(
                                   "부모 님은",
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                 ),
                                 Text(
                                   topEmotion.isNotEmpty
                                       ? "$topEmotion한 한 주를 보내셨습니다!"
                                       : "감정 데이터를 불러오지 못했습니다.",
-                                  style: TextStyle(
-                                      fontSize: 14, color: Colors.pinkAccent),
+                                  style: TextStyle(fontSize: 14, color: Colors.pinkAccent, fontFamily: 'NotoSansKR'),
                                 ),
                                 GestureDetector(
                                   onTap: () {
@@ -754,16 +719,13 @@ class _WeekViewState extends State<WeekView> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                          builder: (context) =>
-                                              DetailedWeeklyConversationView(
-                                                  emotionData: weeklyData![
-                                                      'avgEmotion'])),
+                                          builder: (context) => DetailedWeeklyConversationView(emotionData: weeklyData!['avgEmotion'])
+                                      ),
                                     );
                                   },
                                   child: Text(
                                     "대화내용을 확인해보세요. >>",
-                                    style: TextStyle(
-                                        fontSize: 13, color: Colors.grey),
+                                    style: TextStyle(fontSize: 13, color: Colors.grey),
                                   ),
                                 ),
                               ],
@@ -786,24 +748,15 @@ class _WeekViewState extends State<WeekView> {
                       children: [
                         TextSpan(
                           text: '최근 7일 동안 하루 평균 ',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                         ),
                         TextSpan(
                           text: '${formatHours(avgHours)}시간',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.red),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
                         ),
                         TextSpan(
                           text: '을 대화하셨습니다.',
-                          style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                         ),
                       ],
                     ),
@@ -825,10 +778,7 @@ class _WeekViewState extends State<WeekView> {
                 yInterval: 2,
                 yMax: 12,
                 showGradient: true,
-                gradientColors: [
-                  Colors.pink.withOpacity(0.5),
-                  Colors.pink.withOpacity(0.0)
-                ],
+                gradientColors: [Colors.pink.withOpacity(0.5), Colors.pink.withOpacity(0.0)],
               ),
             ),
             Padding(
@@ -840,10 +790,7 @@ class _WeekViewState extends State<WeekView> {
                 yInterval: 30,
                 yMax: 100,
                 showGradient: true,
-                gradientColors: [
-                  Colors.pink.withOpacity(0.5),
-                  Colors.pink.withOpacity(0.0)
-                ],
+                gradientColors: [Colors.pink.withOpacity(0.5), Colors.pink.withOpacity(0.0)],
               ),
             ),
           ],
@@ -853,8 +800,8 @@ class _WeekViewState extends State<WeekView> {
   }
 }
 
-// --------------------------------------------------------------------------
 
+// --------------------------------------------------------------------------
 class MonthView extends StatefulWidget {
   @override
   _MonthViewState createState() => _MonthViewState();
@@ -862,10 +809,8 @@ class MonthView extends StatefulWidget {
 
 class _MonthViewState extends State<MonthView> {
   DateTime now = DateTime.now();
-  DateTime startOfMonth =
-      DateTime(DateTime.now().year, DateTime.now().month, 1);
-  DateTime endOfMonth =
-      DateTime(DateTime.now().year, DateTime.now().month + 1, 0);
+  DateTime startOfMonth = DateTime(DateTime.now().year, DateTime.now().month, 1);
+  DateTime endOfMonth = DateTime(DateTime.now().year, DateTime.now().month + 1, 0);
 
   Map<String, dynamic>? monthlyData;
 
@@ -890,19 +835,16 @@ class _MonthViewState extends State<MonthView> {
     );
 
     if (response.statusCode == 200) {
-      final responseBody = json.decode(utf8.decode(response.bodyBytes));
-      if (responseBody['code'] == "0000" &&
-          responseBody['message'] == "SUCCESS") {
+      final responseBody = json.decode(response.body);
+      if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
         setState(() {
           monthlyData = responseBody['result'];
         });
       } else {
-        throw Exception(
-            'Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
+        throw Exception('Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
       }
     } else {
-      throw Exception(
-          'Failed to load monthly data, status code: ${response.statusCode}');
+      throw Exception('Failed to load monthly data, status code: ${response.statusCode}');
     }
   }
 
@@ -912,35 +854,29 @@ class _MonthViewState extends State<MonthView> {
       return Center(child: CircularProgressIndicator());
     }
 
-    int avgUsageTimeSecond = monthlyData!['avgUsageTimeSecond'] ?? 0;
-    int changeUsageTimeSecond = monthlyData!['changeUsageTimeSecond'] ?? 0;
+    int avgUsageTimeSecond = monthlyData?['avgUsageTimeSecond'] ?? 0;
+    int changeUsageTimeSecond = monthlyData?['changeUsageTimeSecond'] ?? 0;
 
     double avgHours = avgUsageTimeSecond / 3600.0;
-    double prevMonthAvgHours =
-        (avgUsageTimeSecond - changeUsageTimeSecond) / 3600.0;
+    double prevMonthAvgHours = (avgUsageTimeSecond - changeUsageTimeSecond) / 3600.0;
     double difference = avgHours - prevMonthAvgHours;
     String differenceText = difference > 0 ? '더 대화했어요.' : '덜 대화했어요.';
 
     List<double> screenTimeMonthlyInHours = [];
-    if (monthlyData!['screenTimeMonthly'] != null) {
-      screenTimeMonthlyInHours =
-          (monthlyData!['screenTimeMonthly'] as Map<String, dynamic>)
-              .values
-              .map((e) => e is num ? e.toDouble() / 3600.0 : 0.0)
-              .toList();
+    if (monthlyData?['screenTimeMonthly'] != null) {
+      screenTimeMonthlyInHours = (monthlyData?['screenTimeMonthly'] as Map<String, dynamic>).values
+          .map((e) => e is num ? e.toDouble() / 3600.0 : 0.0)
+          .toList();
     }
 
     List<double> negativeExpRate = [];
-    if (monthlyData!['negativeExpRate'] != null) {
-      negativeExpRate =
-          (monthlyData!['negativeExpRate'] as Map<String, dynamic>)
-              .values
-              .map((e) => e is num ? e.toDouble() : 0.0)
-              .toList();
+    if (monthlyData?['negativeExpRate'] != null) {
+      negativeExpRate = (monthlyData?['negativeExpRate'] as Map<String, dynamic>).values
+          .map((e) => e is num ? e.toDouble() : 0.0)
+          .toList();
     }
 
-    Map<String, dynamic> avgEmotion =
-        monthlyData!['avgEmotion'] as Map<String, dynamic>? ?? {};
+    Map<String, dynamic> avgEmotion = monthlyData?['avgEmotion'] as Map<String, dynamic>? ?? {};
     String topEmotion = avgEmotion['maxScore']?.keys?.first ?? '';
 
     final Map<String, String> emotionImages = {
@@ -961,8 +897,7 @@ class _MonthViewState extends State<MonthView> {
             Padding(
               padding: EdgeInsets.all(16.0),
               child: Card(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15.0)),
                 child: Column(
                   children: [
                     Row(
@@ -974,8 +909,7 @@ class _MonthViewState extends State<MonthView> {
                             height: 80,
                             child: ClipOval(
                               child: Image.asset(
-                                emotionImages[topEmotion] ??
-                                    'assets/neutral.png',
+                                emotionImages[topEmotion] ?? 'assets/neutral.png',
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -989,14 +923,11 @@ class _MonthViewState extends State<MonthView> {
                               children: [
                                 Text(
                                   "부모 님은",
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold),
+                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                 ),
                                 Text(
                                   "$topEmotion 한 한달을 보내셨습니다!",
-                                  style: TextStyle(
-                                      fontSize: 14, color: Colors.pinkAccent),
+                                  style: TextStyle(fontSize: 14, color: Colors.pinkAccent,fontFamily: 'NotoSansKR'),
                                 ),
                                 GestureDetector(
                                   onTap: () {
@@ -1006,14 +937,12 @@ class _MonthViewState extends State<MonthView> {
                                           builder: (context) =>
                                               DetailedMonthlyConversationView(
                                                   emotionData: avgEmotion,
-                                                  emotionImages:
-                                                      emotionImages)),
+                                                  emotionImages: emotionImages)),
                                     );
                                   },
                                   child: Text(
                                     "대화내용을 확인해보세요.",
-                                    style: TextStyle(
-                                        fontSize: 13, color: Colors.grey),
+                                    style: TextStyle(fontSize: 13, color: Colors.grey),
                                   ),
                                 ),
                               ],
@@ -1034,29 +963,19 @@ class _MonthViewState extends State<MonthView> {
                     children: [
                       TextSpan(
                         text: '이번달 동안 하루 평균 ',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                       ),
                       TextSpan(
                         text: '${avgHours.toStringAsFixed(1)}시간',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.red),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.red),
                       ),
                       TextSpan(
                         text: '을 대화하셨습니다.\n',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                       ),
                       TextSpan(
-                        text:
-                            '이번달은 지난달 보다 ${difference.abs().toStringAsFixed(1)}시간 ${differenceText}',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        text: '이번달은 지난달 보다 ${difference.abs().toStringAsFixed(1)}시간 ${differenceText}',
+                        style: TextStyle(fontSize:12, color:Colors.grey),
                       ),
                     ],
                   ),
@@ -1076,15 +995,14 @@ class _MonthViewState extends State<MonthView> {
             Padding(
               padding: EdgeInsets.all(4.0),
               child: LineChartWidget(
-                title: Text('부정표현 사용 비율',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black)),
+                title: Text('부정표현 사용 비율', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black)),
                 data: negativeExpRate,
                 xLabels: ['1주', '2주', '3주', '4주', '5주'],
                 yInterval: 30,
                 yMax: 100,
+                showGradient: true,
+                gradientColors: [Colors.orange.withOpacity(0.5), Colors.orange.withOpacity(0.0)],
+                isWeekly: false,
               ),
             ),
           ],
@@ -1106,8 +1024,7 @@ class ConversationSummaryWidget extends StatefulWidget {
   });
 
   @override
-  _ConversationSummaryWidgetState createState() =>
-      _ConversationSummaryWidgetState();
+  _ConversationSummaryWidgetState createState() => _ConversationSummaryWidgetState();
 }
 
 class _ConversationSummaryWidgetState extends State<ConversationSummaryWidget> {
@@ -1123,8 +1040,7 @@ class _ConversationSummaryWidgetState extends State<ConversationSummaryWidget> {
       elevation: 2,
       child: ExpansionTile(
         initiallyExpanded: _isExpanded,
-        onExpansionChanged: (bool expanding) =>
-            setState(() => _isExpanded = expanding),
+        onExpansionChanged: (bool expanding) => setState(() => _isExpanded = expanding),
         title: ListTile(
           title: Text(
             widget.title,
@@ -1133,13 +1049,13 @@ class _ConversationSummaryWidgetState extends State<ConversationSummaryWidget> {
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(''),
+              Text('widget.date'),
               SizedBox(height: 4),
               Row(
                 children: [
                   Icon(Icons.access_time, size: 14),
                   SizedBox(width: 4),
-                  Text(''),
+                  Text('widget.time'),
                 ],
               ),
             ],
@@ -1161,21 +1077,18 @@ class _ConversationSummaryWidgetState extends State<ConversationSummaryWidget> {
                     ),
                   ),
                   SizedBox(height: 10),
-                  ...widget.details
-                      .map((detail) => Text("• $detail",
-                          style: TextStyle(color: defaultTextColor)))
-                      .toList(),
+                  ...widget.details.map((detail) => Text("• $detail", style: TextStyle(color: defaultTextColor))).toList(),
                   SizedBox(height: 10), // 간격 추가
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(' ', style: TextStyle(color: defaultTextColor)),
+                      Text('widget.date', style: TextStyle(color: defaultTextColor)),
                       SizedBox(height: 4),
                       Row(
                         children: [
                           Icon(Icons.access_time, size: 14),
                           SizedBox(width: 4),
-                          Text(' ', style: TextStyle(color: defaultTextColor)),
+                          Text('widget.time', style: TextStyle(color: defaultTextColor)),
                         ],
                       ),
                     ],
@@ -1191,6 +1104,7 @@ class _ConversationSummaryWidgetState extends State<ConversationSummaryWidget> {
 }
 
 // --------------------------------------------------------------
+
 
 class MoodRanking extends StatelessWidget {
   // 감정에 따른 이미지 경로 맵핑
@@ -1209,41 +1123,36 @@ class MoodRanking extends StatelessWidget {
     String date = '2024-06-12';
     // String date = DateTime.now().toIso8601String().split('T')[0]; // 오늘 날짜를 yyyy-mm-dd 형식으로 변환
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? accessToken = prefs.getString('access_token'); // 저장된 액세스 토큰을 가져옵니다.
+    String? accessToken = prefs.getString('access_token');  // 저장된 액세스 토큰을 가져옵니다.
 
     final response = await http.get(
         Uri.parse('http://54.180.229.143:8080/api/v1/stat/daily?date=$date'),
         headers: {
           'Accept': 'application/json',
-          'Authorization':
-              'Bearer $accessToken', // 액세스 토큰을 사용하여 Authorization 헤더를 설정합니다.
+          'Authorization': 'Bearer $accessToken', // 액세스 토큰을 사용하여 Authorization 헤더를 설정합니다.
           'Content-Type': 'application/json; charset=UTF-8', // 추가된 헤더
-        });
+        }
+    );
 
     if (response.statusCode == 200) {
       final responseBody = json.decode(utf8.decode(response.bodyBytes));
-      if (responseBody['code'] == "0000" &&
-          responseBody['message'] == "SUCCESS") {
+      if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
         // 데이터 처리
         final data = responseBody['result']['sentimentAnalysis'];
         return List<Map<String, dynamic>>.from(data.map((item) => {
-              'percentage': item['score'],
-              'emotion': item['label'],
-            }));
+          'percentage': item['score'],
+          'emotion': item['label'],
+        }));
       } else {
-        throw Exception(
-            'Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
+        throw Exception('Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
       }
     } else {
-      throw Exception(
-          'Failed to load emotion data, status code: ${response.statusCode}');
+      throw Exception('Failed to load emotion data, status code: ${response.statusCode}');
     }
   }
 
   Color getMarkerColor(String emotion) {
-    return (emotion == '행복' || emotion == '중립' || emotion == '당황')
-        ? Color(0x60FF7672)
-        : Color(0xFFEC295D);
+    return (emotion == '행복' || emotion == '중립' || emotion == '당황') ? Color(0x60FF7672) : Color(0xFFEC295D);
   }
 
   @override
@@ -1261,8 +1170,7 @@ class MoodRanking extends StatelessWidget {
 
         List<Map<String, dynamic>> emotionData = snapshot.data!;
         emotionData.sort((a, b) => b['percentage'].compareTo(a['percentage']));
-        List<Map<String, dynamic>> topThreeEmotions =
-            emotionData.take(3).toList();
+        List<Map<String, dynamic>> topThreeEmotions = emotionData.take(3).toList();
 
         return Container(
           padding: const EdgeInsets.all(16.0),
@@ -1301,19 +1209,14 @@ class MoodRanking extends StatelessWidget {
                   children: topThreeEmotions.map((data) {
                     Color boxColor = Color(0xFFEC295D);
                     Color textColor = Colors.white;
-                    if (data['emotion'] == '행복' ||
-                        data['emotion'] == '중립' ||
-                        data['emotion'] == '당황') {
+                    if (data['emotion'] == '행복'|| data['emotion'] == '중립' || data['emotion'] == '당황') {
                       boxColor = Color(0x60FF7672);
                       textColor = Color(0xFFEC295D);
                     }
                     return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal:
-                              8.0), // 각 EmotionWidget 사이의 간격을 벌리기 위해 패딩 추가
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0), // 각 EmotionWidget 사이의 간격을 벌리기 위해 패딩 추가
                       child: EmotionWidget(
-                        percentage: (data['percentage'] as num)
-                            .toInt(), // percentage 값을 int로 변환
+                        percentage: (data['percentage'] as num).toInt(), // percentage 값을 int로 변환
                         emotion: data['emotion'],
                         imagePath: emotionImages[data['emotion']]!, // 이미지 경로 설정
                         textColor: textColor,
@@ -1355,10 +1258,7 @@ class EmotionWidget extends StatelessWidget {
         children: [
           Text(
             '$percentage%',
-            style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.pinkAccent),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pinkAccent),
           ),
           SizedBox(height: 5),
           Image.asset(imagePath, height: 80), // PNG 이미지 로드
@@ -1384,13 +1284,10 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
   final List<Map<String, dynamic>> emotionData;
   final Map<String, String> emotionImages;
 
-  DetailedEmotionStatisticsView(
-      {required this.emotionData, required this.emotionImages});
+  DetailedEmotionStatisticsView({required this.emotionData, required this.emotionImages});
 
   Color getMarkerColor(String emotion) {
-    return (emotion == '행복' || emotion == '중립' || emotion == '당황')
-        ? Color(0x60FF7672)
-        : Color(0xFFEC295D);
+    return (emotion == '행복' || emotion == '중립' || emotion == '당황') ? Color(0x60FF7672) : Color(0xFFEC295D);
   }
 
   @override
@@ -1400,11 +1297,12 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Center(child: Text('상세 감정통계')), // 제목 가운데 정렬
+        title: Text('상세 감정통계'),
+        centerTitle: true, // 타이틀을 AppBar 중앙에 정렬
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(25.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -1414,24 +1312,15 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
                   children: [
                     TextSpan(
                       text: '오늘 하루 ',
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
                     ),
                     TextSpan(
                       text: '$topEmotion',
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.pinkAccent),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.pinkAccent),
                     ),
                     TextSpan(
                       text: '이 많으셨네요.\n전화통화를 추천드려요!',
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black),
                     ),
                   ],
                 ),
@@ -1443,15 +1332,12 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
                 children: emotionData.take(3).map((data) {
                   Color boxColor = Colors.pink;
                   Color textColor = Colors.white;
-                  if (data['emotion'] == '행복' ||
-                      data['emotion'] == '중립' ||
-                      data['emotion'] == '당황') {
+                  if (data['emotion'] == '행복' || data['emotion'] == '중립' || data['emotion'] == '당황') {
                     boxColor = Color(0x60FF7672);
                     textColor = Color(0xFFEC295D);
                   }
                   return EmotionWidget(
-                    percentage: (data['percentage'] as num)
-                        .toInt(), // double 타입을 int로 변환
+                    percentage: (data['percentage'] as num).toInt(),
                     emotion: data['emotion'],
                     imagePath: emotionImages[data['emotion']]!, // 이미지 경로 설정
                     textColor: textColor,
@@ -1470,53 +1356,23 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
 
   List<Widget> _buildEmotionBars() {
     return emotionData.map((data) {
-      Color boxColor = getMarkerColor(data['emotion']);
-      return Container(
-        margin: EdgeInsets.symmetric(vertical: 4),
-        padding: EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: boxColor.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              data['emotion'],
-              style: TextStyle(fontSize: 14, color: Colors.black),
-            ),
-            Text(
-              '${data['percentage']}%',
-              style: TextStyle(fontSize: 14, color: Colors.black),
-            ),
-          ],
-        ),
+      return EmotionBar(
+        emotion: data['emotion'],
+        percentage: (data['percentage'] as num).toInt(),
       );
     }).toList();
   }
 }
 
-// List<Widget> _buildEmotionBars(){
-//     return emotionData.map((data){
-//       return EmotionBar(
-//         emotion: data['emotion'],
-//         percentage: data['percentage'],
-//       );
-//     }).toList();
-// }
-
-//----------------------------------------------------------------------------
-
 class EmotionBar extends StatelessWidget {
   final String emotion;
   final int percentage;
 
-  const EmotionBar({Key? key, required this.emotion, required this.percentage})
-      : super(key: key);
+  const EmotionBar({Key? key, required this.emotion, required this.percentage}) : super(key: key);
 
   Color _getColorForEmotion(String emotion) {
     if (emotion == '행복' || emotion == '당황' || emotion == '중립') {
-      return Color(0x60FF7672);
+      return Color(0xFFEC295D);
     } else {
       return Color(0xFFEC295D);
     }
@@ -1524,52 +1380,41 @@ class EmotionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Color barColor = _getColorForEmotion(emotion);
     return Padding(
-      padding:
-          const EdgeInsets.symmetric(vertical: 20.0), // EmotionBar들 간 간격 조정
+      padding: const EdgeInsets.symmetric(vertical: 20.0), // EmotionBar들 간 간격 조정
       child: Row(
         children: [
-          Text(emotion,
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFEC295D))),
-          SizedBox(width: 19),
+          Text(emotion, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFEC295D))),
+          SizedBox(width: 10),
           Expanded(
-            child: SizedBox(
-              height: 19, // 두께 조정
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(10.0),
               child: LinearProgressIndicator(
                 value: percentage / 100.0,
                 backgroundColor: Colors.grey[300],
-                valueColor:
-                    AlwaysStoppedAnimation<Color>(Colors.pinkAccent), //bar 컬러
+                valueColor: AlwaysStoppedAnimation<Color>(barColor),
+                minHeight: 15.0, // 막대의 세로 길이를 20픽셀로 설정
               ),
             ),
           ),
           SizedBox(width: 10),
-          Text('$percentage%',
-              style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFEC295D))),
+          Text('$percentage%', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFEC295D))),
         ],
       ),
     );
   }
 }
-
 class DetailedWeeklyConversationView extends StatefulWidget {
   final Map<String, dynamic> emotionData;
 
   DetailedWeeklyConversationView({required this.emotionData});
 
   @override
-  _DetailedWeeklyConversationViewState createState() =>
-      _DetailedWeeklyConversationViewState();
+  _DetailedWeeklyConversationViewState createState() => _DetailedWeeklyConversationViewState();
 }
 
-class _DetailedWeeklyConversationViewState
-    extends State<DetailedWeeklyConversationView> {
+class _DetailedWeeklyConversationViewState extends State<DetailedWeeklyConversationView> {
   int selectedDayIndex = DateTime.now().weekday - 1;
   DateTime selectedDay = DateTime.now();
 
@@ -1592,28 +1437,24 @@ class _DetailedWeeklyConversationViewState
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
           'Content-Type': 'application/json; charset=UTF-8',
-        });
+        }
+    );
 
     if (response.statusCode == 200) {
-      final responseBody = json.decode(response.body);
-      if (responseBody['code'] == "0000" &&
-          responseBody['message'] == "SUCCESS") {
+      final responseBody = json.decode(utf8.decode(response.bodyBytes));
+      if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
         setState(() {
-          weeklyConversations = parseWeeklyConversations(
-              responseBody['result']['weeklyConversations']);
+          weeklyConversations = parseWeeklyConversations(responseBody['result']['weeklyConversations']);
         });
       } else {
-        throw Exception(
-            'Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
+        throw Exception('Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
       }
     } else {
-      throw Exception(
-          'Failed to load weekly data, status code: ${response.statusCode}');
+      throw Exception('Failed to load weekly data, status code: ${response.statusCode}');
     }
   }
 
-  List<List<Map<String, dynamic>>> parseWeeklyConversations(
-      Map<String, dynamic> data) {
+  List<List<Map<String, dynamic>>> parseWeeklyConversations(Map<String, dynamic> data) {
     return [
       data['mon'],
       data['tue'],
@@ -1623,13 +1464,12 @@ class _DetailedWeeklyConversationViewState
       data['sat'],
       data['sun'],
     ].map((conversations) {
-      return List<Map<String, dynamic>>.from(
-          (conversations as List<dynamic>).map((conversation) => {
-                'title': conversation['title'],
-                'date': conversation['date'],
-                'duration': conversation['duration'],
-                'details': List<String>.from(conversation['details']),
-              }));
+      return List<Map<String, dynamic>>.from((conversations as List<dynamic>).map((conversation) => {
+        'title': conversation['title'],
+        'date': conversation['date'],
+        'duration': conversation['duration'],
+        'details': List<String>.from(conversation['details']),
+      }));
     }).toList();
   }
 
@@ -1642,10 +1482,8 @@ class _DetailedWeeklyConversationViewState
 
   @override
   Widget build(BuildContext context) {
-    DateTime startOfWeek =
-        selectedDay.subtract(Duration(days: selectedDay.weekday - 1));
-    List<DateTime> weekDays =
-        List.generate(7, (index) => startOfWeek.add(Duration(days: index)));
+    DateTime startOfWeek = selectedDay.subtract(Duration(days: selectedDay.weekday - 1));
+    List<DateTime> weekDays = List.generate(7, (index) => startOfWeek.add(Duration(days: index)));
 
     return Scaffold(
       appBar: PreferredSize(
@@ -1668,8 +1506,7 @@ class _DetailedWeeklyConversationViewState
                         onTap: () {
                           Navigator.pop(context);
                         },
-                        child:
-                            SvgPicture.asset('assets/icon_eut.svg', height: 80),
+                        child: SvgPicture.asset('assets/icon_eut.svg', height: 80),
                       ),
                     ],
                   ),
@@ -1721,17 +1558,14 @@ class _DetailedWeeklyConversationViewState
                             color: selectedDayIndex == index
                                 ? Colors.pinkAccent
                                 : weekDays[index].day == DateTime.now().day &&
-                                        weekDays[index].month ==
-                                            DateTime.now().month &&
-                                        weekDays[index].year ==
-                                            DateTime.now().year
-                                    ? Colors.transparent
-                                    : Colors.transparent,
+                                weekDays[index].month == DateTime.now().month &&
+                                weekDays[index].year == DateTime.now().year
+                                ? Colors.transparent
+                                : Colors.transparent,
                             shape: BoxShape.circle,
                             border: weekDays[index].day == DateTime.now().day &&
-                                    weekDays[index].month ==
-                                        DateTime.now().month &&
-                                    weekDays[index].year == DateTime.now().year
+                                weekDays[index].month == DateTime.now().month &&
+                                weekDays[index].year == DateTime.now().year
                                 ? Border.all(color: Colors.pinkAccent, width: 2)
                                 : null,
                           ),
@@ -1740,35 +1574,23 @@ class _DetailedWeeklyConversationViewState
                               '${weekDays[index].day}',
                               style: TextStyle(
                                 fontSize: 16,
-                                color: selectedDayIndex == index
-                                    ? Colors.white
-                                    : Colors.black,
-                                fontWeight: selectedDayIndex == index
-                                    ? FontWeight.bold
-                                    : FontWeight.normal,
+                                color: selectedDayIndex == index ? Colors.white : Colors.black,
+                                fontWeight: selectedDayIndex == index ? FontWeight.bold : FontWeight.normal,
                               ),
                             ),
                           ),
                         ),
-                        if (index < weeklyConversations.length &&
-                            weeklyConversations[index].isNotEmpty)
+                        if (index < weeklyConversations.length && weeklyConversations[index].isNotEmpty)
                           Container(
                             width: 10,
                             height: 10,
                             decoration: BoxDecoration(
-                              color: ['행복', '중립', '당황'].any((emotion) =>
-                                      weeklyConversations[index]
-                                          .map((conversation) =>
-                                              (conversation['details']
-                                                      as List<String>)
-                                                  .join(' '))
-                                          .reduce((value, element) =>
-                                              value.length > element.length
-                                                  ? value
-                                                  : element)
-                                          .contains(emotion))
-                                  ? Color(0x60FF7672)
-                                  : Color(0xFFEC295D),
+                              color: ['행복', '중립', '당황'].any(
+                                      (emotion) => weeklyConversations[index]
+                                      .map((conversation) => (conversation['details'] as List<String>).join(' '))
+                                      .reduce((value, element) => value.length > element.length ? value : element)
+                                      .contains(emotion)
+                              ) ? Color(0x60FF7672) : Color(0xFFEC295D),
                               shape: BoxShape.circle,
                             ),
                           ),
@@ -1785,15 +1607,7 @@ class _DetailedWeeklyConversationViewState
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${selectedDay.year}년 ${selectedDay.month}월 ${selectedDay.day}일 (${[
-                      '월',
-                      '화',
-                      '수',
-                      '목',
-                      '금',
-                      '토',
-                      '일'
-                    ][selectedDayIndex]})',
+                    '${selectedDay.year}년 ${selectedDay.month}월 ${selectedDay.day}일 (${['월', '화', '수', '목', '금', '토', '일'][selectedDayIndex]})',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -1801,8 +1615,7 @@ class _DetailedWeeklyConversationViewState
                   ),
                   SizedBox(height: 10),
                   Column(
-                    children:
-                        getConversationsForSelectedDay().map((conversation) {
+                    children: getConversationsForSelectedDay().map((conversation) {
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: ConversationSummaryWidget(
@@ -1822,28 +1635,22 @@ class _DetailedWeeklyConversationViewState
   }
 }
 
+
 class StatCard extends StatelessWidget {
   final String label; // 카드의 레이블 텍스트
   final int percentage; // 백분율 값
   final Color color; // 색상
 
-  const StatCard(
-      {Key? key,
-      required this.label,
-      required this.percentage,
-      required this.color})
-      : super(key: key);
+  const StatCard({Key? key, required this.label, required this.percentage, required this.color}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin:
-          EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // 카드의 외부 여백 설정
+      margin: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0), // 카드의 외부 여백 설정
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: color, // 원형 아바타의 배경색 설정
-          child: Text('$percentage%',
-              style: TextStyle(color: Colors.white)), // 백분율 텍스트 표시
+          child: Text('$percentage%', style: TextStyle(color: Colors.white)), // 백분율 텍스트 표시
         ),
         title: Text(label), // 카드의 제목 텍스트 설정
         subtitle: Padding(
@@ -1910,26 +1717,32 @@ class LineChartWidget extends StatelessWidget {
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.all(16.0), // 그래프 내부에 패딩 추가
+              padding: const EdgeInsets.all(16.0),
               child: SizedBox(
                 height: 150,
                 child: LineChart(
                   LineChartData(
                     gridData: FlGridData(
                       show: true,
-                      drawVerticalLine: true,
-                      drawHorizontalLine: false,
+                      drawVerticalLine: true, // 세로선 그리기
+                      drawHorizontalLine: true, // 가로선 그리기
                       horizontalInterval: yInterval,
+                      getDrawingHorizontalLine: (value) => FlLine(
+                        color: Colors.grey.withAlpha(70), // 옅은 회색으로 색상 변경
+                        strokeWidth: 0.7, // 선의 두께를 0.5로 설정
+                        dashArray: [5, 3], // 점선 패턴을 5픽셀 그리고 3픽셀 띄우기
+                      ),
                       getDrawingVerticalLine: (value) => FlLine(
-                        color: Colors.grey,
-                        strokeWidth: 1,
+                        color: Colors.grey, // 세로선 색상
+                        strokeWidth: 0.7, // 세로선 두께
                       ),
                     ),
                     titlesData: FlTitlesData(
                       leftTitles: SideTitles(
                         showTitles: true,
                         interval: yInterval,
-                        getTextStyles: (value) => const TextStyle(
+                        getTextStyles: (value) =>
+                        const TextStyle(
                           color: Colors.black,
                           fontSize: 12,
                         ),
@@ -1939,7 +1752,8 @@ class LineChartWidget extends StatelessWidget {
                       ),
                       bottomTitles: SideTitles(
                         showTitles: true,
-                        getTextStyles: (value) => const TextStyle(
+                        getTextStyles: (value) =>
+                        const TextStyle(
                           color: Colors.black,
                           fontSize: 12,
                         ),
@@ -1971,20 +1785,20 @@ class LineChartWidget extends StatelessWidget {
                           show: true,
                           getDotPainter: (spot, percent, barData, index) =>
                               FlDotCirclePainter(
-                            radius: 3.0,
-                            color: barData.colors.first,
-                            strokeWidth: 0,
-                            strokeColor: Colors.white,
-                          ),
+                                radius: 3.0,
+                                color: barData.colors.first,
+                                strokeWidth: 0,
+                                strokeColor: Colors.white,
+                              ),
                         ),
                         belowBarData: showGradient
                             ? BarAreaData(
-                                show: true,
-                                gradientColorStops: [0.2, 1],
-                                gradientFrom: Offset(0, 0),
-                                gradientTo: Offset(0, 1),
-                                colors: gradientColors,
-                              )
+                          show: true,
+                          gradientColorStops: [0.2, 1],
+                          gradientFrom: Offset(0, 0),
+                          gradientTo: Offset(0, 1),
+                          colors: gradientColors,
+                        )
                             : BarAreaData(show: false),
                       ),
                     ],
@@ -1996,7 +1810,7 @@ class LineChartWidget extends StatelessWidget {
                         getTooltipItems: (List<LineBarSpot> touchedSpots) {
                           return touchedSpots.map((touchedSpot) {
                             return LineTooltipItem(
-                              touchedSpot.y.toString(),
+                              touchedSpot.y.toStringAsFixed(1),  // 소수점 첫째 자리까지 표시
                               TextStyle(color: Colors.pinkAccent, fontSize: 12),
                             );
                           }).toList();
@@ -2004,8 +1818,8 @@ class LineChartWidget extends StatelessWidget {
                       ),
                       touchCallback: (LineTouchResponse touchResponse) {},
                       handleBuiltInTouches: true,
-                      getTouchedSpotIndicator:
-                          (LineChartBarData barData, List<int> spotIndexes) {
+                      getTouchedSpotIndicator: (LineChartBarData barData,
+                          List<int> spotIndexes) {
                         return spotIndexes.map((index) {
                           final spot = barData.spots[index];
                           return TouchedSpotIndicatorData(
@@ -2018,11 +1832,11 @@ class LineChartWidget extends StatelessWidget {
                               show: true,
                               getDotPainter: (spot, percent, barData, index) =>
                                   FlDotCirclePainter(
-                                radius: 5.0,
-                                color: Colors.amber,
-                                strokeWidth: 2,
-                                strokeColor: Colors.white,
-                              ),
+                                    radius: 5.0,
+                                    color: Colors.amber,
+                                    strokeWidth: 2,
+                                    strokeColor: Colors.white,
+                                  ),
                             ),
                           );
                         }).toList();
@@ -2045,19 +1859,16 @@ class DetailedMonthlyConversationView extends StatefulWidget {
   final Map<String, dynamic> emotionData;
   final Map<String, dynamic> emotionImages;
 
-  DetailedMonthlyConversationView(
-      {required this.emotionData, required this.emotionImages});
+  DetailedMonthlyConversationView({required this.emotionData, required this.emotionImages});
 
   @override
-  _DetailedMonthlyConversationViewState createState() =>
-      _DetailedMonthlyConversationViewState();
+  _DetailedMonthlyConversationViewState createState() => _DetailedMonthlyConversationViewState();
 }
 
-class _DetailedMonthlyConversationViewState
-    extends State<DetailedMonthlyConversationView> {
+class _DetailedMonthlyConversationViewState extends State<DetailedMonthlyConversationView> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  Map<int, bool> _expandedStates = {}; // 확장 상태를 관리하는 맵
+  Map<int, bool> _expandedStates = {};  // 확장 상태를 관리하는 맵
 
   List<Map<String, dynamic>> dailyNegativityRatioList = [];
 
@@ -2069,34 +1880,29 @@ class _DetailedMonthlyConversationViewState
 
   void fetchMonthlyData() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? accessToken =
-        prefs.getString('access_token'); // 액세스 토큰은 안전하게 관리하고 있어야 합니다.
+    String? accessToken = prefs.getString('access_token');  // 액세스 토큰은 안전하게 관리하고 있어야 합니다.
 
     final response = await http.get(
-        Uri.parse(
-            'http://54.180.229.143:8080/api/v1/stat/calendar?month=${_focusedDay.month}'),
+        Uri.parse('http://54.180.229.143:8080/api/v1/stat/calendar?month=${_focusedDay.month}'),
         headers: {
           'Accept': 'application/json',
-          'Authorization': 'Bearer $accessToken', // Authorization 헤더 추가
+          'Authorization': 'Bearer $accessToken',  // Authorization 헤더 추가
           'Content-Type': 'application/json; charset=UTF-8', // 추가된 헤더
-        });
+        }
+    );
 
     if (response.statusCode == 200) {
-      final responseBody = json.decode(response.body);
-      if (responseBody['code'] == "0000" &&
-          responseBody['message'] == "SUCCESS") {
+      final responseBody = json.decode(utf8.decode(response.bodyBytes));
+      if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
         // 데이터 처리
         setState(() {
-          dailyNegativityRatioList = List<Map<String, dynamic>>.from(
-              responseBody['result']['dailyNegativityRatioList']);
+          dailyNegativityRatioList = List<Map<String, dynamic>>.from(responseBody['result']['dailyNegativityRatioList']);
         });
       } else {
-        throw Exception(
-            'Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
+        throw Exception('Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
       }
     } else {
-      throw Exception(
-          'Failed to load monthly data, status code: ${response.statusCode}');
+      throw Exception('Failed to load monthly data, status code: ${response.statusCode}');
     }
   }
 
@@ -2109,16 +1915,14 @@ class _DetailedMonthlyConversationViewState
 
   void _toggleExpanded(int index) {
     setState(() {
-      _expandedStates[index] =
-          !_expandedStates.containsKey(index) || !_expandedStates[index]!;
+      _expandedStates[index] = !_expandedStates.containsKey(index) || !_expandedStates[index]!;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     // Null 체크 및 기본값 설정
-    String topEmotion = (widget.emotionData['maxScore'] != null &&
-            widget.emotionData['maxScore'].isNotEmpty)
+    String topEmotion = (widget.emotionData['maxScore'] != null && widget.emotionData['maxScore'].isNotEmpty)
         ? widget.emotionData['maxScore'].keys.first
         : 'neutral';
 
@@ -2140,8 +1944,7 @@ class _DetailedMonthlyConversationViewState
                     children: [
                       SizedBox(width: 10),
                       IconButton(
-                        icon:
-                            SvgPicture.asset('assets/img/icon.svg', height: 80),
+                        icon: SvgPicture.asset('assets/icon_eut.svg', height: 80),
                         onPressed: () {
                           Navigator.pop(context);
                         },
@@ -2178,47 +1981,47 @@ class _DetailedMonthlyConversationViewState
                 setState(() {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
-                  _expandedStates.clear(); // 새로운 날짜를 선택할 때 확장 상태 초기화
+                  _expandedStates.clear();  // 새로운 날짜를 선택할 때 확장 상태 초기화
                 });
               },
               calendarFormat: CalendarFormat.month,
               eventLoader: _getEventsForDay,
               headerStyle: HeaderStyle(
-                formatButtonVisible:
-                    false, // TableCalendar 위젯의 헤더에 있는 포맷 변경 버튼의 가시성을 제어
+                formatButtonVisible: false, // TableCalendar 위젯의 헤더에 있는 포맷 변경 버튼의 가시성을 제어
                 titleCentered: true,
               ),
               calendarStyle: CalendarStyle(
                 todayDecoration: BoxDecoration(
                   color: Colors.transparent,
-                  shape: BoxShape.circle, // 달력에서의 오늘을 날짜에 대한 데이터
-                  border:
-                      Border.all(color: Colors.pinkAccent, width: 2), // 핑크색 테두리
+                  shape: BoxShape.circle,  // 달력에서의 오늘을 날짜에 대한 데이터
+                  border: Border.all(color: Colors.pinkAccent, width: 2), // 핑크색 테두리
+                ),
+                todayTextStyle: TextStyle(
+                  color: Colors.black,
+                  fontWeight:FontWeight.bold,
                 ),
                 selectedDecoration: BoxDecoration(
                   color: Colors.pinkAccent,
-                  shape: BoxShape.circle, // 달력에서의 내가 선택한 날짜 데이터
+                  shape: BoxShape.circle,  // 달력에서의 내가 선택한 날짜 데이터
                 ),
               ),
               calendarBuilders: CalendarBuilders(
                 markerBuilder: (context, date, events) {
+                  // print('events : ${events}');
+                  // print('events indx  z : ${events[0]}');
+
                   if (events.isNotEmpty) {
                     String topEmotion = 'neutral'; // 기본값 설정
-                    topEmotion = events
-                        .map((event) => (event
-                            as Map<String, dynamic>)['details'] as String)
-                        .reduce((value, element) =>
-                            value.length > element.length ? value : element);
+                    // topEmotion = events
+                    //     .map((event) => (event as Map<String, dynamic>)['details'] as String)
+                    //     .reduce((value, element) => value.length > element.length ? value : element);
+                    final ratio = (events[0] as Map<String, dynamic>)['negativityRatio'] as double;
                     return Container(
                       width: 10,
                       height: 10,
                       margin: const EdgeInsets.symmetric(horizontal: 0.3),
                       decoration: BoxDecoration(
-                        color: (topEmotion == '행복' ||
-                                topEmotion == '중립' ||
-                                topEmotion == '당황')
-                            ? Color(0x60FF7672)
-                            : Color(0xFFEC295D),
+                        color: ( ratio > 50) ? Color(0x60FF7672) : Color(0xFFEC295D),
                         shape: BoxShape.circle,
                       ),
                     );
@@ -2228,36 +2031,29 @@ class _DetailedMonthlyConversationViewState
               ),
             ),
             const SizedBox(height: 8.0),
-            if (_selectedDay != null) ...[
-              // _selectedDay가 null이 아니면 실행
+            if (_selectedDay != null) ...[ // _selectedDay가 null이 아니면 실행
               Padding(
                 padding: const EdgeInsets.all(16.0), // 모든 방향에 16.0의 패딩 추가
                 child: Align(
                   alignment: Alignment.centerLeft, // 왼쪽 정렬
                   child: Text(
                     '${_selectedDay!.year}년 ${_selectedDay!.month}월 ${_selectedDay!.day}일', // 선택된 날짜를 표시
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold), // 텍스트 스타일 설정
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold), // 텍스트 스타일 설정
                   ),
                 ),
               ),
-              ..._getEventsForDay(_selectedDay!).asMap().entries.map((entry) {
-                // 선택된 날짜의 이벤트를 가져와서 맵핑
+              ..._getEventsForDay(_selectedDay!).asMap().entries.map((entry) { // 선택된 날짜의 이벤트를 가져와서 맵핑
                 int index = entry.key; // 현재 이벤트의 인덱스
                 var event = entry.value; // 현재 이벤트 데이터
                 return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      vertical: 8.0, horizontal: 16.0), // 수직 8.0, 수평 16.0 패딩 추가
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0), // 수직 8.0, 수평 16.0 패딩 추가
                   child: ConversationCard(
-                    title: event['title']!, // 이벤트 제목
-                    date: event['date']!, // 이벤트 날짜
-                    duration: event['duration']!, // 이벤트 지속 시간
-                    details: List<String>.from(
-                        event['details'] ?? []), // 이벤트 세부 내용 (없으면 빈 리스트)
+                    title: event['title'] ?? '', // 이벤트 제목
+                    // date: event['date']!, // 이벤트 날짜
+                    // duration: event['duration']!, // 이벤트 지속 시간
+                    // events: List<String>.from(event['details'] ?? []), // 이벤트 세부 내용 (없으면 빈 리스트)
                     isExpanded: _expandedStates[index] ?? false, // 확장 상태
-                    onTap: () =>
-                        _toggleExpanded(index), // 카드 탭 시 확장/축소 상태 변경 함수 호출
+                    onTap: () => _toggleExpanded(index), // 카드 탭 시 확장/축소 상태 변경 함수 호출
                   ),
                 );
               }).toList(), // 맵핑된 이벤트 리스트를 반환
@@ -2271,18 +2067,18 @@ class _DetailedMonthlyConversationViewState
 
 class ConversationCard extends StatelessWidget {
   final String title;
-  final String date;
-  final String duration;
-  final List<String> details; // 수정된 부분
+  // final String date;
+  // final String duration;
+  // final List<String> details; // 수정된 부분
   final bool isExpanded;
   final VoidCallback onTap;
 
   const ConversationCard({
     Key? key,
     required this.title,
-    required this.date,
-    required this.duration,
-    required this.details,
+    // required this.date,
+    // required this.duration,
+    // required this.details,
     required this.isExpanded,
     required this.onTap,
   }) : super(key: key);
@@ -2298,13 +2094,13 @@ class ConversationCard extends StatelessWidget {
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(date),
+                // Text(date),
                 SizedBox(height: 4),
                 Row(
                   children: [
                     Icon(Icons.access_time, size: 14),
                     SizedBox(width: 4),
-                    Text(duration),
+                    // Text(duration),
                   ],
                 ),
               ],
@@ -2317,7 +2113,7 @@ class ConversationCard extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: details.map((detail) => Text(detail)).toList(),
+                // children: details.map((detail) => Text(detail)).toList(),
               ),
             ),
         ],

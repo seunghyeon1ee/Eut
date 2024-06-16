@@ -127,6 +127,12 @@ class _VerificationWidgetState extends State<VerificationWidget> {
         _verificationId = verificationId;
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('인증번호 발송')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('인증번호 발송')));
+        startTimer();
+        setState(() {
+          _isTextFieldVisible = true;
+        });
       },
       codeAutoRetrievalTimeout: (String verificationId) {
         _verificationId = verificationId;
