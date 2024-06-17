@@ -575,6 +575,8 @@ class _WeekViewState extends State<WeekView> {
   final DateTime today = DateTime.now();
   bool isLoading = true;
   Map<String, dynamic>? weeklyData;
+  List<double> screenTimeWeekly = [];
+  List<double> negativeExpRate = [];
 
   @override
   void initState() {
@@ -623,6 +625,65 @@ class _WeekViewState extends State<WeekView> {
         weekDays.add(_getWeekdayLabel(day.weekday));
       }
     }
+    List<double> useTimeList = [];
+    List<double> negativeExpRateList = [];
+
+    /// 요일에 맞게 데이터 정렬
+    if (weeklyData != null) {
+      /// 주간 사용 시간
+      if (weeklyData!['screenTimeWeekly'] != null &&
+          weeklyData!['screenTimeWeekly'] is Map<String, dynamic>) {
+        useTimeList = (weeklyData!['screenTimeWeekly'] as Map<String, dynamic>)
+            .values
+            .map((e) => e is num ? (e / 3600.0).toDouble() : 0.0)
+            .map((hours) => double.parse(hours.toStringAsFixed(1)))
+            .toList();
+      }
+
+      /// 주간 부정 표현 비율
+      if (weeklyData!['negativeExpRate'] != null &&
+          weeklyData!['negativeExpRate'] is Map<String, dynamic>) {
+        negativeExpRateList =
+            (weeklyData!['negativeExpRate'] as Map<String, dynamic>)
+                .values
+                .map((e) => e is num ? e.toDouble() : 0.0)
+                .toList();
+      }
+    }
+    for (String i in weekDays) {
+      if (i == '월') {
+        screenTimeWeekly.add(useTimeList[0]);
+        negativeExpRate.add(negativeExpRateList[0]);
+      } else if (i == '화') {
+        screenTimeWeekly.add(useTimeList[1]);
+        negativeExpRate.add(negativeExpRateList[1]);
+      } else if (i == '수') {
+        screenTimeWeekly.add(useTimeList[2]);
+        negativeExpRate.add(negativeExpRateList[2]);
+      } else if (i == '목') {
+        screenTimeWeekly.add(useTimeList[3]);
+        negativeExpRate.add(negativeExpRateList[3]);
+      } else if (i == '금') {
+        screenTimeWeekly.add(useTimeList[4]);
+        negativeExpRate.add(negativeExpRateList[4]);
+      } else if (i == '토') {
+        screenTimeWeekly.add(useTimeList[5]);
+        negativeExpRate.add(negativeExpRateList[5]);
+      } else if (i == '일') {
+        screenTimeWeekly.add(useTimeList[6]);
+        negativeExpRate.add(negativeExpRateList[6]);
+      }
+      if (i == '오늘') {
+        final date = DateTime.now();
+        screenTimeWeekly.add(useTimeList[date.weekday - 1]);
+        negativeExpRate.add(negativeExpRateList[date.weekday - 1]);
+      }
+    }
+
+    setState(() {
+      screenTimeWeekly;
+      negativeExpRate;
+    });
     return weekDays;
   }
 
@@ -664,33 +725,11 @@ class _WeekViewState extends State<WeekView> {
     String emotionDescription = topEmotion + '한 한 주를 보내셨습니다!';
     List<String> xLabels = _generateWeekDays();
 
-    List<double> screenTimeWeekly = [];
-    List<double> negativeExpRate = [];
     double avgHours = 0.0;
     // String topEmotion = '';
     double topEmotionScore = 0.0;
     double changeHours = 0.0;
-
     if (weeklyData != null) {
-      if (weeklyData!['screenTimeWeekly'] != null &&
-          weeklyData!['screenTimeWeekly'] is Map<String, dynamic>) {
-        screenTimeWeekly =
-            (weeklyData!['screenTimeWeekly'] as Map<String, dynamic>)
-                .values
-                .map((e) => e is num ? (e / 3600.0).toDouble() : 0.0)
-                .map((hours) => double.parse(hours.toStringAsFixed(1)))
-                .toList();
-      }
-
-      if (weeklyData!['negativeExpRate'] != null &&
-          weeklyData!['negativeExpRate'] is Map<String, dynamic>) {
-        negativeExpRate =
-            (weeklyData!['negativeExpRate'] as Map<String, dynamic>)
-                .values
-                .map((e) => e is num ? e.toDouble() : 0.0)
-                .toList();
-      }
-
       if (weeklyData!['avgUsageTimeSecond'] != null &&
           weeklyData!['avgUsageTimeSecond'] is num) {
         avgHours = (weeklyData!['avgUsageTimeSecond'] as num) / 3600.0;
