@@ -577,6 +577,7 @@ class _WeekViewState extends State<WeekView> {
   Map<String, dynamic>? weeklyData;
   List<double> screenTimeWeekly = [];
   List<double> negativeExpRate = [];
+  List<String> xLabels = [];
 
   @override
   void initState() {
@@ -604,6 +605,7 @@ class _WeekViewState extends State<WeekView> {
         setState(() {
           weeklyData = responseBody['result'];
           isLoading = false;
+          xLabels = _generateWeekDays();
         });
       } else {
         throw Exception(
@@ -680,10 +682,10 @@ class _WeekViewState extends State<WeekView> {
       }
     }
 
-    setState(() {
-      screenTimeWeekly;
-      negativeExpRate;
-    });
+    // setState(() {
+    //   screenTimeWeekly;
+    //   negativeExpRate;
+    // });
     return weekDays;
   }
 
@@ -723,7 +725,6 @@ class _WeekViewState extends State<WeekView> {
     print('topEmotion: ${weeklyData?['avgEmotion']['maxScore']}');
     print('topEmotion: ${weeklyData}');
     String emotionDescription = topEmotion + '한 한 주를 보내셨습니다!';
-    List<String> xLabels = _generateWeekDays();
 
     double avgHours = 0.0;
     // String topEmotion = '';
