@@ -84,6 +84,7 @@ class _DayViewState extends State<DayView> {
   final DateTime today = DateTime.now();
   bool isLoading = true;
   Map<String, dynamic> apiData = {};
+  int _currentPage = 0;
 
   Future<void> fetchData() async {
     // DateTime 객체를 yyyy-MM-dd 형식의 문자열로 변환
@@ -116,6 +117,7 @@ class _DayViewState extends State<DayView> {
             'Data fetch was successful but returned an unexpected code or message');
       }
     } else {
+      print(utf8.decode(response.bodyBytes));
       throw Exception('Failed to load data');
     }
   }
@@ -137,8 +139,6 @@ class _DayViewState extends State<DayView> {
 
     List<String> afternoonConversations =
         List<String>.from(apiData['summaryEvening']);
-
-    int _currentPage = 0;
 
     return SafeArea(
       child: SingleChildScrollView(
@@ -170,6 +170,7 @@ class _DayViewState extends State<DayView> {
             ExpandablePageView.builder(
               itemCount: 2,
               onPageChanged: (index) {
+                print('on page changed index: $index');
                 setState(() {
                   _currentPage = index;
                 });
@@ -188,6 +189,8 @@ class _DayViewState extends State<DayView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(2, (index) {
+                print('current index: $index');
+                print('current page: $_currentPage');
                 return Container(
                   margin: const EdgeInsets.symmetric(horizontal: 3.0),
                   width: 8.0,
@@ -653,7 +656,7 @@ class _WeekViewState extends State<WeekView> {
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-
+    print('weeklyData: $weeklyData');
     String topEmotion =
         weeklyData?['avgEmotion']['maxScore']?.keys.first ?? '평범';
     print('topEmotion: ${weeklyData?['avgEmotion']['maxScore']}');
@@ -838,7 +841,7 @@ class _WeekViewState extends State<WeekView> {
                 data: screenTimeWeekly,
                 xLabels: xLabels,
                 yInterval: 2,
-                yMax: 12,
+                yMax: 6,
                 showGradient: true,
                 gradientColors: [
                   Colors.pink.withOpacity(0.5),
