@@ -102,12 +102,11 @@ class _DayViewState extends State<DayView> {
       },
     );
 
-    print(utf8.decode(response.bodyBytes));
-
     if (response.statusCode == 200) {
       final responseData = json.decode(utf8.decode(response.bodyBytes));
       if (responseData['code'] == "0000" &&
           responseData['message'] == "SUCCESS") {
+        print(responseData['result']['sentimentAnalysis']);
         setState(() {
           apiData = responseData['result'];
           isLoading = false;
@@ -1219,8 +1218,10 @@ class MoodRanking extends StatelessWidget {
   };
 
   Future<List<Map<String, dynamic>>> fetchEmotionData() async {
-    String date = '2024-06-12';
-    // String date = DateTime.now().toIso8601String().split('T')[0]; // 오늘 날짜를 yyyy-mm-dd 형식으로 변환
+    // String date = '2024-06-12';
+    String date = DateTime.now()
+        .toIso8601String()
+        .split('T')[0]; // 오늘 날짜를 yyyy-mm-dd 형식으로 변환
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String? accessToken = prefs.getString('access_token'); // 저장된 액세스 토큰을 가져옵니다.
 
@@ -1238,6 +1239,7 @@ class MoodRanking extends StatelessWidget {
       if (responseBody['code'] == "0000" &&
           responseBody['message'] == "SUCCESS") {
         // 데이터 처리
+
         final data = responseBody['result']['sentimentAnalysis'];
         return List<Map<String, dynamic>>.from(data.map((item) => {
               'percentage': item['score'],
@@ -1271,7 +1273,7 @@ class MoodRanking extends StatelessWidget {
         } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text('No data available'));
         }
-
+        print('getData ${snapshot.data}');
         List<Map<String, dynamic>> emotionData = snapshot.data!;
         emotionData.sort((a, b) => b['percentage'].compareTo(a['percentage']));
         List<Map<String, dynamic>> topThreeEmotions =
