@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:simple_ripple_animation/simple_ripple_animation.dart';
 import 'package:taba_app_proj/chatbot/greeting.dart';
+import 'package:taba_app_proj/chatbot/select_image.dart';
 
 
 void main() {
@@ -54,23 +55,60 @@ class Chat1 extends StatelessWidget {
 }
 
 class RippleEffectPage extends StatelessWidget {
+  final String imagePath;
+
+  RippleEffectPage({required this.imagePath});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: RippleAnimation(
-          repeat: true,
-          color: Color(0xFFFF7672),
-          minRadius: 90,
-          ripplesCount: 6,
-          child: ClipOval(
-            child: SvgPicture.asset('assets/botboy.svg',
-            width: 120, height: 120, fit: BoxFit.cover),
-          ),
-          // duration: const Duration(milliseconds: 6 * 300),
-          // delay: const Duration(milliseconds: 300),
+        child: GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => SelectImagePage(),
+              ),
+            );
+          },
+          child: RippleAnimation(
+            repeat: true,
+            color: Color(0xFFFF7672),
+            minRadius: 90,
+            ripplesCount: 6,
+            child: ClipOval(
+              child: SvgPicture.asset(
+                'assets/botboy.svg',
+                width: 120,
+                height: 120,
+                fit: BoxFit.cover,
               ),
             ),
+          ),
+        ),
+      ),
     );
   }
 }
+// class RippleEffectPage extends StatelessWidget {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       body: Center(
+//         child: RippleAnimation(
+//           repeat: true,
+//           color: Color(0xFFFF7672),
+//           minRadius: 90,
+//           ripplesCount: 6,
+//           child: ClipOval(
+//             child: SvgPicture.asset('assets/botboy.svg',
+//             width: 120, height: 120, fit: BoxFit.cover),
+//           ),
+//           // duration: const Duration(milliseconds: 6 * 300),
+//           // delay: const Duration(milliseconds: 300),
+//               ),
+//             ),
+//     );
+//   }
+// }
