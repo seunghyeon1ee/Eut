@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:taba_app_proj/chatbot/chat1.dart';
+import 'chat1.dart';
 import 'edit_image_page.dart';
 import 'image_item.dart';
+import 'create_image_page.dart';
 
 class SelectImagePage extends StatefulWidget {
   @override
@@ -14,8 +15,8 @@ class _SelectImagePageState extends State<SelectImagePage> {
     ImageItem(imagePath: 'assets/botboy.png', name: '김영희'),
     ImageItem(imagePath: 'assets/image1.png', name: '김철수'),
   ];
-  int? selectedIndex = 0; // 초기 선택된 이미지의 인덱스 설정
-  bool isEditing = false; // 수정 모드 상태 변수
+  int? selectedIndex = 0;
+  bool isEditing = false;
 
   void _onImageTap(int index) {
     if (!isEditing) {
@@ -45,6 +46,19 @@ class _SelectImagePageState extends State<SelectImagePage> {
     );
   }
 
+  void _onAddButtonTap() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CreateImagePage(onImageCreated: (newImageItem) {
+          setState(() {
+            imageItems.add(newImageItem);
+          });
+        }),
+      ),
+    );
+  }
+
   Widget _buildImageItem(int index) {
     return GestureDetector(
       onTap: () => _onImageTap(index),
@@ -65,8 +79,8 @@ class _SelectImagePageState extends State<SelectImagePage> {
                 opacity: isEditing ? 0.3 : 1.0,
                 child: Image.asset(
                   imageItems[index].imagePath,
-                  width: 150, // 원하는 크기로 설정
-                  height: 150, // 원하는 크기로 설정
+                  width: 150,
+                  height: 150,
                 ),
               ),
             ),
@@ -114,17 +128,20 @@ class _SelectImagePageState extends State<SelectImagePage> {
   }
 
   Widget _buildAddButton() {
-    return Container(
-      margin: EdgeInsets.all(8.0),
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-        borderRadius: BorderRadius.circular(8.0),
-      ),
-      child: Center(
-        child: Icon(
-          Icons.add,
-          size: 50,
-          color: Colors.grey,
+    return GestureDetector(
+      onTap: _onAddButtonTap,
+      child: Container(
+        margin: EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          color: Colors.grey[300],
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: Center(
+          child: Icon(
+            Icons.add,
+            size: 50,
+            color: Colors.grey,
+          ),
         ),
       ),
     );
