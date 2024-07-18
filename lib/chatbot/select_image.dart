@@ -59,6 +59,40 @@ class _SelectImagePageState extends State<SelectImagePage> {
     );
   }
 
+  void _onDeleteIconTap(int index) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('삭제 확인'),
+          content: Text('정말로 삭제하시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('취소'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  imageItems.removeAt(index);
+                  if (selectedIndex == index && imageItems.isNotEmpty) {
+                    selectedIndex = index == imageItems.length ? index - 1 : index;
+                  } else if (imageItems.isEmpty) {
+                    selectedIndex = null;
+                  }
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('삭제'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildImageItem(int index) {
     return GestureDetector(
       onTap: () => _onImageTap(index),
@@ -85,6 +119,23 @@ class _SelectImagePageState extends State<SelectImagePage> {
               ),
             ),
           ),
+          if (isEditing)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: () => _onDeleteIconTap(index),
+                child: CircleAvatar(
+                  radius: 15,
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.delete,
+                    color: Colors.red,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
           if (isEditing)
             Positioned.fill(
               child: Align(

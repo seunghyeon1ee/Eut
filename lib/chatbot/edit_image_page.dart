@@ -19,15 +19,22 @@ class EditImagePage extends StatefulWidget {
 
 class _EditImagePageState extends State<EditImagePage> {
   late String _name;
-  late PageController _pageController;
   late int _currentIndex;
+  late String _imagePath;
+  late PageController _pageController;
+  List<String> _imagePaths = [
+    'assets/botboy.png',
+    'assets/image1.png',
+    'assets/image2.png',
+  ];
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
     _name = widget.imageItems[_currentIndex].name;
-    _pageController = PageController(initialPage: _currentIndex);
+    _imagePath = widget.imageItems[_currentIndex].imagePath;
+    _pageController = PageController(initialPage: _imagePaths.indexOf(_imagePath));
   }
 
   void _editName() {
@@ -62,6 +69,13 @@ class _EditImagePageState extends State<EditImagePage> {
         );
       },
     );
+  }
+
+  void _onImageChanged(int index) {
+    setState(() {
+      _imagePath = _imagePaths[index];
+      widget.imageItems[_currentIndex].imagePath = _imagePath;
+    });
   }
 
   @override
@@ -103,17 +117,11 @@ class _EditImagePageState extends State<EditImagePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // 이미지 선택 PageView
             Expanded(
               child: PageView.builder(
                 controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentIndex = index;
-                    _name = widget.imageItems[_currentIndex].name;
-                  });
-                },
-                itemCount: widget.imageItems.length,
+                onPageChanged: _onImageChanged,
+                itemCount: _imagePaths.length,
                 itemBuilder: (context, index) {
                   return Container(
                     width: 200,
@@ -124,7 +132,7 @@ class _EditImagePageState extends State<EditImagePage> {
                     ),
                     child: Center(
                       child: Image.asset(
-                        widget.imageItems[index].imagePath,
+                        _imagePaths[index],
                         width: 150,
                         height: 150,
                       ),
