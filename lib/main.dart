@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taba_app_proj/chatbot/chat_test.dart';
 import 'package:taba_app_proj/screen/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:taba_app_proj/screen/register_elder_fin.dart';
 import 'package:taba_app_proj/screen/stastics.dart';
 import 'package:taba_app_proj/screentime.dart';
 import 'chatbot/chat1.dart';
@@ -60,7 +61,7 @@ class App extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       // home: StatisticsScreen(),
-      home:SelectImagePage()// HomeScreen(accessToken: accessToken),
+      home: HomeScreen(accessToken: accessToken),
       //homescreen 대신 다른 이미지들 넣어서 확인
     );
   }
