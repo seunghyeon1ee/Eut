@@ -61,7 +61,7 @@ class App extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       // home: StatisticsScreen(),
-      home: HomeScreen(accessToken: accessToken),
+      home:MyApp2()//HomeScreen(accessToken: accessToken),
       //homescreen 대신 다른 이미지들 넣어서 확인
     );
   }
