@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:async';
 import 'image_item.dart';  // Import the ImageItem class
+import 'package:responsive_builder/responsive_builder.dart';
+
 
 class EditImagePage extends StatefulWidget {
   final List<ImageItem> imageItems;
@@ -112,7 +114,16 @@ class _EditImagePageState extends State<EditImagePage> {
           ),
         ),
       ),
-      body: Padding(
+      body: ScreenTypeLayout(
+        mobile: _buildContent(),
+        tablet: _buildContent(),
+        desktop: _buildContent(),
+      ),
+    );
+    }
+
+    Widget _buildContent() {
+    return Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -177,7 +188,6 @@ class _EditImagePageState extends State<EditImagePage> {
               ),
             ),
           ],
-        ),
       ),
     );
   }
@@ -300,3 +310,10 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
     );
   }
 }
+
+// class ImageItem {
+//   String imagePath;
+//   String name;
+//
+//   ImageItem({required this.imagePath, required this.name});
+// }

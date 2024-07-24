@@ -10,6 +10,8 @@ import 'package:http/http.dart' as http;
 import 'package:taba_app_proj/screen/stastics.dart';
 import 'dart:async';
 
+import 'package:responsive_builder/responsive_builder.dart';
+
 class MyApp3 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -353,7 +355,9 @@ class _VerificationWidgetState extends State<VerificationWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return ResponsiveBuilder(
+        builder: (context, sizingInformation) {
+          return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -643,7 +647,9 @@ class _VerificationWidgetState extends State<VerificationWidget> {
             ),
           ),
         ],
-      ),
+          ),
+      );
+        },
     );
   }
 }

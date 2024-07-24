@@ -17,6 +17,8 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao_user;
 
+import 'package:responsive_builder/responsive_builder.dart';
+
 class MyApp2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -177,6 +179,11 @@ class _VerificationWidgetState extends State<VerificationWidget> {
       } else {
         _timer?.cancel();
         // todo 타이머가 0이 되었을 때 수행할 동작 추가
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("인증번호 유효시간이 만료되었습니다. 다시 시도해주세요.")));
+        setState(() {
+          _isTextFieldVisible = false;
+          _remainingTime = 300; // 타이머 초기화
+        });
       }
     });
   }
@@ -381,6 +388,12 @@ class _VerificationWidgetState extends State<VerificationWidget> {
 
   @override
   Widget build(BuildContext context) {
+    return ScreenTypeLayout(
+      mobile: _buildMobileLayout(),
+    );
+  }
+
+  Widget _buildMobileLayout() {
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
