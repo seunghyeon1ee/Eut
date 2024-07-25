@@ -19,8 +19,10 @@ import 'chatbot/select_image.dart';
 import 'controller/fcm_controller.dart';
 import 'firebase_options.dart';
 import 'package:taba_app_proj/screentime.dart';
+import 'package:responsive_builder/responsive_builder.dart';
 
 part 'notification_config.dart';
+
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -61,7 +63,18 @@ class App extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       // home: StatisticsScreen(),
-      home:MyApp2()//HomeScreen(accessToken: accessToken),
+      home: ResponsiveBuilder(
+        builder: (context, sizingInformation) {
+          if (sizingInformation.deviceScreenType == DeviceScreenType.mobile) {
+            return MyApp2();
+          } else if (sizingInformation.deviceScreenType == DeviceScreenType.tablet) {
+            return HomeScreen(accessToken: accessToken);
+          } else {
+            return HomeScreen(accessToken: accessToken); // 다른 레이아웃을 원할 경우 수정
+          }
+        },
+      ),
+      //HomeScreen(accessToken: accessToken),
       //homescreen 대신 다른 이미지들 넣어서 확인
     );
   }

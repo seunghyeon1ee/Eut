@@ -4,6 +4,7 @@ import 'chat1.dart';
 import 'edit_image_page.dart';
 import 'image_item.dart';
 import 'create_image_page.dart';
+import 'package:responsive_builder/responsive_builder.dart';
 
 class SelectImagePage extends StatefulWidget {
   @override
@@ -226,13 +227,15 @@ class _SelectImagePageState extends State<SelectImagePage> {
                             ),
                           );
                         },
-                        child: SvgPicture.asset('assets/icon_eut.svg', height: 80),
+                        child: SvgPicture.asset(
+                            'assets/icon_eut.svg', height: 80),
                       ),
                     ],
                   ),
                   TextButton.icon(
                     icon: Icon(isEditing ? Icons.check : Icons.edit),
-                    label: Text(isEditing ? '완료' : '수정하기', style: TextStyle(color: Colors.black)),
+                    label: Text(isEditing ? '완료' : '수정하기',
+                        style: TextStyle(color: Colors.black)),
                     onPressed: () {
                       setState(() {
                         isEditing = !isEditing;
@@ -253,12 +256,12 @@ class _SelectImagePageState extends State<SelectImagePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                children: List.generate(
+        child: ResponsiveBuilder(
+          builder: (context, sizingInformation) {
+            return GridView.count(
+              crossAxisCount: sizingInformation.deviceScreenType ==
+                  DeviceScreenType.mobile ? 2 : 4,
+              children: List.generate(
                   isEditing ? imageItems.length : imageItems.length + 1,
                       (index) {
                     if (index < imageItems.length) {
@@ -266,13 +269,15 @@ class _SelectImagePageState extends State<SelectImagePage> {
                     } else {
                       return _buildAddButton();
                     }
-                  },
-                ),
+                  }
               ),
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
   }
 }
+
+// sizingInformation.deviceScreenType 을 사용해 화면 크기에 따라 'crossAxisCount' 값을 조정하여
+// 이미지 그리드가 모바일 장치에서는 2열, 태블릿 및 데스크탑 장치에서는 4열로 표시되도록 설정

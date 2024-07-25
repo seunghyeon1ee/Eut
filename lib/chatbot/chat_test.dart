@@ -17,6 +17,9 @@ import 'package:http_parser/http_parser.dart';
 
 import '../controller/fcm_controller.dart';
 
+import 'package:responsive_builder/responsive_builder.dart';
+
+
 class ChatTest extends StatefulWidget {
   const ChatTest({super.key});
 
@@ -251,24 +254,44 @@ class _ChatTestState extends State<ChatTest> {
     // );
     return SafeArea(
       child: Scaffold(
-        body: Padding(
-          padding: EdgeInsets.all(20),
+        body: ScreenTypeLayout.builder(
+            mobile: (_) => buildContent(context),
+            tablet: (_) => buildContent(context),
+            desktop: (_) => buildContent(context, isDesktop: true),
+        ),
+        floatingActionButton: IconButton(
+          icon: SvgPicture.asset(
+            imagePath,
+            width: 110,
+            height: 110,
+          ),
+          onPressed: _toggleRecording,
+          iconSize: 64.0,
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      ),
+        );
+  }
+
+  Widget buildContent(BuildContext context, {bool isDesktop = false}) {
+    return Padding(
+          padding: EdgeInsets.all(isDesktop ? 40:20),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              SizedBox(height: 40),
+              SizedBox(height: isDesktop ? 80:40),
               Text(
                 greetingMessage,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.black,
-                  fontSize: 22,
+                  fontSize: isDesktop ? 28: 22,
                   fontFamily: 'Noto Sans',
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              SizedBox(height: 80),
+              SizedBox(height: isDesktop ? 160:80),
               // Row(
               //  mainAxisAlignment: MainAxisAlignment.center,
               //  children: [
@@ -293,13 +316,13 @@ class _ChatTestState extends State<ChatTest> {
                   RippleAnimation(
                     repeat: true,
                     color: Color(0xFFFF7672),
-                    minRadius: 90,
+                    minRadius: isDesktop ? 180:90,
                     ripplesCount: 6,
                     child: ClipOval(
                       child: Image.asset(
                           emotionImages[topEmotion] ?? 'assets/neutral.png',
-                          width: 350,
-                          height: 350,
+                          width: isDesktop ? 700:350,
+                          height: isDesktop ? 700:350,
                           fit: BoxFit.cover),
                     ),
                     // duration: const Duration(milliseconds: 6 * 300),
@@ -325,7 +348,7 @@ class _ChatTestState extends State<ChatTest> {
               //     ),
               //   ),
               // ),
-              SizedBox(height: 50),
+              SizedBox(height: isDesktop ? 100:50),
 
               // SizedBox(height: 50),
               // Text(_sttResult, style: TextStyle(fontSize: 20)),
@@ -342,18 +365,6 @@ class _ChatTestState extends State<ChatTest> {
               // SvgPicture.asset('assets/record_icon.svg'),
             ],
           ),
-        ),
-        floatingActionButton: IconButton(
-          icon: SvgPicture.asset(
-            imagePath,
-            width: 110,
-            height: 110,
-          ),
-          onPressed: _toggleRecording,
-          iconSize: 64.0,
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      ),
-    );
+        );
   }
 }

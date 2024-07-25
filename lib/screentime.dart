@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import 'package:responsive_builder/responsive_builder.dart';
 
-  
-  class Screentime extends StatefulWidget {
+
+
+class Screentime extends StatefulWidget {
   @override
   State<Screentime> createState() => _ScreentimeState();
 }
@@ -23,7 +25,32 @@ class _ScreentimeState extends State<Screentime> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: Padding(
+        body: ResponsiveBuilder(
+        builder: (context, sizingInformation) {
+      double containerWidth;
+      double containerHeight;
+      double fontSize;
+      EdgeInsetsGeometry padding;
+
+      if (sizingInformation.isMobile) {
+        containerWidth = 350;
+        containerHeight = 500;
+        fontSize = 16;
+        padding = EdgeInsets.all(20);
+      } else if (sizingInformation.isTablet) {
+        containerWidth = 400;
+        containerHeight = 600;
+        fontSize = 18;
+        padding = EdgeInsets.all(30);
+      } else {
+        containerWidth = 600;
+        containerHeight = 800;
+        fontSize = 20;
+        padding = EdgeInsets.all(40);
+      }
+
+
+      return  Padding(
           padding: EdgeInsets.all(20),
           child:
         Column(
@@ -100,7 +127,9 @@ class _ScreentimeState extends State<Screentime> {
               ),
     ),
         ],
-      ),
+        ),
+      );
+        },
       ),
       ),
     );
