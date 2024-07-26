@@ -46,7 +46,7 @@ dependencies:
   get: ^4.6.6
   firebase_messaging: ^15.0.1
   responsive_builder:
-
+  sign_in_with_apple: ^5.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
