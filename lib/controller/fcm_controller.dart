@@ -122,7 +122,8 @@ class FcmController extends GetxController {
   ///FCM 푸시 클릭 핸들링
   void _handleMessage(RemoteMessage message) async {
     debugPrint("in handleMessage : ${message.toMap()}");
-    Get.to(ChatTest());
+    Get.to(ChatTest(imagePath: 'assets/sample.png',
+      emotionImages: {},));
     if (message.data['pushType'] != null &&
         message.data['pushType'].toString().isNotEmpty) {
       // if (message.data['referenceValue'] != null) {

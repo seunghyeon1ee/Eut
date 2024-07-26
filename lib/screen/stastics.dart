@@ -8,7 +8,7 @@ import 'package:table_calendar/table_calendar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'package:responsive_builder/responsive_builder.dart';
+
 
 // 2. Statistics 클래스
 class Statistics extends StatelessWidget {

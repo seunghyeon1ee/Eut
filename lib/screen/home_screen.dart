@@ -29,7 +29,8 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
       debugPrint('A new onMessageOpenedApp event was published!');
-      await Get.to(ChatTest());
+      await Get.to(ChatTest(imagePath: 'assets/sample.png',
+        emotionImages: {},));
     });
   }
 
@@ -45,7 +46,8 @@ class _HomeScreenState extends State<HomeScreen> {
         debugPrint(
             'did Notification Launch App: ${details.notificationResponse?.payload}');
 
-        Get.to(ChatTest());
+        Get.to(ChatTest(imagePath: 'assets/sample.png',
+          emotionImages: {},));
 
         if (details.notificationResponse?.payload != null) {}
       }

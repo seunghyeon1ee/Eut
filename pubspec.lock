@@ -49,6 +49,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
+  audioplayers:
+    dependency: "direct dev"
+    description:
+      name: audioplayers
+      sha256: d50acc9659568fe0c14a5fd81ec51cdd5948b5362186572a58d76bc745302202
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.18.3"
   avatar_glow:
     dependency: "direct main"
     description:
@@ -376,7 +384,7 @@ packages:
     source: hosted
     version: "6.0.0"
   flutter_launcher_icons:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: flutter_launcher_icons
       sha256: "526faf84284b86a4cb36d20a5e45147747b7563d921373d4ee0559c54fcdbcea"
@@ -589,10 +597,10 @@ packages:
     dependency: "direct main"
     description:
       name: http
-      sha256: "761a297c042deedc1ffbb156d6e2af13886bb305c2a343a4d972504cd67dd938"
+      sha256: b9c29a161230ee03d3ccf545097fccd9b87a5264228c5d348202e0f0c28f9010
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.1"
+    version: "1.2.2"
   http_parser:
     dependency: "direct main"
     description:

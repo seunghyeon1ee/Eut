@@ -530,7 +530,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                                 Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) => ChatTest()));
+                                        builder: (context) => ChatTest(imagePath: 'assets/sample.png',
+                                          emotionImages: {},)));
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                     content: Text("회원가입 실패, 다시 시도해주세요")));

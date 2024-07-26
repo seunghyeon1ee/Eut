@@ -16,6 +16,7 @@ import 'package:taba_app_proj/screen/register_fam_fin.dart';
 import 'package:taba_app_proj/screen/stastics.dart';
 import 'package:taba_app_proj/screentime.dart';
 import 'chatbot/chat1.dart';
+import 'chatbot/edit_image_page.dart';
 import 'chatbot/select_image.dart';
 import 'controller/fcm_controller.dart';
 import 'firebase_options.dart';
@@ -67,7 +68,9 @@ class App extends StatelessWidget {
       home: ResponsiveBuilder(
         builder: (context, sizingInformation) {
           if (sizingInformation.deviceScreenType == DeviceScreenType.mobile) {
-            return MyApp2();
+            return SelectImagePage();
+            //return ChatTest(imagePath: 'assets/neutral.png',
+             // emotionImages: {},);
           } else if (sizingInformation.deviceScreenType == DeviceScreenType.tablet) {
             return HomeScreen(accessToken: accessToken);
           } else {
