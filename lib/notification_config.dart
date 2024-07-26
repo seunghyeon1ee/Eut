@@ -51,15 +51,12 @@ void onSelectNotification(NotificationResponse notificationResponse) async {
   /// 로컬 푸시가 클릭됨
   /// 여기서 페이로드는 로컬 푸시 띄울 때 등록한 페이로드
   debugPrint('push notification clicked!');
-  Get.to(ChatTest(
-    imagePath: imageItems[index].imagePath,
-    emotionImages: imageItems[index].emotionImages,
-  ));
-
+  Get.to(ChatTest(imagePath: 'assets/neutral.png',
+    emotionImages: {},));
   if (notificationResponse.payload != null &&
       notificationResponse.payload.toString().isNotEmpty) {
     final Map<String, dynamic> payload =
-        jsonDecode(notificationResponse.payload!);
+    jsonDecode(notificationResponse.payload!);
     debugPrint('notificaiton payload: $payload');
   }
   //밑에 푸시 알림 액션 구현
@@ -79,7 +76,7 @@ Future<void> setupFlutterNotifications() async {
     'high_importance_channel', // id
     'High Importance Notifications', // title
     description:
-        'This channel is used for important notifications.', // description
+    'This channel is used for important notifications.', // description
     importance: Importance.high,
     enableVibration: true,
   );
@@ -88,9 +85,9 @@ Future<void> setupFlutterNotifications() async {
 
   ///플랫폼 별 초기화
   const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('app_icon'); //res/drawable/ 에 아이콘.png 만들어야함
+  AndroidInitializationSettings('app_icon'); //res/drawable/ 에 아이콘.png 만들어야함
   final DarwinInitializationSettings initializationSettingsDarwin =
-      DarwinInitializationSettings(
+  DarwinInitializationSettings(
     //퍼미션 리퀘스트 따로하기 위해서 false
     requestSoundPermission: false,
     requestBadgePermission: false,
@@ -124,7 +121,7 @@ Future<void> setupFlutterNotifications() async {
     ],
   );
   final LinuxInitializationSettings initializationSettingsLinux =
-      LinuxInitializationSettings(defaultActionName: 'Open notification');
+  LinuxInitializationSettings(defaultActionName: 'Open notification');
   final InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
@@ -144,7 +141,7 @@ Future<void> setupFlutterNotifications() async {
   /// default FCM channel to enable heads up notifications.
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
+      AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
   /// Update the iOS foreground notification presentation options to allow

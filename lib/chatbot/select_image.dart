@@ -233,6 +233,8 @@ class _SelectImagePageState extends State<SelectImagePage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => ChatTest(
+                                imagePath: 'assets/neutral.png',
+                                emotionImages: {},
                               ),
                             ),
                           );
@@ -242,20 +244,28 @@ class _SelectImagePageState extends State<SelectImagePage> {
                     ],
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    padding: EdgeInsets.all(8.0),
                     decoration: BoxDecoration(
-                      color: Colors.pink,
-                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey, width: 2.0), // Border color and width
+                      borderRadius: BorderRadius.circular(20), // Rounded corners
+                      color: Colors.white, // Background color of the container
                     ),
-                    child: GestureDetector(
-                      onTap: () {
+                    child: TextButton.icon(
+                      icon: Icon(isEditing ? Icons.check : Icons.edit),
+                      label: Text(
+                        isEditing ? '완료' : '수정하기',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      onPressed: () {
                         setState(() {
                           isEditing = !isEditing;
                         });
                       },
-                      child: Text(
-                        isEditing ? '완료' : '편집',
-                        style: const TextStyle(color: Colors.white, fontSize: 18),
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
                       ),
                     ),
                   ),

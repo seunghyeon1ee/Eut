@@ -102,19 +102,19 @@ class FcmController extends GetxController {
     ///파이어 베이스 포어 그라운드 푸시 알림 처리
     _foregroundPushSubscription =
         FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      /// IOS
-      /// 포어에서 notification 이 없거나 null이거나 비어있으면 리스너에서 수신 못함
-      /// notification: {title 또는 body} 가 있어야함
-      debugPrint('Got a message whilst in the foreground!');
-      debugPrint('Message: ${message.toMap()}');
+          /// IOS
+          /// 포어에서 notification 이 없거나 null이거나 비어있으면 리스너에서 수신 못함
+          /// notification: {title 또는 body} 가 있어야함
+          debugPrint('Got a message whilst in the foreground!');
+          debugPrint('Message: ${message.toMap()}');
 
-      /// 안드로이드
-      /// 애는 notification이 없어도 리스너 수신 함
-      /// 포어에서는 FCM으로 못열기 때문에 메세지를 로컬 노티로 열어줌
-      if (Platform.isAndroid) showFlutterNotification(message);
-    }, onDone: () {
-      _foregroundPushSubscription.cancel();
-    }, onError: (e) {});
+          /// 안드로이드
+          /// 애는 notification이 없어도 리스너 수신 함
+          /// 포어에서는 FCM으로 못열기 때문에 메세지를 로컬 노티로 열어줌
+          if (Platform.isAndroid) showFlutterNotification(message);
+        }, onDone: () {
+          _foregroundPushSubscription.cancel();
+        }, onError: (e) {});
 
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
   }
@@ -122,11 +122,8 @@ class FcmController extends GetxController {
   ///FCM 푸시 클릭 핸들링
   void _handleMessage(RemoteMessage message) async {
     debugPrint("in handleMessage : ${message.toMap()}");
-    Get.to(ChatTest(
-      imagePath: imageItems[index].imagePath,
-      emotionImages: imageItems[index].emotionImages,
-    ));
-
+    Get.to(ChatTest(imagePath: 'assets/sample.png',
+      emotionImages: {},));
     if (message.data['pushType'] != null &&
         message.data['pushType'].toString().isNotEmpty) {
       // if (message.data['referenceValue'] != null) {
