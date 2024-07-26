@@ -233,8 +233,6 @@ class _SelectImagePageState extends State<SelectImagePage> {
                             context,
                             MaterialPageRoute(
                               builder: (context) => ChatTest(
-                                imagePath: 'assets/neutral.png',
-                                emotionImages: {},
                               ),
                             ),
                           );
