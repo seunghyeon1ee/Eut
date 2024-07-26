@@ -281,9 +281,8 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
   }
 
   Future<void> _saveRecording() async {
-    final directory = Directory.systemTemp; // Temporary directory
+    final directory = Directory.systemTemp;
     final file = File('${directory.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav');
-    // 더미 데이터로 파일을 생성하는 부분입니다. 실제 녹음 데이터를 여기에 저장해야 합니다.
     await file.writeAsBytes(List.generate(100, (index) => index));
     widget.onAudioFilePathUpdated(file.path);
     ScaffoldMessenger.of(context).showSnackBar(
@@ -331,8 +330,7 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('취소',
-                    style: TextStyle(color: Colors.red, fontSize: 18)),
+                child: Text('취소', style: TextStyle(color: Colors.red, fontSize: 18)),
               ),
               if (isRecording)
                 FloatingActionButton(
@@ -352,8 +350,7 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
                   onPressed: resetRecording,
                 ),
               IconButton(
-                icon: Icon(Icons.send,
-                    color: (isRecorded || isRecording) ? Colors.red : Colors.grey),
+                icon: Icon(Icons.send, color: (isRecorded || isRecording) ? Colors.red : Colors.grey),
                 onPressed: () {
                   // 녹음 파일 저장 기능 추가
                 },
@@ -366,4 +363,3 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
     );
   }
 }
-
