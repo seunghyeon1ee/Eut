@@ -176,7 +176,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
 
   // 부양가족 회원가입을 처리하는 함수
   Future<bool> registerChild(String phone, String email, String parentPhone) async {
-    var url = Uri.parse('http://54.180.229.143:8080/api/v1/join'); // API 엔드포인트 URL
+    var url = Uri.parse('http://3.38.165.93:8080/api/v1/join'); // API 엔드포인트 URL
     var response = await http.post(
       url,
       headers: <String, String>{
@@ -225,7 +225,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   }
 
   Future<bool> loginUser(String phone) async {
-    var url = Uri.parse('http://54.180.229.143:8080/api/v1/login');
+    var url = Uri.parse('http://3.38.165.93:8080/api/v1/login');
     var response = await http.post(
       url,
       headers: <String, String>{

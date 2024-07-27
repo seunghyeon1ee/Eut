@@ -39,7 +39,7 @@ class _ChatTestState extends State<ChatTest> {
   bool _isRecording = false;
   String greetingMessage = 'Loading...';
   String _sttResult = '녹음 버튼을 누르세요.';
-  final String _sttApiUrl = 'http://54.180.229.143:8080/api/v1/chat/stt';
+  final String _sttApiUrl = 'http://3.38.165.93:8080/api/v1/chat/stt';
   final String _ttsApiUrl =
       'https://api.elevenlabs.io/v1/text-to-speech/VDHVV8QN47SSt26Po3BA';
   final String _apiKey = 'cef4d9cb6ac0ca3bf613183df847472c';
@@ -59,7 +59,7 @@ class _ChatTestState extends State<ChatTest> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
     final response = await http.post(
-        Uri.parse('http://54.180.229.143:8080/api/v1/chat/text'),
+        Uri.parse('http://3.38.165.93:8080/api/v1/chat/text'),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',

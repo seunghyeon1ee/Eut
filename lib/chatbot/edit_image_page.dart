@@ -3,8 +3,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'image_item.dart';
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
+import 'dart:convert';
 
 class EditImagePage extends StatefulWidget {
   final List<ImageItem> imageItems;
@@ -108,6 +112,97 @@ class _EditImagePageState extends State<EditImagePage> {
     );
   }
 
+  Future<void> _submitEdit() async {
+    if (_name.isNotEmpty && _audioFilePath != null) {
+      try {
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse('http://3.38.165.93:8080//characters/{characterId}'), // API URL을 여기에 추가하세요
+        );
+
+        request.headers['Content-Type'] = 'multipart/form-data';
+        request.fields['characterName'] = _name;
+
+        // Add voiceFile field if it exists
+        if (_audioFilePath != null) {
+          final file = File(_audioFilePath!);
+          request.files.add(
+            http.MultipartFile.fromBytes(
+              'voiceFile',
+              await file.readAsBytes(),
+              filename: path.basename(file.path),
+              contentType: MediaType('audio', 'mp3'),
+            ),
+          );
+        }
+
+        final response = await request.send();
+        final responseBody = await response.stream.bytesToString();
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(responseBody);
+          final result = data['result'];
+          final characterId = result['characterId']as int?;  // String으로 변환
+          final memberId = result['memberId'] as int?;
+          final characterName = result['characterName'] as String;
+          final voiceId = result['voiceId'] as String;
+
+          // 이미지 아이템 업데이트
+          setState(() {
+            widget.imageItems[_currentIndex] = widget.imageItems[_currentIndex].copyWith(
+              characterId: characterId,
+              memberId: memberId,
+              characterName: characterName,
+              voiceId: voiceId,
+              imagePath: _imagePath,
+            );
+          });
+
+          Navigator.pop(context);
+        } else {
+          _showOverlayMessage(context, '서버 오류가 발생했습니다.');
+        }
+      } catch (e) {
+        _showOverlayMessage(context, '네트워크 오류가 발생했습니다.');
+      }
+    } else {
+      _showOverlayMessage(context, '이름과 음성 파일을 모두 입력해주세요.');
+    }
+  }
+
+  void _showOverlayMessage(BuildContext context, String message) {
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 50,
+        left: 0,
+        right: 0,
+        child: Material(
+          color: Colors.transparent,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+              decoration: BoxDecoration(
+                color: Colors.pink,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                message,
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    Future.delayed(Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,6 +249,11 @@ class _EditImagePageState extends State<EditImagePage> {
         mobile: _buildContent(),
         tablet: _buildContent(),
         desktop: _buildContent(),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _submitEdit,
+        child: Icon(Icons.save),
+        backgroundColor: Colors.blue,
       ),
     );
   }
@@ -284,6 +384,9 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
     final directory = Directory.systemTemp;
     final file = File('${directory.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav');
     await file.writeAsBytes(List.generate(100, (index) => index));
+    setState(() {
+      _recordingFilePath = file.path;
+    });
     widget.onAudioFilePathUpdated(file.path);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('녹음 파일이 저장되었습니다: ${file.path}')),

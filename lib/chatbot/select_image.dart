@@ -1,6 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:responsive_builder/responsive_builder.dart';
+import 'package:http/http.dart' as http;
 import 'create_image_page.dart';
 import 'edit_image_page.dart';
 import 'chat_test.dart';
@@ -12,38 +14,90 @@ class SelectImagePage extends StatefulWidget {
 }
 
 class _SelectImagePageState extends State<SelectImagePage> {
-  List<ImageItem> imageItems = [
-    ImageItem(
-      imagePath: 'assets/neutral_girl.png',
-      name: '김영희',
-      emotionImages: {
-        '슬픔': 'assets/sad_girl.png',
-        '분노': 'assets/angry_girl.png',
-        '당황': 'assets/confused_girl.png',
-        '불안': 'assets/anxious_girl.png',
-        '행복': 'assets/happy_girl.png',
-        '중립': 'assets/neutral_girl.png',
-        '혐오': 'assets/disgusted_girl.png',
-      },
-    ),
-    ImageItem(
-      imagePath: 'assets/neutral.png',
-      name: '김철수',
-      emotionImages: {
-        '슬픔': 'assets/sad.png',
-        '분노': 'assets/angry.png',
-        '당황': 'assets/confused.png',
-        '불안': 'assets/anxious.png',
-        '행복': 'assets/happy.png',
-        '중립': 'assets/neutral.png',
-        '혐오': 'assets/disgusted.png',
-      },
-    ),
-    // 기타 항목 추가
-  ];
-
+  List<ImageItem> imageItems = [];
   int? selectedIndex;
   bool isEditing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCharacterList();
+  }
+
+  Future<void> _fetchCharacterList() async {
+    final response = await http.get(Uri.parse('http://3.38.165.93:8080/characters'));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      final List<dynamic> characters = data['result'];
+
+      setState(() {
+        imageItems = characters.map((character) {
+          final characterId = character['characterId'] as int?;
+          final memberId = character['memberId'] as int?;
+          final characterName = character['characterName'] as String?;
+          final voiceId = character['voiceId'] as String?;
+
+          final imagePath = 'assets/default_image.png';
+          final emotionImages = {
+            '슬픔': 'assets/sad.png',
+            '분노': 'assets/angry.png',
+            '당황': 'assets/confused.png',
+            '불안': 'assets/anxious.png',
+            '행복': 'assets/happy.png',
+            '중립': 'assets/neutral.png',
+            '혐오': 'assets/disgusted.png',
+          };
+
+          return ImageItem(
+            name: characterName ?? '이름 없음',  // 필수로 추가된 필드
+            imagePath: imagePath,
+            characterId: characterId,
+            memberId: memberId,
+            characterName: characterName,
+            voiceId: voiceId,
+            emotionImages: emotionImages,
+          );
+        }).toList();
+      });
+    } else {
+      throw Exception('Failed to load character list');
+    }
+  }
+
+  Future<void> _deleteCharacter(int index) async {
+    final characterId = imageItems[index].characterId;
+    if (characterId == null) {
+      _showErrorMessage('삭제할 캐릭터의 ID가 없습니다.');
+      return;
+    }
+
+    final response = await http.delete(
+      Uri.parse('http://3.38.165.93:8080//characters/{characterId}'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['code'] == '0000') {
+        setState(() {
+          imageItems.removeAt(index);
+          if (selectedIndex == index) {
+            selectedIndex = imageItems.isNotEmpty ? (index > 0 ? index - 1 : null) : null;
+          }
+        });
+      } else {
+        _showErrorMessage('서버 오류: ${data['message']}');
+      }
+    } else {
+      _showErrorMessage('삭제 요청 실패');
+    }
+  }
+
+  void _showErrorMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 
   void _onImageTap(int index) {
     if (isEditing) return;
@@ -73,7 +127,6 @@ class _SelectImagePageState extends State<SelectImagePage> {
         ),
       ),
     ).then((_) {
-      // EditImagePage에서 돌아왔을 때 상태를 업데이트합니다.
       setState(() {});
     });
   }
@@ -107,13 +160,8 @@ class _SelectImagePageState extends State<SelectImagePage> {
             ),
             TextButton(
               onPressed: () {
-                setState(() {
-                  imageItems.removeAt(index);
-                  if (selectedIndex == index) {
-                    selectedIndex = imageItems.isNotEmpty ? (index > 0 ? index - 1 : null) : null;
-                  }
-                });
                 Navigator.of(context).pop();
+                _deleteCharacter(index); // Call the delete function
               },
               child: const Text('삭제'),
             ),
@@ -182,7 +230,7 @@ class _SelectImagePageState extends State<SelectImagePage> {
             left: 8,
             right: 8,
             child: Text(
-              imageItems[index].name,
+              imageItems[index].characterName ?? '이름 없음',  // Null 체크 추가
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.black, fontSize: 16),
             ),
@@ -246,9 +294,9 @@ class _SelectImagePageState extends State<SelectImagePage> {
                   Container(
                     padding: EdgeInsets.all(8.0),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey, width: 2.0), // Border color and width
-                      borderRadius: BorderRadius.circular(20), // Rounded corners
-                      color: Colors.white, // Background color of the container
+                      border: Border.all(color: Colors.grey, width: 2.0),
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white,
                     ),
                     child: TextButton.icon(
                       icon: Icon(isEditing ? Icons.check : Icons.edit),

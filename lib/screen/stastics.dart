@@ -95,7 +95,7 @@ class _DayViewState extends State<DayView> {
     String? accessToken = prefs.getString('access_token');
 
     final response = await http.get(
-      Uri.parse('http://54.180.229.143:8080/api/v1/stat/daily?date=$date'),
+      Uri.parse('http://3.38.165.93:8080/api/v1/stat/daily?date=$date'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Accept': 'application/json',
@@ -249,7 +249,7 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
     String? accessToken = prefs.getString('access_token');
 
     final response = await http.get(
-      Uri.parse('http://54.180.229.143:8080/api/v1/stat/daily?date=$date'),
+      Uri.parse('http://3.38.165.93:8080/api/v1/stat/daily?date=$date'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Accept': 'application/json',
@@ -574,7 +574,7 @@ class _WeekViewState extends State<WeekView> {
     String? accessToken = prefs.getString('access_token');
 
     final response = await http.get(
-        Uri.parse('http://54.180.229.143:8080/api/v1/stat/weekly?date=$date'),
+        Uri.parse('http://3.38.165.93:8080/api/v1/stat/weekly?date=$date'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
@@ -912,7 +912,7 @@ class _MonthViewState extends State<MonthView> {
     String? accessToken = prefs.getString('access_token');
 
     final response = await http.get(
-      Uri.parse('http://54.180.229.143:8080/api/v1/stat/monthly?date=$date'),
+      Uri.parse('http://3.38.165.93:8080/api/v1/stat/monthly?date=$date'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
         'Accept': 'application/json',
@@ -1236,7 +1236,7 @@ class MoodRanking extends StatelessWidget {
     String? accessToken = prefs.getString('access_token');
 
     final response = await http.get(
-        Uri.parse('http://54.180.229.143:8080/api/v1/stat/daily?date=$date'),
+        Uri.parse('http://3.38.165.93:8080/api/v1/stat/daily?date=$date'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
@@ -1578,7 +1578,7 @@ class _DetailedWeeklyConversationViewState
     String? accessToken = prefs.getString('access_token');
 
     final response = await http.get(
-        Uri.parse('http://54.180.229.143:8080/api/v1/stat/daily?date=$date'),
+        Uri.parse('http://3.38.165.93:8080/api/v1/stat/daily?date=$date'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
@@ -2075,7 +2075,7 @@ class _DetailedMonthlyConversationViewState
     String? accessToken = prefs.getString('access_token');
 
     final response = await http.get(
-        Uri.parse('http://54.180.229.143:8080/api/v1/stat/daily?date=$date'),
+        Uri.parse('http://3.38.165.93:8080/api/v1/stat/daily?date=$date'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',
@@ -2111,7 +2111,7 @@ class _DetailedMonthlyConversationViewState
 
     final response = await http.get(
         Uri.parse(
-            'http://54.180.229.143:8080/api/v1/stat/calendar?month=${_focusedDay.month}'),
+            'http://3.38.165.93:8080/api/v1/stat/calendar?month=${_focusedDay.month}'),
         headers: {
           'Accept': 'application/json',
           'Authorization': 'Bearer $accessToken',

@@ -200,7 +200,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   }
 
   Future<bool> registerParent(String phone) async {
-    var url = Uri.parse('http://54.180.229.143:8080/api/v1/join');
+    var url = Uri.parse('http://3.38.165.93:8080/api/v1/join');
     var response = await http.post(
       url,
       headers: <String, String>{
@@ -230,7 +230,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   }
 
   Future<bool> loginUser(String phone) async {
-    var url = Uri.parse('http://54.180.229.143:8080/api/v1/login');
+    var url = Uri.parse('http://3.38.165.93:8080/api/v1/login');
     var response = await http.post(
       url,
       headers: <String, String>{

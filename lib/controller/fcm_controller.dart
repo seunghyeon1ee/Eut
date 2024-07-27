@@ -77,7 +77,7 @@ class FcmController extends GetxController {
     print('accessToken: $accessToken');
 
     var url = Uri.parse(
-        'http://54.180.229.143:8080/api/v1/push/register'); // API 엔드포인트 URL
+        'http://3.38.165.93:8080/api/v1/push/register'); // API 엔드포인트 URL
     var response = await http.post(
       url,
       headers: <String, String>{

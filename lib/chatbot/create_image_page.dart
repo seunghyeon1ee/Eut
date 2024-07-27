@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // SVG 패키지 임포트
 import 'dart:async';
 import 'image_item.dart';
 import 'package:responsive_builder/responsive_builder.dart';
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
+import 'package:http_parser/http_parser.dart';
 
 class CreateImagePage extends StatefulWidget {
   final Function(ImageItem) onImageCreated;
@@ -19,20 +22,67 @@ class _CreateImagePageState extends State<CreateImagePage> {
   final TextEditingController _nameController = TextEditingController();
   String? _selectedImagePath;
   List<String> _imagePaths = [
-    'assets/botboy.png',
-    'assets/image1.png',
-    'assets/image2.png',
+    'assets/neutral.png',
+    'assets/neutral_girl.png',
+    'assets/neutral.png',
   ];
   int _currentIndex = 0;
+  String? _recordingFilePath;
 
-  void _saveImageItem() {
-    if (_selectedImagePath != null && _nameController.text.isNotEmpty) {
-      widget.onImageCreated(
-        ImageItem(imagePath: _selectedImagePath!, name: _nameController.text, emotionImages: {}),
-      );
-      Navigator.pop(context);
+  void _saveImageItem() async {
+    if (_selectedImagePath != null && _nameController.text.isNotEmpty && _recordingFilePath != null) {
+      try {
+        final request = http.MultipartRequest(
+          'POST',
+          Uri.parse('http://3.38.165.93:8080/characters'),
+        );
+        request.headers['Content-Type'] = 'multipart/form-data';
+
+        // Add characterName field
+        request.fields['characterName'] = _nameController.text;
+
+        // Add voiceFile field
+        final file = File(_recordingFilePath!);
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'voiceFile',
+            await file.readAsBytes(),
+            filename: path.basename(file.path),
+            contentType: MediaType('audio', 'mp3'),
+          ),
+        );
+
+        final response = await request.send();
+        final responseBody = await response.stream.bytesToString();
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(responseBody);
+          final result = data['result'];
+          final characterId = result['characterId'] as int;
+          final memberId = result['memberId'] as int;
+          final characterName = result['characterName'] as String;
+          final voiceId = result['voiceId'] as String;
+
+          widget.onImageCreated(
+            ImageItem(
+              name: characterName, // 추가된 필드
+              characterId: characterId,
+              memberId: memberId,
+              characterName: characterName,
+              voiceId: voiceId,
+              imagePath: _selectedImagePath!,
+              emotionImages: {}, // 초기화할 필요가 있다면 설정
+            ),
+          );
+          Navigator.pop(context);
+        } else {
+          _showOverlayMessage(context, '서버 오류가 발생했습니다.');
+        }
+      } catch (e) {
+        _showOverlayMessage(context, '네트워크 오류가 발생했습니다.');
+      }
     } else {
-      _showOverlayMessage(context, '이미지와 이름을 모두 입력해주세요.');
+      _showOverlayMessage(context, '이미지와 이름, 음성 파일을 모두 입력해주세요.');
     }
   }
 
@@ -186,7 +236,9 @@ class _CreateImagePageState extends State<CreateImagePage> {
                 SizedBox(height: 16),
                 VoiceRecordWidget(
                   onAudioFilePathUpdated: (filePath) {
-                    // Handle the audio file path update if needed
+                    setState(() {
+                      _recordingFilePath = filePath;
+                    });
                   },
                 ),
               ],
@@ -250,8 +302,13 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
 
   Future<void> _saveRecording() async {
     final directory = Directory.systemTemp;
-    final file = File('${directory.path}/recording_${DateTime.now().millisecondsSinceEpoch}.wav');
-    await file.writeAsBytes(List.generate(100, (index) => index));
+    final file = File('${directory.path}/recording_${DateTime.now().millisecondsSinceEpoch}.mp3');
+    await file.writeAsBytes(List.generate(100, (index) => index)); // Mock data
+
+    setState(() {
+      _recordingFilePath = file.path;
+    });
+
     widget.onAudioFilePathUpdated(file.path);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('녹음 파일이 저장되었습니다: ${file.path}')),
@@ -320,7 +377,9 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
               IconButton(
                 icon: Icon(Icons.send, color: (isRecorded || isRecording) ? Colors.red : Colors.grey),
                 onPressed: () {
-                  // 녹음 파일 저장 기능 추가
+                  if (isRecorded) {
+                    _saveRecording();
+                  }
                 },
               ),
             ],
