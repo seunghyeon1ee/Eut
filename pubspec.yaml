@@ -24,7 +24,7 @@ dependencies:
   flutter_native_splash: ^2.4.0
   google_sign_in: 6.1.2
   flutter_facebook_auth: ^7.0.1
-  flutter_naver_login: 1.8.0  # 최신 버전으로 업데이트
+  flutter_naver_login: 1.8.0
   kakao_flutter_sdk: 1.9.5
   avatar_glow:
     git:
@@ -46,13 +46,13 @@ dependencies:
   firebase_messaging: ^15.0.1
   responsive_builder: ^0.4.3
   sign_in_with_apple: ^5.0.0
+  audioplayers: ^0.18.3 # 더 낮은 버전으로 조정
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.0
   flutter_launcher_icons: ^0.13.1
-  audioplayers: ^0.18.0
 
 flutter_launcher_icons:
   android: true

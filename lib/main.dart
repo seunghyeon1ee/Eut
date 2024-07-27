@@ -68,7 +68,7 @@ class App extends StatelessWidget {
       home: ResponsiveBuilder(
         builder: (context, sizingInformation) {
           if (sizingInformation.deviceScreenType == DeviceScreenType.mobile) {
-            return SelectImagePage();
+            return HomeScreen();
             //return ChatTest(imagePath: 'assets/neutral.png',
              // emotionImages: {},);
           } else if (sizingInformation.deviceScreenType == DeviceScreenType.tablet) {
