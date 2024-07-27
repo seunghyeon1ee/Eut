@@ -13,10 +13,11 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:http_parser/http_parser.dart';
+import 'package:taba_app_proj/chatbot/select_image.dart';
 
 import '../controller/fcm_controller.dart';
-
 import 'package:responsive_builder/responsive_builder.dart';
+
 
 class ChatTest extends StatefulWidget {
   final String imagePath;
@@ -64,8 +65,7 @@ class _ChatTestState extends State<ChatTest> {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
-          'text':
-          '독거노인에게 안부를 물어보는 말을 걸어줘. 날씨 얘기는 가급적 하지마', // todo 앱 시작 시 챗봇에게 시킬 프롬프트 작성 ex) 독거노인이 관심있을법한 대화주제로 말을 걸어줘
+          'text': '독거노인에게 안부를 물어보는 말을 걸어줘. 날씨 얘기는 가급적 하지마',
         }));
     print('response: ${utf8.decode(response.bodyBytes)}');
     if (response.statusCode == 200) {
@@ -77,7 +77,6 @@ class _ChatTestState extends State<ChatTest> {
           greetingMessage = jsonResponse['result']['response'];
         });
 
-        /// todo 나중에 주석 해제
         textToSpeech(greetingMessage);
       }
     } else {
@@ -94,7 +93,6 @@ class _ChatTestState extends State<ChatTest> {
     if (status != PermissionStatus.granted) {
       throw RecordingPermissionException('녹음 권한 허용되지 않음');
     }
-    // _toggleRecording();
   }
 
   @override
@@ -104,7 +102,6 @@ class _ChatTestState extends State<ChatTest> {
     super.dispose();
   }
 
-  /// 녹음 버튼 클릭
   void _toggleRecording() async {
     if (!_isRecording) {
       await _recorder.startRecorder(
@@ -123,7 +120,6 @@ class _ChatTestState extends State<ChatTest> {
     }
   }
 
-  /// 녹음 완료 후 stt api로 전송
   void _sendAudioFileForTranscription(String path) async {
     print('Sending audio file for transcription...');
     print('path: $path');
@@ -146,17 +142,12 @@ class _ChatTestState extends State<ChatTest> {
       if (response.statusCode == 200) {
         setState(() {
           _sttResult = result['result']['stt_result'];
-          // 가장 높은 score의 label 추출
           topEmotion = result['result']['sentiment_analysis']
               .reduce((a, b) => a['score'] > b['score'] ? a : b)['label'];
           greetingMessage = result['result']['gpt_response'];
         });
-        // _sttResult를 잠깐 보여줌
         showTemporaryMessage(_sttResult);
-        // todo 감정 받는 변수 만들고 표정 변화 (result의 sentiment_analysis 중 score가 가장 높은 것을 temp 변수에 넣고 각 label에 맞는 표정으로 나타내기)
-        // negativeRatio
-        textToSpeech(
-            greetingMessage); // Convert text to speech after transcription
+        textToSpeech(greetingMessage);
       } else {
         setState(() {
           _sttResult = 'STT 작동 중 에러 발생';
@@ -172,12 +163,11 @@ class _ChatTestState extends State<ChatTest> {
   void showTemporaryMessage(String message) {
     final snackBar = SnackBar(
       content: Text(message),
-      duration: const Duration(seconds: 2), // 메시지를 2초간 표시
+      duration: const Duration(seconds: 2),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  /// 챗봇의 응답을 음성으로 변환
   Future<void> textToSpeech(String text) async {
     try {
       var response = await http.post(
@@ -211,7 +201,6 @@ class _ChatTestState extends State<ChatTest> {
     return filePath;
   }
 
-  /// 오디오 파일 재생
   void _playAudio(String filePath) {
     _player.startPlayer(
       fromURI: filePath,
@@ -225,9 +214,8 @@ class _ChatTestState extends State<ChatTest> {
   Widget build(BuildContext context) {
     String recordImagePath =
     _isRecording ? 'assets/record_stop_icon.svg' : 'assets/record_icon.svg';
-    // 감정에 따라 사용할 이미지 세트 선택
     Map<String, String> currentEmotionImages = widget.emotionImages;
-    String emotionImagePath = currentEmotionImages[topEmotion] ?? 'assets/neutral.png'; // topEmotion에 따라 이미지 변경
+    String emotionImagePath = currentEmotionImages[topEmotion] ?? 'assets/neutral.png';
     return SafeArea(
       child: Scaffold(
         body: ScreenTypeLayout.builder(
@@ -267,26 +255,30 @@ class _ChatTestState extends State<ChatTest> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: isDesktop ? 160 : 80),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              RippleAnimation(
-                repeat: true,
-                color: Color(0xFFFF7672),
-                minRadius: isDesktop ? 180 : 90,
-                ripplesCount: 6,
-                child: ClipOval(
-                  child: Image.asset(
-                      emotionImagePath,
-                      width: isDesktop ? 700 : 350,
-                      height: isDesktop ? 700 : 350,
-                      fit: BoxFit.cover),
-                ),
-              ),
-            ],
+          SizedBox(height: isDesktop ? 80 : 20),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SelectImagePage()),
+              );
+            },
+            child: Image.asset(
+              emotionImagePath,
+              width: isDesktop ? 300 : 200,
+              height: isDesktop ? 300 : 200,
+            ),
           ),
-          SizedBox(height: isDesktop ? 100 : 50),
+          SizedBox(height: 20),
+          Text(
+            '현재 감정: $topEmotion',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: isDesktop ? 24 : 18,
+              fontFamily: 'Noto Sans',
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
