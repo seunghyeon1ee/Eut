@@ -15,14 +15,6 @@ void main() {
   );
 }
 
-// class Chat1 extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       home: HomeScreen(),
-//     );
-//   }
-// }
 
 class Chat1 extends StatelessWidget {
   const Chat1({super.key});
@@ -91,24 +83,4 @@ class RippleEffectPage extends StatelessWidget {
     );
   }
 }
-// class RippleEffectPage extends StatelessWidget {
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       body: Center(
-//         child: RippleAnimation(
-//           repeat: true,
-//           color: Color(0xFFFF7672),
-//           minRadius: 90,
-//           ripplesCount: 6,
-//           child: ClipOval(
-//             child: SvgPicture.asset('assets/botboy.svg',
-//             width: 120, height: 120, fit: BoxFit.cover),
-//           ),
-//           // duration: const Duration(milliseconds: 6 * 300),
-//           // delay: const Duration(milliseconds: 300),
-//               ),
-//             ),
-//     );
-//   }
-// }
+

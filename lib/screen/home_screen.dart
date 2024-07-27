@@ -22,6 +22,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  get imageItems => null;
+
+  get index => null;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -29,7 +33,11 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
       debugPrint('A new onMessageOpenedApp event was published!');
-      await Get.to(ChatTest());
+      await Get.to(ChatTest(
+        imagePath: imageItems[index].imagePath,
+        emotionImages: imageItems[index].emotionImages,
+      ));
+
     });
   }
 
@@ -45,7 +53,8 @@ class _HomeScreenState extends State<HomeScreen> {
         debugPrint(
             'did Notification Launch App: ${details.notificationResponse?.payload}');
 
-        Get.to(ChatTest());
+        Get.to(ChatTest( imagePath: imageItems[index].imagePath,
+          emotionImages: imageItems[index].emotionImages,));
 
         if (details.notificationResponse?.payload != null) {}
       }
