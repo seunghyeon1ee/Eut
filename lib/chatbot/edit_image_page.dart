@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:async';
 import 'dart:io';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_sound/flutter_sound.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'image_item.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'dart:convert';
+
 
 class EditImagePage extends StatefulWidget {
   final List<ImageItem> imageItems;
@@ -34,7 +35,7 @@ class _EditImagePageState extends State<EditImagePage> {
     'assets/image1.png',
     'assets/image2.png',
   ];
-  AudioPlayer _audioPlayer = AudioPlayer();
+  FlutterSoundPlayer _audioPlayer = FlutterSoundPlayer();
   String? _audioFilePath;
 
   @override
@@ -89,7 +90,9 @@ class _EditImagePageState extends State<EditImagePage> {
 
   void _playAudio() async {
     if (_audioFilePath != null) {
-      await _audioPlayer.play(_audioFilePath!, isLocal: true);
+      await _audioPlayer.startPlayer(
+          fromURI: _audioFilePath!,
+          codec: Codec.mp3);
     }
   }
 

@@ -46,7 +46,8 @@ dependencies:
   firebase_messaging: ^15.0.1
   responsive_builder: ^0.4.3
   sign_in_with_apple: ^5.0.0
-  audioplayers: ^0.18.3 # 더 낮은 버전으로 조정
+
+ # audioplayers: #^0.18.3   # 더 낮은 버전으로 조정
 
 dev_dependencies:
   flutter_test:
