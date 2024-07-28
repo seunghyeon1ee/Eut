@@ -9,8 +9,8 @@ import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:http_parser/http_parser.dart';
 import '../provider/create_image_provider.dart';
+import '../provider/auth_provider.dart'; // AuthProvider 임포트
 import 'image_item.dart';
-
 
 class CreateImagePage extends StatefulWidget {
   final Function(ImageItem) onImageCreated;
@@ -24,8 +24,23 @@ class CreateImagePage extends StatefulWidget {
 class _CreateImagePageState extends State<CreateImagePage> {
   final TextEditingController _nameController = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    final provider = Provider.of<CreateImageProvider>(context, listen: false);
+    provider.setImagePath(0); // 초기 이미지 설정
+    _loadToken(); // 토큰 로드
+  }
+
+  Future<void> _loadToken() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.loadToken();
+  }
+
   void _saveImageItem() async {
     final provider = Provider.of<CreateImageProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
     if (provider.selectedImagePath != null && _nameController.text.isNotEmpty && provider.recordingFilePath != null) {
       try {
         final request = http.MultipartRequest(
@@ -33,6 +48,7 @@ class _CreateImagePageState extends State<CreateImagePage> {
           Uri.parse('http://3.38.165.93:8080/characters'),
         );
         request.headers['Content-Type'] = 'multipart/form-data';
+        request.headers['Authorization'] = 'Bearer ${authProvider.accessToken}'; // 토큰 포함
 
         // Add characterName field
         request.fields['characterName'] = _nameController.text;
@@ -61,7 +77,7 @@ class _CreateImagePageState extends State<CreateImagePage> {
 
           widget.onImageCreated(
             ImageItem(
-              name: characterName, // 추가된 필드
+              name: characterName,
               characterId: characterId,
               memberId: memberId,
               characterName: characterName,
@@ -72,9 +88,12 @@ class _CreateImagePageState extends State<CreateImagePage> {
           );
           Navigator.pop(context);
         } else {
+          print('Response status: ${response.statusCode}');
+          print('Response body: $responseBody');
           _showOverlayMessage(context, '서버 오류가 발생했습니다.');
         }
       } catch (e) {
+        print('Exception: $e');
         _showOverlayMessage(context, '네트워크 오류가 발생했습니다.');
       }
     } else {
@@ -113,13 +132,6 @@ class _CreateImagePageState extends State<CreateImagePage> {
     Future.delayed(Duration(seconds: 2), () {
       overlayEntry.remove();
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    final provider = Provider.of<CreateImageProvider>(context, listen: false);
-    provider.setImagePath(0); // 초기 이미지 설정
   }
 
   @override
@@ -228,7 +240,6 @@ class _CreateImagePageState extends State<CreateImagePage> {
                   decoration: InputDecoration(hintText: '이름을 입력해주세요.'),
                   keyboardType: TextInputType.text,
                 ),
-
                 SizedBox(height: 16),
                 VoiceRecordWidget(
                   onAudioFilePathUpdated: (filePath) {

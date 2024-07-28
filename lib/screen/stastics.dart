@@ -105,18 +105,28 @@ class _DayViewState extends State<DayView> {
 
     if (response.statusCode == 200) {
       final responseData = json.decode(utf8.decode(response.bodyBytes));
-      if (responseData['code'] == "0000" &&
-          responseData['message'] == "SUCCESS") {
+      if (responseData['code'] == "0000" && responseData['message'] == "SUCCESS") {
         setState(() {
           apiData = responseData['result'];
           isLoading = false;
         });
       } else {
-        throw Exception(
-            'Data fetch was successful but returned an unexpected code or message');
+        setState(() {
+          apiData = {
+            'summaryDay': ["No data available for the morning."],
+            'summaryEvening': ["No data available for the evening."]
+          };
+          isLoading = false;
+        });
       }
     } else {
-      throw Exception('Failed to load data');
+      setState(() {
+        apiData = {
+          'summaryDay': ["오늘 오전에는 대화를 하지 않았습니다.."],
+          'summaryEvening': ["오늘 오후에는 대화를 하지 않았습니다."]
+        };
+        isLoading = false;
+      });
     }
   }
 
@@ -259,22 +269,51 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
 
     if (response.statusCode == 200) {
       final responseBody = json.decode(utf8.decode(response.bodyBytes));
-      if (responseBody['code'] == "0000" &&
-          responseBody['message'] == "SUCCESS") {
+      if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
         setState(() {
-          dailyScreenTime =
-          Map<String, int>.from(responseBody['result']['dailyScreenTime']);
-          totalScreenTimeSecond =
-          responseBody['result']['totalScreenTimeSecond'];
+          dailyScreenTime = Map<String, int>.from(responseBody['result']['dailyScreenTime']);
+          totalScreenTimeSecond = responseBody['result']['totalScreenTimeSecond'];
           isLoading = false;
         });
       } else {
-        throw Exception(
-            'Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
+        setState(() {
+          dailyScreenTime = {
+            "t0_2": 0,
+            "t2_4": 0,
+            "t4_6": 0,
+            "t6_8": 0,
+            "t8_10": 0,
+            "t10_12": 0,
+            "t12_14": 0,
+            "t14_16": 0,
+            "t16_18": 0,
+            "t18_20": 0,
+            "t20_22": 0,
+            "t22_24": 0
+          };
+          totalScreenTimeSecond = 0;
+          isLoading = false;
+        });
       }
     } else {
-      throw Exception(
-          'Failed to load data, status code: ${response.statusCode}');
+      setState(() {
+        dailyScreenTime = {
+          "t0_2": 0,
+          "t2_4": 0,
+          "t4_6": 0,
+          "t6_8": 0,
+          "t8_10": 0,
+          "t10_12": 0,
+          "t12_14": 0,
+          "t14_16": 0,
+          "t16_18": 0,
+          "t18_20": 0,
+          "t20_22": 0,
+          "t22_24": 0
+        };
+        totalScreenTimeSecond = 0;
+        isLoading = false;
+      });
     }
   }
 
@@ -550,7 +589,7 @@ final Map<String, String> emotionImages = {
   '당황': 'assets/confused.png',
   '슬픔': 'assets/sad.png',
   '혐오': 'assets/disgusted.png',
-  '중립': 'assets/neutral.png',
+  '평범': 'assets/neutral.png',
 };
 
 class _WeekViewState extends State<WeekView> {
@@ -582,20 +621,64 @@ class _WeekViewState extends State<WeekView> {
 
     if (response.statusCode == 200) {
       final responseBody = json.decode(utf8.decode(response.bodyBytes));
-      if (responseBody['code'] == "0000" &&
-          responseBody['message'] == "SUCCESS") {
+      if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
         setState(() {
           weeklyData = responseBody['result'];
           isLoading = false;
           xLabels = _generateWeekDays();
         });
       } else {
-        throw Exception(
-            'Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
+        setState(() {
+          weeklyData = {
+            'screenTimeWeekly': {
+              "mon": 0,
+              "tue": 0,
+              "wed": 0,
+              "thu": 0,
+              "fri": 0,
+              "sat": 0,
+              "sun": 0
+            },
+            'negativeExpRate': {
+              "mon": 0.0,
+              "tue": 0.0,
+              "wed": 0.0,
+              "thu": 0.0,
+              "fri": 0.0,
+              "sat": 0.0,
+              "sun": 0.0
+            }
+          };
+          isLoading = false;
+          xLabels = _generateWeekDays();
+        });
       }
     } else {
-      throw Exception(
-          'Failed to load weekly data, status code: ${response.statusCode}');
+      setState(() {
+        weeklyData = {
+          'screenTimeWeekly': {
+            "mon": 0,
+            "tue": 0,
+            "wed": 0,
+            "thu": 0,
+            "fri": 0,
+            "sat": 0,
+            "sun": 0
+          },
+          'negativeExpRate': {
+            "mon": 0.0,
+            "tue": 0.0,
+            "wed": 0.0,
+            "thu": 0.0,
+            "fri": 0.0,
+            "sat": 0.0,
+            "sun": 0.0
+          },
+          'avgEmotion':{'maxScore':{'평범':0.0}}
+        };
+        isLoading = false;
+        xLabels = _generateWeekDays();
+      });
     }
   }
 
@@ -771,7 +854,7 @@ class _WeekViewState extends State<WeekView> {
                                 ),
                                 Text(
                                   topEmotion.isNotEmpty
-                                      ? topEmotion.contains('중립')
+                                      ? topEmotion.contains('평범')
                                       ? '평범한 한 주를 보내셨습니다.'
                                       : '$topEmotion 한 한 주를 보내셨습니다.'
                                       : "감정 데이터를 불러오지 못했습니다.",
@@ -920,21 +1003,65 @@ class _MonthViewState extends State<MonthView> {
 
     if (response.statusCode == 200) {
       final responseBody = json.decode(utf8.decode(response.bodyBytes));
-      if (responseBody['code'] == "0000" &&
-          responseBody['message'] == "SUCCESS") {
+      if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
         setState(() {
           monthlyData = responseBody['result'];
         });
       } else {
-        throw Exception(
-            'Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
+        setState(() {
+          monthlyData = {
+            'avgUsageTimeSecond': 0,
+            'changeUsageTimeSecond': 0,
+            'screenTimeMonthly': {
+              "week1": 0,
+              "week2": 0,
+              "week3": 0,
+              "week4": 0,
+              "week5": 0
+            },
+            'negativeExpRate': {
+              "week1": 0.0,
+              "week2": 0.0,
+              "week3": 0.0,
+              "week4": 0.0,
+              "week5": 0.0
+            },
+            'avgEmotion': {
+              'maxScore': {
+                '평범': 0.0
+              }
+            }
+          };
+        });
       }
     } else {
-      throw Exception(
-          'Failed to load monthly data, status code: ${response.statusCode}');
+      setState(() {
+        monthlyData = {
+          'avgUsageTimeSecond': 0,
+          'changeUsageTimeSecond': 0,
+          'screenTimeMonthly': {
+            "week1": 0,
+            "week2": 0,
+            "week3": 0,
+            "week4": 0,
+            "week5": 0
+          },
+          'negativeExpRate': {
+            "week1": 0.0,
+            "week2": 0.0,
+            "week3": 0.0,
+            "week4": 0.0,
+            "week5": 0.0
+          },
+          'avgEmotion': {
+            'maxScore': {
+              '평범': 0.0
+            }
+          }
+        };
+      });
     }
   }
-
   @override
   Widget build(BuildContext context) {
     if (monthlyData == null) {
@@ -980,7 +1107,7 @@ class _MonthViewState extends State<MonthView> {
       '당황': 'assets/confused.png',
       '슬픔': 'assets/sad.png',
       '혐오': 'assets/disgusted.png',
-      '중립': 'assets/neutral.png',
+      '평범': 'assets/neutral.png',
     };
 
     return SafeArea(
@@ -1226,7 +1353,7 @@ class MoodRanking extends StatelessWidget {
     '당황': 'assets/confused.png',
     '슬픔': 'assets/sad.png',
     '혐오': 'assets/disgusted.png',
-    '중립': 'assets/neutral.png',
+    '평범': 'assets/neutral.png',
   };
 
   Future<List<Map<String, dynamic>>> fetchEmotionData(BuildContext context) async {
@@ -1244,8 +1371,7 @@ class MoodRanking extends StatelessWidget {
 
     if (response.statusCode == 200) {
       final responseBody = json.decode(utf8.decode(response.bodyBytes));
-      if (responseBody['code'] == "0000" &&
-          responseBody['message'] == "SUCCESS") {
+      if (responseBody['code'] == "0000" && responseBody['message'] == "SUCCESS") {
         final data = responseBody['result']['sentimentAnalysis'];
         return List<Map<String, dynamic>>.from(data.map((item) => {
           'percentage': item['score'],
@@ -1256,10 +1382,19 @@ class MoodRanking extends StatelessWidget {
             'Data fetch was successful but returned an unexpected code or message: ${responseBody['message']}');
       }
     } else {
-      throw Exception(
-          'Failed to load emotion data, status code: ${response.statusCode}');
+      return [
+        {'percentage': 0, 'emotion': '평범'},
+        {'percentage': 0, 'emotion': '행복'},
+        {'percentage': 0, 'emotion': '분노'},
+        {'percentage': 0, 'emotion': '슬픔'},
+        {'percentage': 0, 'emotion': '불안'},
+        {'percentage': 0, 'emotion': '혐오'},
+        {'percentage': 0, 'emotion': '걱정'},
+        {'percentage': 0, 'emotion': '당황'},
+      ];
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -1316,7 +1451,7 @@ class MoodRanking extends StatelessWidget {
                     Color boxColor = const Color(0xFFEC295D);
                     Color textColor = Colors.white;
                     if (data['emotion'] == '행복' ||
-                        data['emotion'] == '중립' ||
+                        data['emotion'] == '평범' ||
                         data['emotion'] == '당황') {
                       boxColor = const Color(0x60FF7672);
                       textColor = const Color(0xFFEC295D);
@@ -1397,7 +1532,7 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
       {required this.emotionData, required this.emotionImages});
 
   Color getMarkerColor(String emotion) {
-    return (emotion == '행복' || emotion == '중립' || emotion == '당황')
+    return (emotion == '행복' || emotion == '평범' || emotion == '당황')
         ? const Color(0x60FF7672)
         : const Color(0xFFEC295D);
   }
@@ -1454,7 +1589,7 @@ class DetailedEmotionStatisticsView extends StatelessWidget {
                   Color boxColor = Colors.pink;
                   Color textColor = Colors.white;
                   if (data['emotion'] == '행복' ||
-                      data['emotion'] == '중립' ||
+                      data['emotion'] == '평범' ||
                       data['emotion'] == '당황') {
                     boxColor = const Color(0x60FF7672);
                     textColor = const Color(0xFFEC295D);
@@ -1495,7 +1630,7 @@ class EmotionBar extends StatelessWidget {
       : super(key: key);
 
   Color _getColorForEmotion(String emotion) {
-    if (emotion == '행복' || emotion == '당황' || emotion == '중립') {
+    if (emotion == '행복' || emotion == '당황' || emotion == '평범') {
       return const Color(0xFFEC295D);
     } else {
       return const Color(0xFFEC295D);
@@ -1733,7 +1868,7 @@ class _DetailedWeeklyConversationViewState
                             width: 10,
                             height: 10,
                             decoration: BoxDecoration(
-                              color: ['행복', '중립', '당황'].any((emotion) =>
+                              color: ['행복', '평범', '당황'].any((emotion) =>
                                   weeklyConversations[index]
                                       .map((conversation) =>
                                       (conversation['details']
@@ -2141,7 +2276,7 @@ class _DetailedMonthlyConversationViewState
     String topEmotion = (widget.emotionData['maxScore'] != null &&
         widget.emotionData['maxScore'].isNotEmpty)
         ? widget.emotionData['maxScore'].keys.first
-        : 'neutral';
+        : '평범';
 
     return Scaffold(
       appBar: PreferredSize(

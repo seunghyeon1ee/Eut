@@ -4,23 +4,6 @@ import 'package:taba_app_proj/firebase_options.dart';
 // import 'package:calendar_scheduler/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-// 책에 있는 내용
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//
-//   await Firebase.initializeApp(
-//     options: DefaultFirebaseOptions.currentPlatform,
-//   );
-//
-//   await initializeDataFormatting();
-//
-//   final database = LocalDatabase();
-//
-//   GetIt.I.registerSingleton<LocalDatabase>(database);
-//
-//
-// }
-
 FirebaseAuth _auth = FirebaseAuth.instance;
 
 void sendCode(String phoneNumber) async {

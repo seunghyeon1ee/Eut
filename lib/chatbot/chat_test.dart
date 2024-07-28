@@ -252,7 +252,7 @@ class _ChatTestState extends State<ChatTest> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: isDesktop ? 80 : 20),
+          SizedBox(height: isDesktop ? 180 : 120),
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -262,20 +262,11 @@ class _ChatTestState extends State<ChatTest> {
             },
             child: Image.asset(
               emotionImagePath,
-              width: isDesktop ? 300 : 200,
-              height: isDesktop ? 300 : 200,
+              width: isDesktop ? 500 : 400,
+              height: isDesktop ? 400 : 300,
             ),
           ),
           SizedBox(height: 20),
-          Text(
-            '현재 감정: $topEmotion',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: isDesktop ? 24 : 18,
-              fontFamily: 'Noto Sans',
-              fontWeight: FontWeight.w600,
-            ),
-          ),
         ],
       ),
     );

@@ -11,6 +11,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:taba_app_proj/provider/fcm_provider.dart';
 import 'package:taba_app_proj/screen/home_screen.dart';
 import 'package:responsive_builder/responsive_builder.dart';
+import 'package:taba_app_proj/screen/stastics.dart';
 import 'controller/fcm_controller.dart';
 import 'firebase_options.dart';
 import 'provider/auth_provider.dart';
