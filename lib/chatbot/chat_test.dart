@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:taba_app_proj/chatbot/greeting.dart';
+import 'package:taba_app_proj/provider/greeting.dart';
 import 'package:simple_ripple_animation/simple_ripple_animation.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -13,11 +13,10 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:http_parser/http_parser.dart';
-import 'package:taba_app_proj/chatbot/select_image.dart';
+import 'package:taba_app_proj/chatbot/select_image_page.dart';
 
 import '../controller/fcm_controller.dart';
 import 'package:responsive_builder/responsive_builder.dart';
-
 
 class ChatTest extends StatefulWidget {
   final String imagePath;
@@ -37,7 +36,6 @@ class _ChatTestState extends State<ChatTest> {
   final FlutterSoundRecorder _recorder = FlutterSoundRecorder();
   final FlutterSoundPlayer _player = FlutterSoundPlayer();
   bool _isRecording = false;
-  String greetingMessage = 'Loading...';
   String _sttResult = '녹음 버튼을 누르세요.';
   final String _sttApiUrl = 'http://3.38.165.93:8080/api/v1/chat/stt';
   final String _ttsApiUrl =
@@ -51,11 +49,11 @@ class _ChatTestState extends State<ChatTest> {
     super.initState();
     FcmController.instance.saveToken();
     _initRecorder();
-    fetchGreeting();
+    fetchGreeting(context);
     _player.openAudioSession();
   }
 
-  Future<void> fetchGreeting() async {
+  Future<void> fetchGreeting(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
     final response = await http.post(
@@ -71,18 +69,15 @@ class _ChatTestState extends State<ChatTest> {
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       print(jsonResponse);
-      if (jsonResponse['code'] == '0000' &&
-          jsonResponse['message'] == 'SUCCESS') {
-        setState(() {
-          greetingMessage = jsonResponse['result']['response'];
-        });
+      if (jsonResponse['code'] == '0000' && jsonResponse['message'] == 'SUCCESS') {
+        final greetingProvider = Provider.of<GreetingProvider>(context, listen: false);
+        greetingProvider.setGreeting(jsonResponse['result']['response']);
 
-        textToSpeech(greetingMessage);
+        textToSpeech(greetingProvider.greeting);
       }
     } else {
-      setState(() {
-        greetingMessage = '환영 메시지 로드 실패';
-      });
+      final greetingProvider = Provider.of<GreetingProvider>(context, listen: false);
+      greetingProvider.setGreeting('환영 메시지 로드 실패');
     }
   }
 
@@ -144,10 +139,11 @@ class _ChatTestState extends State<ChatTest> {
           _sttResult = result['result']['stt_result'];
           topEmotion = result['result']['sentiment_analysis']
               .reduce((a, b) => a['score'] > b['score'] ? a : b)['label'];
-          greetingMessage = result['result']['gpt_response'];
         });
+        final greetingProvider = Provider.of<GreetingProvider>(context, listen: false);
+        greetingProvider.setGreeting(result['result']['gpt_response']);
         showTemporaryMessage(_sttResult);
-        textToSpeech(greetingMessage);
+        textToSpeech(greetingProvider.greeting);
       } else {
         setState(() {
           _sttResult = 'STT 작동 중 에러 발생';
@@ -212,6 +208,7 @@ class _ChatTestState extends State<ChatTest> {
 
   @override
   Widget build(BuildContext context) {
+    final greetingProvider = Provider.of<GreetingProvider>(context);
     String recordImagePath =
     _isRecording ? 'assets/record_stop_icon.svg' : 'assets/record_icon.svg';
     Map<String, String> currentEmotionImages = widget.emotionImages;
@@ -219,9 +216,9 @@ class _ChatTestState extends State<ChatTest> {
     return SafeArea(
       child: Scaffold(
         body: ScreenTypeLayout.builder(
-          mobile: (_) => buildContent(context, emotionImagePath),
-          tablet: (_) => buildContent(context, emotionImagePath),
-          desktop: (_) => buildContent(context, emotionImagePath, isDesktop: true),
+          mobile: (_) => buildContent(context, emotionImagePath, greetingProvider.greeting),
+          tablet: (_) => buildContent(context, emotionImagePath, greetingProvider.greeting),
+          desktop: (_) => buildContent(context, emotionImagePath, greetingProvider.greeting, isDesktop: true),
         ),
         floatingActionButton: IconButton(
           icon: SvgPicture.asset(
@@ -237,7 +234,7 @@ class _ChatTestState extends State<ChatTest> {
     );
   }
 
-  Widget buildContent(BuildContext context, String emotionImagePath, {bool isDesktop = false}) {
+  Widget buildContent(BuildContext context, String emotionImagePath, String greetingMessage, {bool isDesktop = false}) {
     return Padding(
       padding: EdgeInsets.all(isDesktop ? 40 : 20),
       child: Column(

@@ -1,14 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // SVG 패키지 임포트
+import 'dart:async';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:responsive_builder/responsive_builder.dart';
+import '../provider/create_image_provider.dart';
 import 'image_item.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
-import 'dart:convert';
+import 'package:provider/provider.dart';
 
 
 class EditImagePage extends StatefulWidget {
@@ -27,24 +29,17 @@ class EditImagePage extends StatefulWidget {
 
 class _EditImagePageState extends State<EditImagePage> {
   late String _name;
-  late int _currentIndex;
-  late String _imagePath;
   late PageController _pageController;
-  List<String> _imagePaths = [
-    'assets/botboy.png',
-    'assets/image1.png',
-    'assets/image2.png',
-  ];
   FlutterSoundPlayer _audioPlayer = FlutterSoundPlayer();
-  String? _audioFilePath;
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialIndex;
-    _name = widget.imageItems[_currentIndex].name;
-    _imagePath = widget.imageItems[_currentIndex].imagePath;
-    _pageController = PageController(initialPage: _imagePaths.indexOf(_imagePath));
+    final provider = Provider.of<CreateImageProvider>(context, listen: false);
+    _name = widget.imageItems[provider.currentIndex].name;
+    provider.updateImagePath(widget.imageItems[provider.currentIndex].imagePath);
+    provider.updateImagePaths(widget.imageItems.map((item) => item.imagePath).toList());
+    _pageController = PageController(initialPage: provider.currentIndex);
   }
 
   void _editName() {
@@ -69,7 +64,8 @@ class _EditImagePageState extends State<EditImagePage> {
               onPressed: () {
                 setState(() {
                   _name = nameController.text;
-                  widget.imageItems[_currentIndex] = widget.imageItems[_currentIndex].copyWith(name: _name);
+                  final provider = Provider.of<CreateImageProvider>(context, listen: false);
+                  widget.imageItems[provider.currentIndex] = widget.imageItems[provider.currentIndex].copyWith(name: _name);
                 });
                 Navigator.of(context).pop();
               },
@@ -82,17 +78,17 @@ class _EditImagePageState extends State<EditImagePage> {
   }
 
   void _onImageChanged(int index) {
+    final provider = Provider.of<CreateImageProvider>(context, listen: false);
+    provider.setImagePath(index);
     setState(() {
-      _imagePath = _imagePaths[index];
-      widget.imageItems[_currentIndex] = widget.imageItems[_currentIndex].copyWith(imagePath: _imagePath);
+      widget.imageItems[provider.currentIndex] = widget.imageItems[provider.currentIndex].copyWith(imagePath: provider.selectedImagePath!);
     });
   }
 
   void _playAudio() async {
-    if (_audioFilePath != null) {
-      await _audioPlayer.startPlayer(
-          fromURI: _audioFilePath!,
-          codec: Codec.mp3);
+    final provider = Provider.of<CreateImageProvider>(context, listen: false);
+    if (provider.recordingFilePath != null) {
+      await _audioPlayer.startPlayer(fromURI: provider.recordingFilePath!, codec: Codec.mp3);
     }
   }
 
@@ -106,9 +102,8 @@ class _EditImagePageState extends State<EditImagePage> {
       builder: (context) {
         return VoiceRecordWidget(
           onAudioFilePathUpdated: (filePath) {
-            setState(() {
-              _audioFilePath = filePath;
-            });
+            final provider = Provider.of<CreateImageProvider>(context, listen: false);
+            provider.setRecordingFilePath(filePath);
           },
         );
       },
@@ -116,7 +111,8 @@ class _EditImagePageState extends State<EditImagePage> {
   }
 
   Future<void> _submitEdit() async {
-    if (_name.isNotEmpty && _audioFilePath != null) {
+    final provider = Provider.of<CreateImageProvider>(context, listen: false);
+    if (_name.isNotEmpty && provider.recordingFilePath != null) {
       try {
         final request = http.MultipartRequest(
           'POST',
@@ -127,8 +123,8 @@ class _EditImagePageState extends State<EditImagePage> {
         request.fields['characterName'] = _name;
 
         // Add voiceFile field if it exists
-        if (_audioFilePath != null) {
-          final file = File(_audioFilePath!);
+        if (provider.recordingFilePath != null) {
+          final file = File(provider.recordingFilePath!);
           request.files.add(
             http.MultipartFile.fromBytes(
               'voiceFile',
@@ -145,19 +141,19 @@ class _EditImagePageState extends State<EditImagePage> {
         if (response.statusCode == 200) {
           final data = jsonDecode(responseBody);
           final result = data['result'];
-          final characterId = result['characterId']as int?;  // String으로 변환
-          final memberId = result['memberId'] as int?;
+          final characterId = result['characterId'] as int;
+          final memberId = result['memberId'] as int;
           final characterName = result['characterName'] as String;
           final voiceId = result['voiceId'] as String;
 
           // 이미지 아이템 업데이트
           setState(() {
-            widget.imageItems[_currentIndex] = widget.imageItems[_currentIndex].copyWith(
+            widget.imageItems[provider.currentIndex] = widget.imageItems[provider.currentIndex].copyWith(
               characterId: characterId,
               memberId: memberId,
               characterName: characterName,
               voiceId: voiceId,
-              imagePath: _imagePath,
+              imagePath: provider.selectedImagePath!,
             );
           });
 
@@ -208,6 +204,8 @@ class _EditImagePageState extends State<EditImagePage> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<CreateImageProvider>(context);
+
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(140.0),
@@ -249,9 +247,9 @@ class _EditImagePageState extends State<EditImagePage> {
         ),
       ),
       body: ScreenTypeLayout(
-        mobile: _buildContent(),
-        tablet: _buildContent(),
-        desktop: _buildContent(),
+        mobile: _buildContent(provider),
+        tablet: _buildContent(provider),
+        desktop: _buildContent(provider),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _submitEdit,
@@ -261,7 +259,7 @@ class _EditImagePageState extends State<EditImagePage> {
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent(CreateImageProvider provider) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -271,7 +269,7 @@ class _EditImagePageState extends State<EditImagePage> {
             child: PageView.builder(
               controller: _pageController,
               onPageChanged: _onImageChanged,
-              itemCount: _imagePaths.length,
+              itemCount: provider.imagePaths.length,
               itemBuilder: (context, index) {
                 return Container(
                   decoration: BoxDecoration(
@@ -280,7 +278,7 @@ class _EditImagePageState extends State<EditImagePage> {
                   ),
                   child: Center(
                     child: Image.asset(
-                      _imagePaths[index],
+                      provider.imagePaths[index],
                       fit: BoxFit.cover,
                       width: 350,
                       height: 350,
@@ -308,8 +306,8 @@ class _EditImagePageState extends State<EditImagePage> {
             children: [
               IconButton(
                 icon: Icon(
-                  _audioFilePath != null ? Icons.play_arrow : Icons.play_disabled,
-                  color: _audioFilePath != null ? Colors.red : Colors.grey,
+                  provider.recordingFilePath != null ? Icons.play_arrow : Icons.play_disabled,
+                  color: provider.recordingFilePath != null ? Colors.red : Colors.grey,
                 ),
                 onPressed: _playAudio,
               ),

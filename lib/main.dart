@@ -1,85 +1,80 @@
 import 'dart:convert';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:taba_app_proj/chatbot/chat_test.dart';
-import 'package:taba_app_proj/screen/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:taba_app_proj/screen/register_elder_fin.dart';
-import 'package:taba_app_proj/screen/register_fam_fin.dart';
-import 'package:taba_app_proj/screen/stastics.dart';
-import 'package:taba_app_proj/screentime.dart';
-import 'chatbot/chat1.dart';
-import 'chatbot/edit_image_page.dart';
-import 'chatbot/select_image.dart';
+import 'package:taba_app_proj/provider/fcm_provider.dart';
+import 'package:taba_app_proj/screen/home_screen.dart';
+import 'package:responsive_builder/responsive_builder.dart';
 import 'controller/fcm_controller.dart';
 import 'firebase_options.dart';
-import 'package:taba_app_proj/screentime.dart';
-import 'package:responsive_builder/responsive_builder.dart';
-
-part 'notification_config.dart';
+import 'provider/auth_provider.dart';
+import 'provider/greeting.dart';
+import 'provider/create_image_provider.dart';
+import 'chatbot/chat_test.dart';
 
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  // FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  // Future.delayed(duration)
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // ***파이어 베이스 메세징 백그라운드 핸들러는 최상위에 위치***
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   if (!kIsWeb) {
     await setupFlutterNotifications();
   }
-  // 앱 수직 고정
+
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  // 앱 상태바 활성화
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-      overlays: SystemUiOverlay.values);
-  // 앱 상태바 스타일
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    // ios 상태바 모드
     statusBarBrightness: Brightness.light,
   ));
 
   await initServices();
 
-  final refs = await SharedPreferences.getInstance();
-  String? accessToken = refs.getString('access_token');
-  runApp(App(accessToken: accessToken));
+  final prefs = await SharedPreferences.getInstance();
+  String? accessToken = prefs.getString('access_token');
+
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => GreetingProvider()),
+        ChangeNotifierProvider(create: (_) => CreateImageProvider()),
+        ChangeNotifierProvider(create: (_) => FcmProvider()),
+      ],
+      child: App(accessToken: accessToken),
+    ),
+  );
 }
 
 class App extends StatelessWidget {
   const App({super.key, this.accessToken});
   final String? accessToken;
+
   @override
   Widget build(BuildContext context) {
+    Provider.of<AuthProvider>(context, listen: false).setAccessToken(accessToken);
+
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      // home: StatisticsScreen(),
       home: ResponsiveBuilder(
         builder: (context, sizingInformation) {
           if (sizingInformation.deviceScreenType == DeviceScreenType.mobile) {
             return HomeScreen();
-            //return ChatTest(imagePath: 'assets/neutral.png',
-             // emotionImages: {},);
           } else if (sizingInformation.deviceScreenType == DeviceScreenType.tablet) {
             return HomeScreen(accessToken: accessToken);
           } else {
-            return HomeScreen(accessToken: accessToken); // 다른 레이아웃을 원할 경우 수정
+            return HomeScreen(accessToken: accessToken);
           }
         },
       ),
-      //HomeScreen(accessToken: accessToken),
-      //homescreen 대신 다른 이미지들 넣어서 확인
     );
   }
 }
@@ -87,7 +82,6 @@ class App extends StatelessWidget {
 Future<void> initServices() async {
   debugPrint('starting services ...');
   await Get.putAsync(() => GetService().init());
-  // DynamicLinks().setup(); // 2025 deprecate
   debugPrint('All services started...');
 }
 
@@ -98,3 +92,133 @@ class GetService extends GetxService {
     return this;
   }
 }
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await setupFlutterNotifications();
+  debugPrint("background message: ${message.toMap()}");
+
+  if (message.notification == null && message.messageId != null) {
+    showFlutterNotification(message);
+  }
+}
+
+void onSelectNotification(NotificationResponse notificationResponse) async {
+  debugPrint('push notification clicked!');
+  Get.to(ChatTest(imagePath: 'assets/neutral.png', emotionImages: {}));
+  if (notificationResponse.payload != null &&
+      notificationResponse.payload.toString().isNotEmpty) {
+    final Map<String, dynamic> payload = jsonDecode(notificationResponse.payload!);
+    debugPrint('notification payload: $payload');
+  }
+}
+
+late AndroidNotificationChannel channel;
+bool isFlutterLocalNotificationsInitialized = false;
+
+Future<void> setupFlutterNotifications() async {
+  if (isFlutterLocalNotificationsInitialized) {
+    return;
+  }
+  channel = const AndroidNotificationChannel(
+    'high_importance_channel',
+    'High Importance Notifications',
+    description: 'This channel is used for important notifications.',
+    importance: Importance.high,
+    enableVibration: true,
+  );
+
+  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  const AndroidInitializationSettings initializationSettingsAndroid =
+  AndroidInitializationSettings('app_icon');
+  final DarwinInitializationSettings initializationSettingsDarwin =
+  DarwinInitializationSettings(
+    requestSoundPermission: false,
+    requestBadgePermission: false,
+    requestAlertPermission: false,
+    notificationCategories: [
+      DarwinNotificationCategory(
+        'demoCategory',
+        actions: <DarwinNotificationAction>[
+          DarwinNotificationAction.plain('id_1', 'Action 1'),
+          DarwinNotificationAction.plain(
+            'id_2',
+            'Action 2',
+            options: <DarwinNotificationActionOption>{
+              DarwinNotificationActionOption.destructive,
+            },
+          ),
+          DarwinNotificationAction.plain(
+            'id_3',
+            'Action 3',
+            options: <DarwinNotificationActionOption>{
+              DarwinNotificationActionOption.foreground,
+            },
+          ),
+        ],
+        options: <DarwinNotificationCategoryOption>{
+          DarwinNotificationCategoryOption.hiddenPreviewShowTitle,
+        },
+      ),
+    ],
+  );
+  final LinuxInitializationSettings initializationSettingsLinux =
+  LinuxInitializationSettings(defaultActionName: 'Open notification');
+  final InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsDarwin,
+      macOS: initializationSettingsDarwin,
+      linux: initializationSettingsLinux);
+
+  flutterLocalNotificationsPlugin.initialize(
+    initializationSettings,
+    onDidReceiveNotificationResponse: onSelectNotification,
+    onDidReceiveBackgroundNotificationResponse: onSelectNotification,
+  );
+
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
+
+  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+  isFlutterLocalNotificationsInitialized = true;
+}
+
+void showFlutterNotification(RemoteMessage message) {
+  debugPrint("run showFlutterNotification");
+  RemoteNotification? notification = message.notification;
+  Map<String, dynamic>? data = message.data;
+
+  flutterLocalNotificationsPlugin.show(
+    notification?.hashCode ?? data.hashCode,
+    notification?.title ?? data['title'],
+    notification?.body ?? data['body'],
+    NotificationDetails(
+      android: AndroidNotificationDetails(
+        channel.id,
+        channel.name,
+        channelDescription: channel.description,
+        importance: Importance.max,
+        priority: Priority.high,
+        ticker: 'ticker',
+        icon: 'app_icon',
+        color: const Color(0x00ffdf16),
+        largeIcon: const DrawableResourceAndroidBitmap("@drawable/app_icon"),
+      ),
+      iOS: DarwinNotificationDetails(
+        badgeNumber: 1,
+      ),
+    ),
+    payload: jsonEncode(data),
+  );
+}
+
+late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;

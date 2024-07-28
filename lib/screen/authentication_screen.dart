@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import 'package:taba_app_proj/screen/register_elder_fin.dart';
-
+import 'package:taba_app_proj/provider/auth_provider.dart';
 
 class Authentic extends StatelessWidget {
   @override
@@ -11,28 +10,44 @@ class Authentic extends StatelessWidget {
   }
 }
 
-class FirebaseAuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+class LogInElder2 extends StatefulWidget {
+  const LogInElder2({Key? key}) : super(key: key);
 
-  Future<void> verifyPhoneNumber(
-      BuildContext context, String phoneNumber) async {
-    await _auth.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      timeout: const Duration(seconds: 60),
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        await _auth.signInWithCredential(credential);
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text("Failed to Verify Phone Number: ${e.message}")));
-      },
-      codeSent: (String verificationId, int? resendToken) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text("Verification Code Sent")));
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {
-        // Handle code auto retrieval timeout
-      },
+  @override
+  _LogInElder2State createState() => _LogInElder2State();
+}
+
+class _LogInElder2State extends State<LogInElder2> {
+  final TextEditingController _phoneController = TextEditingController();
+
+  void _verifyPhone() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    authProvider.verifyPhoneNumber(context, _phoneController.text.trim());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Log In Elder 2'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _phoneController,
+              decoration: InputDecoration(labelText: 'Phone Number'),
+              keyboardType: TextInputType.phone,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _verifyPhone,
+              child: Text('Verify Phone Number'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

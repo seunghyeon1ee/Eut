@@ -3,12 +3,12 @@ import 'package:expandable_page_view/expandable_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart'; // 추가된 부분
 import 'package:table_calendar/table_calendar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
-
+import '../provider/auth_provider.dart'; // 추가된 부분
 
 // 2. Statistics 클래스
 class Statistics extends StatelessWidget {
@@ -91,8 +91,8 @@ class _DayViewState extends State<DayView> {
 
   Future<void> fetchData() async {
     String date = today.toIso8601String().split('T')[0];
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? accessToken = prefs.getString('access_token');
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    String? accessToken = authProvider.accessToken;
 
     final response = await http.get(
       Uri.parse('http://3.38.165.93:8080/api/v1/stat/daily?date=$date'),
@@ -218,15 +218,15 @@ class ScreenTimeSummary extends StatefulWidget {
     "t0_2": 0,
     "t2_4": 0,
     "t4_6": 0,
-    "t6_8": 0,
-    "t8_10": 0,
-    "t10_12": 0,
-    "t12_14": 0,
+    "t6_8": 2760,
+    "t8_10": 3600,
+    "t10_12": 3900,
+    "t12_14": 7740,
     "t14_16": 0,
-    "t16_18": 2760,
-    "t18_20": 3600,
-    "t20_22": 3900,
-    "t22_24": 7740
+    "t16_18": 0,
+    "t18_20": 0,
+    "t20_22": 0,
+    "t22_24": 0
   };
   final int totalScreenTimeSecond = 24000;
 
@@ -245,8 +245,8 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
 
   Future<void> fetchData() async {
     String date = widget.today.toIso8601String().split('T')[0];
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? accessToken = prefs.getString('access_token');
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    String? accessToken = authProvider.accessToken;
 
     final response = await http.get(
       Uri.parse('http://3.38.165.93:8080/api/v1/stat/daily?date=$date'),
@@ -375,8 +375,7 @@ class _ScreenTimeSummaryState extends State<ScreenTimeSummary> {
                   ),
                   child: Text(
                     selectedTime!,
-                    style: const TextStyle(
-                        fontSize: 14, color: Colors.grey),
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                 ),
               const SizedBox(height: 16),
@@ -570,8 +569,8 @@ class _WeekViewState extends State<WeekView> {
 
   Future<void> fetchWeeklyData() async {
     String date = DateFormat('yyyy-MM-dd').format(today);
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? accessToken = prefs.getString('access_token');
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    String? accessToken = authProvider.accessToken;
 
     final response = await http.get(
         Uri.parse('http://3.38.165.93:8080/api/v1/stat/weekly?date=$date'),
@@ -895,8 +894,7 @@ class _MonthViewState extends State<MonthView> {
   DateTime now = DateTime.now();
   DateTime startOfMonth =
   DateTime(DateTime.now().year, DateTime.now().month, 1);
-  DateTime endOfMonth =
-  DateTime(DateTime.now().year, DateTime.now().month + 1, 0);
+  DateTime endOfMonth = DateTime(DateTime.now().year, DateTime.now().month + 1, 0);
 
   Map<String, dynamic>? monthlyData;
 
@@ -908,8 +906,8 @@ class _MonthViewState extends State<MonthView> {
 
   Future<void> fetchMonthlyData() async {
     String date = startOfMonth.toIso8601String().split('T')[0];
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? accessToken = prefs.getString('access_token');
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    String? accessToken = authProvider.accessToken;
 
     final response = await http.get(
       Uri.parse('http://3.38.165.93:8080/api/v1/stat/monthly?date=$date'),
@@ -1149,7 +1147,8 @@ class ConversationSummaryWidget extends StatefulWidget {
       _ConversationSummaryWidgetState();
 }
 
-class _ConversationSummaryWidgetState extends State<ConversationSummaryWidget> {
+class _ConversationSummaryWidgetState
+    extends State<ConversationSummaryWidget> {
   bool _isExpanded = false;
   final Color defaultTextColor = Colors.black;
 
@@ -1230,10 +1229,10 @@ class MoodRanking extends StatelessWidget {
     '중립': 'assets/neutral.png',
   };
 
-  Future<List<Map<String, dynamic>>> fetchEmotionData() async {
+  Future<List<Map<String, dynamic>>> fetchEmotionData(BuildContext context) async {
     String date = DateTime.now().toIso8601String().split('T')[0];
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? accessToken = prefs.getString('access_token');
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    String? accessToken = authProvider.accessToken;
 
     final response = await http.get(
         Uri.parse('http://3.38.165.93:8080/api/v1/stat/daily?date=$date'),
@@ -1262,16 +1261,10 @@ class MoodRanking extends StatelessWidget {
     }
   }
 
-  Color getMarkerColor(String emotion) {
-    return (emotion == '행복' || emotion == '중립' || emotion == '당황')
-        ? const Color(0x60FF7672)
-        : const Color(0xFFEC295D);
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Map<String, dynamic>>>(
-      future: fetchEmotionData(),
+      future: fetchEmotionData(context),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -1374,9 +1367,7 @@ class EmotionWidget extends StatelessWidget {
           Text(
             '$percentage%',
             style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.pinkAccent),
+                fontSize: 18, fontWeight: FontWeight.bold, color: Colors.pinkAccent),
           ),
           const SizedBox(height: 5),
           Image.asset(imagePath, height: 80),
@@ -1515,15 +1506,12 @@ class EmotionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     Color barColor = _getColorForEmotion(emotion);
     return Padding(
-      padding:
-      const EdgeInsets.symmetric(vertical: 20.0),
+      padding: const EdgeInsets.symmetric(vertical: 20.0),
       child: Row(
         children: [
           Text(emotion,
               style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFEC295D))),
+                  fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFFEC295D))),
           const SizedBox(width: 10),
           Expanded(
             child: ClipRRect(
@@ -1539,9 +1527,7 @@ class EmotionBar extends StatelessWidget {
           const SizedBox(width: 10),
           Text('$percentage%',
               style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFEC295D))),
+                  fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFFEC295D))),
         ],
       ),
     );
@@ -1574,8 +1560,8 @@ class _DetailedWeeklyConversationViewState
 
   Future<void> fetchDate() async {
     String date = selectedDay.toIso8601String().split('T')[0];
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? accessToken = prefs.getString('access_token');
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    String? accessToken = authProvider.accessToken;
 
     final response = await http.get(
         Uri.parse('http://3.38.165.93:8080/api/v1/stat/daily?date=$date'),
@@ -1660,8 +1646,7 @@ class _DetailedWeeklyConversationViewState
                         onTap: () {
                           Navigator.pop(context);
                         },
-                        child:
-                        SvgPicture.asset('assets/icon_eut.svg', height: 80),
+                        child: SvgPicture.asset('assets/icon_eut.svg', height: 80),
                       ),
                     ],
                   ),
@@ -1722,8 +1707,7 @@ class _DetailedWeeklyConversationViewState
                                 : Colors.transparent,
                             shape: BoxShape.circle,
                             border: weekDays[index].day == DateTime.now().day &&
-                                weekDays[index].month ==
-                                    DateTime.now().month &&
+                                weekDays[index].month == DateTime.now().month &&
                                 weekDays[index].year == DateTime.now().year
                                 ? Border.all(color: Colors.pinkAccent, width: 2)
                                 : null,
@@ -2071,8 +2055,8 @@ class _DetailedMonthlyConversationViewState
 
   Future<void> fetchDate() async {
     String date = _selectedDay.toIso8601String().split('T')[0];
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? accessToken = prefs.getString('access_token');
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    String? accessToken = authProvider.accessToken;
 
     final response = await http.get(
         Uri.parse('http://3.38.165.93:8080/api/v1/stat/daily?date=$date'),
@@ -2106,8 +2090,8 @@ class _DetailedMonthlyConversationViewState
   }
 
   void fetchMonthlyData() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? accessToken = prefs.getString('access_token');
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    String? accessToken = authProvider.accessToken;
 
     final response = await http.get(
         Uri.parse(
@@ -2177,8 +2161,7 @@ class _DetailedMonthlyConversationViewState
                     children: [
                       const SizedBox(width: 10),
                       IconButton(
-                        icon:
-                        SvgPicture.asset('assets/icon_eut.svg', height: 80),
+                        icon: SvgPicture.asset('assets/icon_eut.svg', height: 80),
                         onPressed: () {
                           Navigator.pop(context);
                         },
@@ -2252,8 +2235,9 @@ class _DetailedMonthlyConversationViewState
                       return Container();
                     }
                     if (events.isNotEmpty) {
-                      final ratio = (events[0]
-                      as Map<String, dynamic>)['negativityRatio'] as double;
+                      final ratio =
+                      (events[0] as Map<String, dynamic>)['negativityRatio']
+                      as double;
                       return Container(
                         width: 10,
                         height: 10,

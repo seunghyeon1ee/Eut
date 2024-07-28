@@ -1,3 +1,5 @@
+//todo : 이 코드 대신에 fcm_provider를 만들어 준건데,, 혹시 몰라서 남겨는 둠
+//todo: 근데 또 밑에 home_screen을 fcm_provider로 구현하려니까 어려워서..그냥 두고 얘로 함
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';

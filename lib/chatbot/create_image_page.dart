@@ -3,11 +3,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // SVG 패키지 임포트
 import 'dart:async';
-import 'image_item.dart';
+import 'package:provider/provider.dart'; // Provider 패키지 임포트
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:http_parser/http_parser.dart';
+import '../provider/create_image_provider.dart';
+import 'image_item.dart';
+
 
 class CreateImagePage extends StatefulWidget {
   final Function(ImageItem) onImageCreated;
@@ -20,17 +23,10 @@ class CreateImagePage extends StatefulWidget {
 
 class _CreateImagePageState extends State<CreateImagePage> {
   final TextEditingController _nameController = TextEditingController();
-  String? _selectedImagePath;
-  List<String> _imagePaths = [
-    'assets/neutral.png',
-    'assets/neutral_girl.png',
-    'assets/neutral.png',
-  ];
-  int _currentIndex = 0;
-  String? _recordingFilePath;
 
   void _saveImageItem() async {
-    if (_selectedImagePath != null && _nameController.text.isNotEmpty && _recordingFilePath != null) {
+    final provider = Provider.of<CreateImageProvider>(context, listen: false);
+    if (provider.selectedImagePath != null && _nameController.text.isNotEmpty && provider.recordingFilePath != null) {
       try {
         final request = http.MultipartRequest(
           'POST',
@@ -42,7 +38,7 @@ class _CreateImagePageState extends State<CreateImagePage> {
         request.fields['characterName'] = _nameController.text;
 
         // Add voiceFile field
-        final file = File(_recordingFilePath!);
+        final file = File(provider.recordingFilePath!);
         request.files.add(
           http.MultipartFile.fromBytes(
             'voiceFile',
@@ -70,7 +66,7 @@ class _CreateImagePageState extends State<CreateImagePage> {
               memberId: memberId,
               characterName: characterName,
               voiceId: voiceId,
-              imagePath: _selectedImagePath!,
+              imagePath: provider.selectedImagePath!,
               emotionImages: {}, // 초기화할 필요가 있다면 설정
             ),
           );
@@ -122,18 +118,14 @@ class _CreateImagePageState extends State<CreateImagePage> {
   @override
   void initState() {
     super.initState();
-    _selectedImagePath = _imagePaths[_currentIndex];
-  }
-
-  void _onImageChanged(int index) {
-    setState(() {
-      _currentIndex = index;
-      _selectedImagePath = _imagePaths[index];
-    });
+    final provider = Provider.of<CreateImageProvider>(context, listen: false);
+    provider.setImagePath(0); // 초기 이미지 설정
   }
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<CreateImageProvider>(context);
+
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(140.0),
@@ -201,15 +193,17 @@ class _CreateImagePageState extends State<CreateImagePage> {
               children: [
                 Expanded(
                   child: PageView.builder(
-                    itemCount: _imagePaths.length,
+                    itemCount: provider.imagePaths.length,
                     controller: PageController(viewportFraction: 0.8),
-                    onPageChanged: _onImageChanged,
+                    onPageChanged: (index) {
+                      provider.setImagePath(index);
+                    },
                     itemBuilder: (context, index) {
                       return AnimatedBuilder(
                         animation: PageController(viewportFraction: 0.8),
                         builder: (context, child) {
                           return Transform.scale(
-                            scale: index == _currentIndex ? 1.0 : 0.8,
+                            scale: index == provider.currentIndex ? 1.0 : 0.8,
                             child: child,
                           );
                         },
@@ -217,13 +211,13 @@ class _CreateImagePageState extends State<CreateImagePage> {
                           margin: EdgeInsets.symmetric(horizontal: 10.0),
                           decoration: BoxDecoration(
                             border: Border.all(
-                              color: _currentIndex == index
+                              color: provider.currentIndex == index
                                   ? Colors.blue
                                   : Colors.transparent,
                               width: 2.0,
                             ),
                           ),
-                          child: Image.asset(_imagePaths[index]),
+                          child: Image.asset(provider.imagePaths[index]),
                         ),
                       );
                     },
@@ -238,9 +232,7 @@ class _CreateImagePageState extends State<CreateImagePage> {
                 SizedBox(height: 16),
                 VoiceRecordWidget(
                   onAudioFilePathUpdated: (filePath) {
-                    setState(() {
-                      _recordingFilePath = filePath;
-                    });
+                    provider.setRecordingFilePath(filePath);
                   },
                 ),
               ],

@@ -1,16 +1,17 @@
+//todo: 이거 어케건들지 몰라서 그냥 fcm_controller 사용함
 import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:provider/provider.dart'; // Provider 패키지 추가
 import 'package:taba_app_proj/chatbot/chat_test.dart';
 import 'package:taba_app_proj/screen/register_elder_fin.dart';
 import 'package:taba_app_proj/screen/register_fam_1.dart';
 import 'package:taba_app_proj/screen/register_fam_fin.dart';
-
 import '../controller/fcm_controller.dart';
-
+import '../provider/auth_provider.dart'; // auth_provider.dart 추가
 import 'package:responsive_builder/responsive_builder.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -28,33 +29,39 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
-    FcmController.instance.initializeNotification();
     super.initState();
+    FcmController.instance.initializeNotification();
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) async {
       debugPrint('A new onMessageOpenedApp event was published!');
       await Get.to(ChatTest(
         imagePath: imageItems[index].imagePath,
         emotionImages: imageItems[index].emotionImages,
       ));
+    });
 
+    // 앱이 시작될 때 accessToken 설정
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      authProvider.setAccessToken(widget.accessToken);
     });
   }
 
   /// 앱 종료시 로컬 푸시를 클릭해 앱을 켰는지 체크
   Future<void> _listenerWithTerminated() async {
     FlutterLocalNotificationsPlugin localNotification =
-        FlutterLocalNotificationsPlugin();
+    FlutterLocalNotificationsPlugin();
 
     NotificationAppLaunchDetails? details =
-        await localNotification.getNotificationAppLaunchDetails();
+    await localNotification.getNotificationAppLaunchDetails();
     if (details != null) {
       if (details.didNotificationLaunchApp) {
         debugPrint(
             'did Notification Launch App: ${details.notificationResponse?.payload}');
 
-        Get.to(ChatTest( imagePath: imageItems[index].imagePath,
-          emotionImages: imageItems[index].emotionImages,));
+        Get.to(ChatTest(
+          imagePath: imageItems[index].imagePath,
+          emotionImages: imageItems[index].emotionImages,
+        ));
 
         if (details.notificationResponse?.payload != null) {}
       }
@@ -63,21 +70,24 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final accessToken = authProvider.accessToken;
+
     return SafeArea(
       child: Scaffold(
         body: Padding(
           padding: EdgeInsets.all(10),
           child: ScreenTypeLayout.builder(
-            mobile: (BuildContext context) => buildMobileLayout(context),
-            tablet: (BuildContext context) => buildTabletLayout(context),
-            desktop: (BuildContext context) => buildDesktopLayout(context),
+            mobile: (BuildContext context) => buildMobileLayout(context, accessToken),
+            tablet: (BuildContext context) => buildTabletLayout(context, accessToken),
+            desktop: (BuildContext context) => buildDesktopLayout(context, accessToken),
           ),
         ),
       ),
     );
   }
 
-  Widget buildMobileLayout(BuildContext context) {
+  Widget buildMobileLayout(BuildContext context, String? accessToken) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -165,8 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
                 style: OutlinedButton.styleFrom(
                   minimumSize: Size(350, 52), // width: 200, height: 60
-                  padding:
-                  EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -190,11 +199,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget buildTabletLayout(BuildContext context) {
-    return buildMobileLayout(context); // 간단히 모바일 레이아웃을 재사용
+  Widget buildTabletLayout(BuildContext context, String? accessToken) {
+    return buildMobileLayout(context, accessToken); // 간단히 모바일 레이아웃을 재사용
   }
 
-  Widget buildDesktopLayout(BuildContext context) {
-    return buildMobileLayout(context);
+  Widget buildDesktopLayout(BuildContext context, String? accessToken) {
+    return buildMobileLayout(context, accessToken);
   }
 }
