@@ -61,7 +61,8 @@ class FcmProvider with ChangeNotifier {
       _handleMessage(context, initialMessage);
     }
 
-    _foregroundPushSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    _foregroundPushSubscription =
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (Platform.isAndroid) showFlutterNotification(message);
     });
 
@@ -74,7 +75,8 @@ class FcmProvider with ChangeNotifier {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ChatTest(imagePath: 'assets/sample.png', emotionImages: {}),
+        builder: (context) =>
+            const ChatTest(imagePath: 'assets/sample.png', emotionImages: {}),
       ),
     );
   }

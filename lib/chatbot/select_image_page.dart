@@ -1,16 +1,19 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:taba_app_proj/model/character_model.dart';
+import '../provider/auth_provider.dart';
 import '../provider/create_image_provider.dart';
 import 'create_image_page.dart';
 import 'edit_image_page.dart';
 import 'chat_test.dart';
 import 'image_item.dart';
-
 
 class SelectImagePage extends StatefulWidget {
   @override
@@ -25,10 +28,20 @@ class _SelectImagePageState extends State<SelectImagePage> {
   }
 
   Future<void> _fetchCharacterList() async {
-    final response = await http.get(Uri.parse('http://3.38.165.93:8080/characters'));
+    final prefs = await SharedPreferences.getInstance();
+    String? accessToken = prefs.getString('access_token');
+
+    final response = await http.get(
+        Uri.parse('http://3.38.165.93:8080/api/v1/character'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        });
+    log(response.body);
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body);
+      final data = json.decode(utf8.decode(response.bodyBytes));
       final List<dynamic> characters = data['result'];
 
       Provider.of<CreateImageProvider>(context, listen: false).setImageItems(
@@ -37,16 +50,22 @@ class _SelectImagePageState extends State<SelectImagePage> {
           final memberId = character['memberId'] as int?;
           final characterName = character['characterName'] as String?;
           final voiceId = character['voiceId'] as String?;
+          final characterCode = character['characterCode'] as String?;
 
-          final imagePath = 'assets/default_image.png';
+          final CharacterModel characterModel = characterCode == 'boy'
+              ? CharacterModel.boy()
+              : CharacterModel.girl();
+
+          final imagePath = characterModel.getEmotionImage(Emotion.neutral);
+
           final emotionImages = {
-            '슬픔': 'assets/sad.png',
-            '분노': 'assets/angry.png',
-            '당황': 'assets/confused.png',
-            '불안': 'assets/anxious.png',
-            '행복': 'assets/happy.png',
-            '중립': 'assets/neutral.png',
-            '혐오': 'assets/disgusted.png',
+            '슬픔': characterModel.getEmotionImage(Emotion.sad),
+            '분노': characterModel.getEmotionImage(Emotion.angry),
+            '당황': characterModel.getEmotionImage(Emotion.confused),
+            '불안': characterModel.getEmotionImage(Emotion.anxious),
+            '행복': characterModel.getEmotionImage(Emotion.happy),
+            '중립': characterModel.getEmotionImage(Emotion.neutral),
+            '혐오': characterModel.getEmotionImage(Emotion.disgusted),
           };
 
           return ImageItem(
@@ -118,7 +137,8 @@ class _SelectImagePageState extends State<SelectImagePage> {
       MaterialPageRoute(
         builder: (context) => EditImagePage(
           initialIndex: index,
-          imageItems: Provider.of<CreateImageProvider>(context, listen: false).imageItems,
+          imageItems: Provider.of<CreateImageProvider>(context, listen: false)
+              .imageItems,
         ),
       ),
     ).then((_) {
@@ -131,7 +151,8 @@ class _SelectImagePageState extends State<SelectImagePage> {
       context,
       MaterialPageRoute(
         builder: (context) => CreateImagePage(onImageCreated: (newImageItem) {
-          final provider = Provider.of<CreateImageProvider>(context, listen: false);
+          final provider =
+              Provider.of<CreateImageProvider>(context, listen: false);
           provider.addImageItem(newImageItem);
         }),
       ),
@@ -173,15 +194,19 @@ class _SelectImagePageState extends State<SelectImagePage> {
           Container(
             margin: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
-              color: provider.isEditing ? Colors.grey[200] : (isSelected ? Colors.pink[50] : Colors.grey[200]),
+              color: provider.isEditing
+                  ? Colors.grey[200]
+                  : (isSelected ? Colors.pink[50] : Colors.grey[200]),
               borderRadius: BorderRadius.circular(8.0),
             ),
             child: Center(
               child: Opacity(
                 opacity: provider.isEditing ? 0.3 : 1.0,
                 child: provider.imageItems[index].imagePath.endsWith('.svg')
-                    ? SvgPicture.asset(provider.imageItems[index].imagePath, width: 150, height: 150)
-                    : Image.asset(provider.imageItems[index].imagePath, width: 150, height: 150),
+                    ? SvgPicture.asset(provider.imageItems[index].imagePath,
+                        width: 150, height: 150)
+                    : Image.asset(provider.imageItems[index].imagePath,
+                        width: 150, height: 150),
               ),
             ),
           ),
@@ -281,7 +306,8 @@ class _SelectImagePageState extends State<SelectImagePage> {
                             ),
                           );
                         },
-                        child: SvgPicture.asset('assets/icon_eut.svg', height: 80),
+                        child:
+                            SvgPicture.asset('assets/icon_eut.svg', height: 80),
                       ),
                     ],
                   ),

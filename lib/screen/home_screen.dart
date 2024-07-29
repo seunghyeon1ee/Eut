@@ -42,17 +42,17 @@ class _HomeScreenState extends State<HomeScreen> {
     // 앱이 시작될 때 accessToken 설정
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      authProvider.setAccessToken(widget.accessToken);
+      // authProvider.setAccessToken(widget.accessToken);
     });
   }
 
   /// 앱 종료시 로컬 푸시를 클릭해 앱을 켰는지 체크
   Future<void> _listenerWithTerminated() async {
     FlutterLocalNotificationsPlugin localNotification =
-    FlutterLocalNotificationsPlugin();
+        FlutterLocalNotificationsPlugin();
 
     NotificationAppLaunchDetails? details =
-    await localNotification.getNotificationAppLaunchDetails();
+        await localNotification.getNotificationAppLaunchDetails();
     if (details != null) {
       if (details.didNotificationLaunchApp) {
         debugPrint(
@@ -78,9 +78,12 @@ class _HomeScreenState extends State<HomeScreen> {
         body: Padding(
           padding: EdgeInsets.all(10),
           child: ScreenTypeLayout.builder(
-            mobile: (BuildContext context) => buildMobileLayout(context, accessToken),
-            tablet: (BuildContext context) => buildTabletLayout(context, accessToken),
-            desktop: (BuildContext context) => buildDesktopLayout(context, accessToken),
+            mobile: (BuildContext context) =>
+                buildMobileLayout(context, accessToken),
+            tablet: (BuildContext context) =>
+                buildTabletLayout(context, accessToken),
+            desktop: (BuildContext context) =>
+                buildDesktopLayout(context, accessToken),
           ),
         ),
       ),
@@ -117,9 +120,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
-            Row(
+            const Row(
               children: [
-                const SizedBox(width: 15.0, height: 100.0),
+                SizedBox(width: 15.0, height: 100.0),
                 Text(
                   '이웃이 있으면 가깝고, 웃음이 있으면 밝고\n이웃을 지금 시작해보세요!',
                   style: TextStyle(
@@ -145,24 +148,24 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(10),
               child: Center(
                   child: Ink(
-                    width: 350,
-                    height: 52,
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        gradient: LinearGradient(
-                            colors: [Color(0xFFEC295D), Color(0xFFFF7672)])),
-                    child: Center(
-                      child: Text(
-                        '시작하기',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontFamily: 'Noto Sans',
-                            fontWeight: FontWeight.w600,
-                            height: 0.07),
-                      ),
-                    ),
-                  )),
+                width: 350,
+                height: 52,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    gradient: LinearGradient(
+                        colors: [Color(0xFFEC295D), Color(0xFFFF7672)])),
+                child: Center(
+                  child: Text(
+                    '시작하기',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontFamily: 'Noto Sans',
+                        fontWeight: FontWeight.w600,
+                        height: 0.07),
+                  ),
+                ),
+              )),
             ),
             const SizedBox(height: 15.0),
             Center(

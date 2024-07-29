@@ -19,7 +19,6 @@ import 'provider/greeting.dart';
 import 'provider/create_image_provider.dart';
 import 'chatbot/chat_test.dart';
 
-
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -32,7 +31,8 @@ void main() async {
   }
 
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: SystemUiOverlay.values);
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+      overlays: SystemUiOverlay.values);
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarBrightness: Brightness.light,
   ));
@@ -61,7 +61,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Provider.of<AuthProvider>(context, listen: false).setAccessToken(accessToken);
+    // Provider.of<AuthProvider>(context, listen: false).setAccessToken(accessToken);
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
@@ -69,7 +69,8 @@ class App extends StatelessWidget {
         builder: (context, sizingInformation) {
           if (sizingInformation.deviceScreenType == DeviceScreenType.mobile) {
             return HomeScreen();
-          } else if (sizingInformation.deviceScreenType == DeviceScreenType.tablet) {
+          } else if (sizingInformation.deviceScreenType ==
+              DeviceScreenType.tablet) {
             return HomeScreen(accessToken: accessToken);
           } else {
             return HomeScreen(accessToken: accessToken);
@@ -111,7 +112,8 @@ void onSelectNotification(NotificationResponse notificationResponse) async {
   Get.to(ChatTest(imagePath: 'assets/neutral.png', emotionImages: {}));
   if (notificationResponse.payload != null &&
       notificationResponse.payload.toString().isNotEmpty) {
-    final Map<String, dynamic> payload = jsonDecode(notificationResponse.payload!);
+    final Map<String, dynamic> payload =
+        jsonDecode(notificationResponse.payload!);
     debugPrint('notification payload: $payload');
   }
 }
@@ -134,9 +136,9 @@ Future<void> setupFlutterNotifications() async {
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   const AndroidInitializationSettings initializationSettingsAndroid =
-  AndroidInitializationSettings('app_icon');
+      AndroidInitializationSettings('app_icon');
   final DarwinInitializationSettings initializationSettingsDarwin =
-  DarwinInitializationSettings(
+      DarwinInitializationSettings(
     requestSoundPermission: false,
     requestBadgePermission: false,
     requestAlertPermission: false,
@@ -167,7 +169,7 @@ Future<void> setupFlutterNotifications() async {
     ],
   );
   final LinuxInitializationSettings initializationSettingsLinux =
-  LinuxInitializationSettings(defaultActionName: 'Open notification');
+      LinuxInitializationSettings(defaultActionName: 'Open notification');
   final InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
@@ -182,7 +184,7 @@ Future<void> setupFlutterNotifications() async {
 
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
-      AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
