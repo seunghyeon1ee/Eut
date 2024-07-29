@@ -45,7 +45,7 @@ class _CreateImagePageState extends State<CreateImagePage> {
       try {
         final request = http.MultipartRequest(
           'POST',
-          Uri.parse('http://3.38.165.93:8080/characters'),
+          Uri.parse('http://3.38.165.93:8080/character'),
         );
         request.headers['Content-Type'] = 'multipart/form-data';
         request.headers['Authorization'] = 'Bearer ${authProvider.accessToken}'; // 토큰 포함
@@ -114,7 +114,7 @@ class _CreateImagePageState extends State<CreateImagePage> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
               decoration: BoxDecoration(
-                color: Colors.pink,
+                color: Colors.black.withOpacity(0.8),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -224,9 +224,9 @@ class _CreateImagePageState extends State<CreateImagePage> {
                           decoration: BoxDecoration(
                             border: Border.all(
                               color: provider.currentIndex == index
-                                  ? Colors.blue
+                                  ? Colors.transparent
                                   : Colors.transparent,
-                              width: 2.0,
+                              width: 1.0,
                             ),
                           ),
                           child: Image.asset(provider.imagePaths[index]),
@@ -342,7 +342,7 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
           Container(
             height: 50,
             decoration: BoxDecoration(
-              color: isRecording || isRecorded ? Color(0xFFEC295D) : Colors.grey[200],
+              color: isRecording || isRecorded ? Color(0xFFEC295D).withOpacity(0.3) : Colors.grey[200],
               borderRadius: BorderRadius.circular(10),
             ),
             child: Center(
@@ -366,13 +366,13 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
                 FloatingActionButton(
                   onPressed: stopRecording,
                   backgroundColor: Color(0xFFEC295D),
-                  child: Icon(Icons.stop, size: 30),
+                  child: Icon(Icons.stop, size: 30, color: Colors.white,),
                 ),
               if (!isRecording && !isRecorded)
                 FloatingActionButton(
                   onPressed: startRecording,
                   backgroundColor: Color(0xFFEC295D),
-                  child: Icon(Icons.mic, size: 30),
+                  child: Icon(Icons.mic, size: 30, color: Colors.white,),
                 ),
               if (!isRecording && isRecorded)
                 IconButton(

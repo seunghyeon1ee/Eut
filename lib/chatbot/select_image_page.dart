@@ -293,7 +293,7 @@ class _SelectImagePageState extends State<SelectImagePage> {
                 children: [
                   Row(
                     children: [
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 10,),
                       GestureDetector(
                         onTap: () {
                           Navigator.push(

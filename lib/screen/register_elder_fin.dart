@@ -414,6 +414,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                   children: [
                     Row(
                       children: [
+                        SizedBox(width: 10),
                         Container(
                           width: 195,
                           height: 52,
@@ -675,43 +676,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                             border: Border.all(color: Colors.grey, width: 1.0),
                           ),
                           child: IconButton(
-                            icon: Image.asset('assets/kakao.png',
-                                width: 30, height: 30),
-                            onPressed: _loginWithKakao,
-                          ),
-                        ),
-                        //SizedBox(width: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.grey, width: 1.0),
-                          ),
-                          child: IconButton(
-                            icon: Image.asset('assets/naver.png', width: 30, height: 30),
-                            onPressed: _loginWithNaver,
-                          ),
-                        ),
-                        //SizedBox(width: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.grey, width: 1.0),
-                          ),
-                          child: IconButton(
-                            icon: Image.asset('assets/apple.png',
-                                width: 30, height: 30),
-                            onPressed: _loginWithApple,
-                          ),
-                        ),
-                        //SizedBox(width: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.grey, width: 1.0),
-                          ),
-                          child: IconButton(
                             icon: Image.asset('assets/google.png',
-                                width: 30, height: 30),
+                                width: 25, height: 25),
                             onPressed: _loginWithGoogle,
                           ),
                         ),
