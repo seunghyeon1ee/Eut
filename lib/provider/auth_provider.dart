@@ -32,7 +32,10 @@ class AuthProvider with ChangeNotifier {
         await _auth.signInWithCredential(credential);
         final User? user = _auth.currentUser;
         if (user != null) {
-          final token = await user.getIdToken();
+          // 토큰 발급 로직 추가
+          final token = await _auth.currentUser!.getIdToken();
+          setAccessToken(token);
+         // final token = await user.getIdToken();
           // setAccessToken(token);
         }
       },
