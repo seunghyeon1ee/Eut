@@ -152,7 +152,7 @@ class _SelectImagePageState extends State<SelectImagePage> {
       MaterialPageRoute(
         builder: (context) => CreateImagePage(onImageCreated: (newImageItem) {
           final provider =
-              Provider.of<CreateImageProvider>(context, listen: false);
+          Provider.of<CreateImageProvider>(context, listen: false);
           provider.addImageItem(newImageItem);
         }),
       ),
@@ -204,9 +204,9 @@ class _SelectImagePageState extends State<SelectImagePage> {
                 opacity: provider.isEditing ? 0.3 : 1.0,
                 child: provider.imageItems[index].imagePath.endsWith('.svg')
                     ? SvgPicture.asset(provider.imageItems[index].imagePath,
-                        width: 150, height: 150)
+                    width: 150, height: 150)
                     : Image.asset(provider.imageItems[index].imagePath,
-                        width: 150, height: 150),
+                    width: 150, height: 150),
               ),
             ),
           ),
@@ -279,13 +279,13 @@ class _SelectImagePageState extends State<SelectImagePage> {
     final provider = Provider.of<CreateImageProvider>(context);
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(140.0),
+        preferredSize: const Size.fromHeight(120.0),
         child: AppBar(
           automaticallyImplyLeading: false,
           backgroundColor: Colors.white,
           elevation: 0,
           flexibleSpace: Padding(
-            padding: const EdgeInsets.only(top: 30),
+            padding: const EdgeInsets.only(top: 30, right: 16),
             child: Align(
               alignment: Alignment.topLeft,
               child: Row(
@@ -307,19 +307,21 @@ class _SelectImagePageState extends State<SelectImagePage> {
                           );
                         },
                         child:
-                            SvgPicture.asset('assets/icon_eut.svg', height: 80),
+                        SvgPicture.asset('assets/icon_eut.svg', height: 80),
                       ),
                     ],
                   ),
                   Container(
-                    padding: EdgeInsets.all(8.0),
+                    padding: EdgeInsets.symmetric(vertical: 2.0, horizontal: 4.0),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey, width: 2.0),
+                      border: Border.all(color: Colors.grey, width: 1.0),
                       borderRadius: BorderRadius.circular(20),
                       color: Colors.white,
                     ),
                     child: TextButton.icon(
-                      icon: Icon(provider.isEditing ? Icons.check : Icons.edit),
+                      icon: Icon(provider.isEditing ? Icons.check : Icons.edit,
+                        color: provider.isEditing ? Colors.grey : Color(0xFFEC295D),
+                      ),
                       label: Text(
                         provider.isEditing ? '완료' : '수정하기',
                         style: TextStyle(color: Colors.black),
@@ -341,24 +343,27 @@ class _SelectImagePageState extends State<SelectImagePage> {
           ),
         ),
       ),
-      body: ResponsiveBuilder(
-        builder: (context, size) {
-          return GridView.builder(
-            padding: const EdgeInsets.all(8.0),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: size.isDesktop ? 4 : (size.isTablet ? 3 : 2),
-              crossAxisSpacing: 8.0,
-              mainAxisSpacing: 8.0,
-            ),
-            itemCount: provider.imageItems.length + 1,
-            itemBuilder: (context, index) {
-              if (index == provider.imageItems.length) {
-                return _buildAddButton();
-              }
-              return _buildImageItem(index);
-            },
-          );
-        },
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ResponsiveBuilder(
+          builder: (context, size) {
+            return GridView.builder(
+              padding: const EdgeInsets.all(8.0),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: size.isDesktop ? 4 : (size.isTablet ? 3 : 2),
+                crossAxisSpacing: 8.0,
+                mainAxisSpacing: 8.0,
+              ),
+              itemCount: provider.imageItems.length + 1,
+              itemBuilder: (context, index) {
+                if (index == provider.imageItems.length) {
+                  return _buildAddButton();
+                }
+                return _buildImageItem(index);
+              },
+            );
+          },
+        ),
       ),
     );
   }
