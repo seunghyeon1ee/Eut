@@ -169,7 +169,7 @@ class _CreateImagePageState extends State<CreateImagePage> {
                         child: Container(
                           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           decoration: BoxDecoration(
-                            color: Colors.blue,
+                            color: Color(0xFFEC295D),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
@@ -316,7 +316,7 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
 
     widget.onAudioFilePathUpdated(file.path);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('녹음 파일이 저장되었습니다: ${file.path}')),
+      SnackBar(content: Text('녹음 파일이 저장되었습니다.: ${file.path}')),
     );
   }
 
@@ -342,7 +342,7 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
           Container(
             height: 50,
             decoration: BoxDecoration(
-              color: isRecording || isRecorded ? Colors.red[100] : Colors.grey[200],
+              color: isRecording || isRecorded ? Color(0xFFEC295D) : Colors.grey[200],
               borderRadius: BorderRadius.circular(10),
             ),
             child: Center(
@@ -360,27 +360,27 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('취소', style: TextStyle(color: Colors.red, fontSize: 18)),
+                child: Text('취소', style: TextStyle(color: Color(0xFFEC295D), fontSize: 18)),
               ),
               if (isRecording)
                 FloatingActionButton(
                   onPressed: stopRecording,
-                  backgroundColor: Colors.red,
+                  backgroundColor: Color(0xFFEC295D),
                   child: Icon(Icons.stop, size: 30),
                 ),
               if (!isRecording && !isRecorded)
                 FloatingActionButton(
                   onPressed: startRecording,
-                  backgroundColor: Colors.red,
+                  backgroundColor: Color(0xFFEC295D),
                   child: Icon(Icons.mic, size: 30),
                 ),
               if (!isRecording && isRecorded)
                 IconButton(
-                  icon: Icon(Icons.refresh, color: Colors.red),
+                  icon: Icon(Icons.refresh, color: Color(0xFFEC295D)),
                   onPressed: resetRecording,
                 ),
               IconButton(
-                icon: Icon(Icons.send, color: (isRecorded || isRecording) ? Colors.red : Colors.grey),
+                icon: Icon(Icons.send, color: (isRecorded || isRecording) ? Color(0xFFEC295D) : Colors.grey),
                 onPressed: () {
                   if (isRecorded) {
                     _saveRecording();

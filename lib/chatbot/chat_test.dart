@@ -63,7 +63,7 @@ class _ChatTestState extends State<ChatTest> {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
-          'text': '독거노인에게 안부를 물어보는 말을 걸어줘. 날씨 얘기는 가급적 하지마',
+          'text': '독거노인에게 안부를 물어보는 말을 걸어줘. 날씨 얘기는 가급적 하지 마',
         }));
     print('response: ${utf8.decode(response.bodyBytes)}');
     if (response.statusCode == 200) {
@@ -247,7 +247,7 @@ class _ChatTestState extends State<ChatTest> {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.black,
-              fontSize: isDesktop ? 28 : 22,
+              fontSize: isDesktop ? 32 : 26,
               fontFamily: 'Noto Sans',
               fontWeight: FontWeight.w600,
             ),

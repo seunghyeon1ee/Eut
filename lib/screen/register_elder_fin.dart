@@ -500,7 +500,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                               )),
                         ],
                       ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 20),
                     TextButton(
                       onPressed: _buttonConfirmColor == Color(0xFFEC295D)
                           ? () async {
@@ -594,28 +594,52 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                               fontWeight: FontWeight.w600,
                               height: 0.07)),
                     ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 50),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        IconButton(
-                          icon: Image.asset('assets/kakao.png', width: 30, height: 30),
-                          onPressed: _loginWithKakao,
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.grey, width: 1.0),
+                          ),
+                          child: IconButton(
+                            icon: Image.asset('assets/kakao.png', width: 30, height: 30),
+                            onPressed: _loginWithKakao,
+                          ),
                         ),
-                        SizedBox(width: 8),
-                        IconButton(
-                          icon: Image.asset('assets/naver.png', width: 30, height: 30),
+                        // SizedBox(width: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.grey, width: 1.0),
+                          ),
+                          child: IconButton(
+                          icon: Image.asset('assets/naver.png', width: 20, height: 20),
                           onPressed: _loginWithNaver,
                         ),
-                        SizedBox(width: 8),
-                        IconButton(
-                          icon: Image.asset('assets/apple.png', width: 30, height: 30),
+                        ),
+                        //SizedBox(width: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.grey, width: 1.0),
+                          ),
+                          child: IconButton(
+                          icon: Image.asset('assets/apple.png', width: 25, height: 25),
                           onPressed: _loginWithApple,
                         ),
-                        SizedBox(width: 8),
-                        IconButton(
-                          icon: Image.asset('assets/google.png', width: 30, height: 30),
+                        ),
+                        //SizedBox(width: 8),
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.grey, width: 1.0),
+                          ),
+                          child: IconButton(
+                          icon: Image.asset('assets/google.png', width: 25, height: 25),
                           onPressed: _loginWithGoogle,
+                        ),
                         ),
                       ],
                     ),
