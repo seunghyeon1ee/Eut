@@ -18,15 +18,17 @@ import 'package:taba_app_proj/chatbot/select_image_page.dart';
 import '../controller/fcm_controller.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 
+import '../provider/create_image_provider.dart';
+
 class ChatTest extends StatefulWidget {
   final String imagePath;
   final Map<String, String> emotionImages;
 
   const ChatTest({
-    Key? key,
+    super.key,
     required this.imagePath,
     required this.emotionImages,
-  }) : super(key: key);
+  });
 
   @override
   State<ChatTest> createState() => _ChatTestState();
@@ -38,10 +40,9 @@ class _ChatTestState extends State<ChatTest> {
   bool _isRecording = false;
   String _sttResult = '녹음 버튼을 누르세요.';
   final String _sttApiUrl = 'http://3.38.165.93:8080/api/v1/chat/stt';
-  final String _ttsApiUrl =
-      'https://api.elevenlabs.io/v1/text-to-speech/VDHVV8QN47SSt26Po3BA';
+  final String _ttsApiUrl = 'https://api.elevenlabs.io/v1/text-to-speech';
   final String _apiKey = 'cef4d9cb6ac0ca3bf613183df847472c';
-  String topEmotion = 'neutral'; // 감정을 나타내는 변수
+  String topEmotion = '중립'; // 감정을 나타내는 변수
   bool _useGirlImages = false; // 이미지 세트 선택 변수
 
   @override
@@ -56,27 +57,30 @@ class _ChatTestState extends State<ChatTest> {
   Future<void> fetchGreeting(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('access_token');
-    final response = await http.post(
-        Uri.parse('http://3.38.165.93:8080/api/v1/chat/text'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: jsonEncode({
-          'text': '독거노인에게 안부를 물어보는 말을 걸어줘. 날씨 얘기는 가급적 하지 마',
-        }));
+    final response =
+        await http.post(Uri.parse('http://3.38.165.93:8080/api/v1/chat/text'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode({
+              'text': '독거노인에게 안부를 물어보는 말을 걸어줘. 날씨 얘기는 가급적 하지마',
+            }));
     print('response: ${utf8.decode(response.bodyBytes)}');
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       print(jsonResponse);
-      if (jsonResponse['code'] == '0000' && jsonResponse['message'] == 'SUCCESS') {
-        final greetingProvider = Provider.of<GreetingProvider>(context, listen: false);
+      if (jsonResponse['code'] == '0000' &&
+          jsonResponse['message'] == 'SUCCESS') {
+        final greetingProvider =
+            Provider.of<GreetingProvider>(context, listen: false);
         greetingProvider.setGreeting(jsonResponse['result']['response']);
 
         textToSpeech(greetingProvider.greeting);
       }
     } else {
-      final greetingProvider = Provider.of<GreetingProvider>(context, listen: false);
+      final greetingProvider =
+          Provider.of<GreetingProvider>(context, listen: false);
       greetingProvider.setGreeting('환영 메시지 로드 실패');
     }
   }
@@ -140,7 +144,8 @@ class _ChatTestState extends State<ChatTest> {
           topEmotion = result['result']['sentiment_analysis']
               .reduce((a, b) => a['score'] > b['score'] ? a : b)['label'];
         });
-        final greetingProvider = Provider.of<GreetingProvider>(context, listen: false);
+        final greetingProvider =
+            Provider.of<GreetingProvider>(context, listen: false);
         greetingProvider.setGreeting(result['result']['gpt_response']);
         showTemporaryMessage(_sttResult);
         textToSpeech(greetingProvider.greeting);
@@ -166,8 +171,19 @@ class _ChatTestState extends State<ChatTest> {
 
   Future<void> textToSpeech(String text) async {
     try {
+      final imageProvider =
+          Provider.of<CreateImageProvider>(context, listen: false);
+
+      String? voiceId = 'pNInz6obpgDQGcFmaJgB'; // 기본값
+      if (imageProvider.imageItems.isNotEmpty) {
+        voiceId = imageProvider
+            .imageItems[
+                imageProvider.selectedIndex ?? imageProvider.currentIndex]
+            .voiceId;
+      }
+
       var response = await http.post(
-        Uri.parse(_ttsApiUrl),
+        Uri.parse('$_ttsApiUrl/$voiceId'),
         headers: {
           'Content-Type': 'application/json',
           'xi-api-key': _apiKey,
@@ -210,15 +226,30 @@ class _ChatTestState extends State<ChatTest> {
   Widget build(BuildContext context) {
     final greetingProvider = Provider.of<GreetingProvider>(context);
     String recordImagePath =
-    _isRecording ? 'assets/record_stop_icon.svg' : 'assets/record_icon.svg';
+        _isRecording ? 'assets/record_stop_icon.svg' : 'assets/record_icon.svg';
     Map<String, String> currentEmotionImages = widget.emotionImages;
-    String emotionImagePath = currentEmotionImages[topEmotion] ?? 'assets/neutral.png';
+    // String emotionImagePath =
+    //     currentEmotionImages[topEmotion] ?? 'assets/neutral.png';
+    final imageProvider =
+        Provider.of<CreateImageProvider>(context, listen: false);
+
+    int botImageListIndex =
+        imageProvider.selectedIndex ?? imageProvider.currentIndex;
+
+    String? emotionImagePath = imageProvider.imageItems.isNotEmpty
+        ? imageProvider.imageItems[botImageListIndex].emotionImages[topEmotion]
+        : 'assets/neutral.png';
+
     return SafeArea(
       child: Scaffold(
         body: ScreenTypeLayout.builder(
-          mobile: (_) => buildContent(context, emotionImagePath, greetingProvider.greeting),
-          tablet: (_) => buildContent(context, emotionImagePath, greetingProvider.greeting),
-          desktop: (_) => buildContent(context, emotionImagePath, greetingProvider.greeting, isDesktop: true),
+          mobile: (_) => buildContent(
+              context, emotionImagePath, greetingProvider.greeting),
+          tablet: (_) => buildContent(
+              context, emotionImagePath, greetingProvider.greeting),
+          desktop: (_) => buildContent(
+              context, emotionImagePath, greetingProvider.greeting,
+              isDesktop: true),
         ),
         floatingActionButton: IconButton(
           icon: SvgPicture.asset(
@@ -234,7 +265,9 @@ class _ChatTestState extends State<ChatTest> {
     );
   }
 
-  Widget buildContent(BuildContext context, String emotionImagePath, String greetingMessage, {bool isDesktop = false}) {
+  Widget buildContent(
+      BuildContext context, String? emotionImagePath, String greetingMessage,
+      {bool isDesktop = false}) {
     return Padding(
       padding: EdgeInsets.all(isDesktop ? 40 : 20),
       child: Column(
@@ -247,7 +280,7 @@ class _ChatTestState extends State<ChatTest> {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.black,
-              fontSize: isDesktop ? 32 : 26,
+              fontSize: isDesktop ? 28 : 22,
               fontFamily: 'Noto Sans',
               fontWeight: FontWeight.w600,
             ),
@@ -261,7 +294,7 @@ class _ChatTestState extends State<ChatTest> {
               );
             },
             child: Image.asset(
-              emotionImagePath,
+              emotionImagePath ?? 'assets/neutral.png',
               width: isDesktop ? 500 : 400,
               height: isDesktop ? 400 : 300,
             ),

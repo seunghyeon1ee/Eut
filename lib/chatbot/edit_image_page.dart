@@ -208,7 +208,7 @@ class _EditImagePageState extends State<EditImagePage> {
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(140.0),
+        preferredSize: const Size.fromHeight(120.0),
         child: AppBar(
           automaticallyImplyLeading: false,
           backgroundColor: Colors.white,

@@ -6,7 +6,8 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao_user;
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart'
+    as kakao_user;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:responsive_builder/responsive_builder.dart';
@@ -82,8 +83,10 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   bool _isTextFieldVisible = false;
   String _buttonText = '인증번호 발송';
 
-  final TextEditingController _controller = TextEditingController(); // 전화번호 입력 컨트롤러
-  final TextEditingController _confirmController = TextEditingController(); // 인증번호 입력 컨트롤러
+  final TextEditingController _controller =
+      TextEditingController(); // 전화번호 입력 컨트롤러
+  final TextEditingController _confirmController =
+      TextEditingController(); // 인증번호 입력 컨트롤러
   Color _buttonColor = Color(0xFFE2E2E2);
   Color _buttonConfirmColor = Color(0xFFE2E2E2);
   Color _textColor = Color(0xFFAEAEAE);
@@ -98,7 +101,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     await _auth.verifyPhoneNumber(
       phoneNumber: '+82${_controller.text}',
       timeout: const Duration(seconds: 60),
-      verificationCompleted: (firebase_auth.PhoneAuthCredential credential) async {
+      verificationCompleted:
+          (firebase_auth.PhoneAuthCredential credential) async {
         await _auth.signInWithCredential(credential);
       },
       verificationFailed: (firebase_auth.FirebaseAuthException e) {
@@ -168,7 +172,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
         });
       } else {
         _timer?.cancel();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("인증번호 유효시간이 만료되었습니다. 다시 시도해주세요.")));
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("인증번호 유효시간이 만료되었습니다. 다시 시도해주세요.")));
         setState(() {
           _isTextFieldVisible = false;
           _remainingTime = 300;
@@ -206,11 +211,13 @@ class _VerificationWidgetState extends State<VerificationWidget> {
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: jsonEncode(<String, String>{'phone': _controller.text, 'type': 'P'}),
+      body:
+          jsonEncode(<String, String>{'phone': _controller.text, 'type': 'P'}),
     );
 
     if (response.statusCode == 200) {
-      Map<String, dynamic> decodedJson = jsonDecode(utf8.decode(response.bodyBytes));
+      Map<String, dynamic> decodedJson =
+          jsonDecode(utf8.decode(response.bodyBytes));
       if (decodedJson['message'] == 'SUCCESS') {
         bool loginResult = await loginUser(_controller.text);
         return loginResult;
@@ -218,7 +225,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
         print('회원가입은 성공했지만 예상치 못한 응답 메시지입니다: ${decodedJson['message']}');
       }
     } else if (response.statusCode == 400) {
-      Map<String, dynamic> errorResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      Map<String, dynamic> errorResponse =
+          jsonDecode(utf8.decode(response.bodyBytes));
       if (errorResponse['message'].toString().contains('이미 존재하는 유저입니다')) {
         bool loginResult = await loginUser(_controller.text);
         if (loginResult) {
@@ -242,9 +250,11 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     );
 
     if (response.statusCode == 200) {
-      Map<String, dynamic> res = jsonDecode(response.body);
-      final prefs = await SharedPreferences.getInstance();
-      prefs.setString('access_token', res['result']['access_token']);
+      await saveUserData(response.body);
+
+      // Map<String, dynamic> res = jsonDecode(response.body);
+      // final prefs = await SharedPreferences.getInstance();
+      // prefs.setString('access_token', res['result']['access_token']);
       return true;
     }
     return false;
@@ -254,7 +264,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final responseData = jsonDecode(jsonResponse);
 
-    if (responseData['code'] == "0000" && responseData['message'] == "SUCCESS") {
+    if (responseData['code'] == "0000" &&
+        responseData['message'] == "SUCCESS") {
       String accessToken = responseData['result']['access_token'];
       String refreshToken = responseData['result']['refresh_token'];
       String phone = responseData['result']['phone'];
@@ -330,12 +341,15 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser != null) {
-        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-        final firebase_auth.AuthCredential credential = firebase_auth.GoogleAuthProvider.credential(
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
+        final firebase_auth.AuthCredential credential =
+            firebase_auth.GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         );
-        await firebase_auth.FirebaseAuth.instance.signInWithCredential(credential);
+        await firebase_auth.FirebaseAuth.instance
+            .signInWithCredential(credential);
         print('Google login success');
       }
     } catch (e) {
@@ -400,17 +414,18 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                   children: [
                     Row(
                       children: [
-                        SizedBox(width: 10),
                         Container(
                           width: 195,
                           height: 52,
                           child: TextField(
                             controller: _controller,
                             textAlign: TextAlign.left,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.all(Radius.circular(10))),
-                              contentPadding: EdgeInsets.fromLTRB(18, 10, 20, 18),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(10))),
+                              contentPadding:
+                                  EdgeInsets.fromLTRB(18, 10, 20, 18),
                               labelText: '전화번호 입력',
                               labelStyle: TextStyle(
                                   color: Color(0xFF8F8F8F),
@@ -427,7 +442,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                           onPressed: () {
                             if (_controller.text.length == 11 &&
                                 _controller.text.runes.every((r) =>
-                                r >= '0'.runes.first && r <= '9'.runes.first)) {
+                                    r >= '0'.runes.first &&
+                                    r <= '9'.runes.first)) {
                               setState(() {
                                 _isTextFieldVisible = !_isTextFieldVisible;
                                 _buttonText = "재발송";
@@ -467,8 +483,10 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                                     textAlign: TextAlign.left,
                                     decoration: InputDecoration(
                                       border: OutlineInputBorder(
-                                          borderRadius: BorderRadius.all(Radius.circular(10))),
-                                      contentPadding: EdgeInsets.fromLTRB(16, 10, 20, 16),
+                                          borderRadius: BorderRadius.all(
+                                              Radius.circular(10))),
+                                      contentPadding:
+                                          EdgeInsets.fromLTRB(16, 10, 20, 16),
                                       labelText: '인증번호',
                                       labelStyle: TextStyle(
                                           color: Color(0xFF8F8F8F),
@@ -488,7 +506,9 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                                       child: Text(
                                         timerText,
                                         style: TextStyle(
-                                          color: _remainingTime > 0 ? Colors.black : Colors.red,
+                                          color: _remainingTime > 0
+                                              ? Colors.black
+                                              : Colors.red,
                                           fontSize: 16,
                                           fontFamily: 'Noto Sans',
                                           fontWeight: FontWeight.w400,
@@ -500,91 +520,109 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                               )),
                         ],
                       ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 10),
                     TextButton(
                       onPressed: _buttonConfirmColor == Color(0xFFEC295D)
                           ? () async {
-                        String smsCode = _confirmController.text;
-                        if (smsCode.isNotEmpty && _verificationId.isNotEmpty) {
-                          try {
-                            firebase_auth.PhoneAuthCredential credential =
-                            firebase_auth.PhoneAuthProvider.credential(
-                                verificationId: _verificationId, smsCode: smsCode);
+                              String smsCode = _confirmController.text;
+                              if (smsCode.isNotEmpty &&
+                                  _verificationId.isNotEmpty) {
+                                try {
+                                  firebase_auth.PhoneAuthCredential credential =
+                                      firebase_auth.PhoneAuthProvider
+                                          .credential(
+                                              verificationId: _verificationId,
+                                              smsCode: smsCode);
 
-                            final firebase_auth.UserCredential userCredential =
-                            await firebase_auth.FirebaseAuth.instance
-                                .signInWithCredential(credential);
+                                  final firebase_auth.UserCredential
+                                      userCredential = await firebase_auth
+                                          .FirebaseAuth.instance
+                                          .signInWithCredential(credential);
 
-                            firebase_auth.User? user = userCredential.user;
+                                  firebase_auth.User? user =
+                                      userCredential.user;
 
-                            if (user != null) {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(SnackBar(content: Text('인증 완료')));
+                                  if (user != null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('인증 완료')));
 
-                              bool registrationResult =
-                              await registerParent(user.phoneNumber!);
-                              if (registrationResult) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text("회원가입 및 로그인 성공")));
+                                    bool registrationResult =
+                                        await registerParent(user.phoneNumber!);
+                                    if (registrationResult) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              content: Text("회원가입 및 로그인 성공")));
 
-                                Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => ChatTest(imagePath: 'assets/sample.png',
-                                          emotionImages: {},)));
+                                      Navigator.pushReplacement(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) => ChatTest(
+                                                    imagePath:
+                                                        'assets/sample.png',
+                                                    emotionImages: {},
+                                                  )));
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(SnackBar(
+                                              content:
+                                                  Text("회원가입 실패, 다시 시도해주세요")));
+                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                            content:
+                                                Text("인증 실패: 사용자 정보가 없습니다.")));
+                                  }
+                                } on firebase_auth
+                                .FirebaseAuthException catch (e) {
+                                  String errorMessage;
+                                  switch (e.code) {
+                                    case "invalid-verification-code":
+                                      errorMessage = '잘못된 인증번호입니다';
+                                      break;
+                                    case "invalid-verification-id":
+                                      errorMessage =
+                                          'verification ID of the credential is not valid.id';
+                                      break;
+                                    case "missing-verification-id":
+                                      errorMessage =
+                                          '인증번호가 전송되지 않았습니다. 재전송해주세요';
+                                      break;
+                                    case "user-disabled":
+                                      errorMessage = '계정이 비활성화되었습니다';
+                                      break;
+                                    case "operation-not-allowed":
+                                      errorMessage = '현재 로그인이 비활성화되었습니다';
+                                      break;
+                                    case "invalid-credential":
+                                      errorMessage =
+                                          '인증 시간이 만료되었습니다. 다시 시도해주세요';
+                                      break;
+                                    default:
+                                      errorMessage = '알 수 없는 오류가 발생했습니다';
+                                  }
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content:
+                                              Text("인증 실패: $errorMessage")));
+                                }
                               } else {
-                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                    content: Text("회원가입 실패, 다시 시도해주세요")));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("인증번호를 입력하세요.")));
                               }
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                  content: Text("인증 실패: 사용자 정보가 없습니다.")));
                             }
-                          } on firebase_auth.FirebaseAuthException catch (e) {
-                            String errorMessage;
-                            switch (e.code) {
-                              case "invalid-verification-code":
-                                errorMessage = '잘못된 인증번호입니다';
-                                break;
-                              case "invalid-verification-id":
-                                errorMessage =
-                                'verification ID of the credential is not valid.id';
-                                break;
-                              case "missing-verification-id":
-                                errorMessage =
-                                '인증번호가 전송되지 않았습니다. 재전송해주세요';
-                                break;
-                              case "user-disabled":
-                                errorMessage = '계정이 비활성화되었습니다';
-                                break;
-                              case "operation-not-allowed":
-                                errorMessage = '현재 로그인이 비활성화되었습니다';
-                                break;
-                              case "invalid-credential":
-                                errorMessage =
-                                '인증 시간이 만료되었습니다. 다시 시도해주세요';
-                                break;
-                              default:
-                                errorMessage = '알 수 없는 오류가 발생했습니다';
-                            }
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("인증 실패: $errorMessage")));
-                          }
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text("인증번호를 입력하세요.")));
-                        }
-                      }
                           : null,
                       style: TextButton.styleFrom(
                         minimumSize: Size(350, 52),
                         backgroundColor: _buttonConfirmColor,
                         foregroundColor: _textConfirmColor,
-                        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
-                            side: BorderSide(width: 1, color: _buttonConfirmColor)),
+                            side: BorderSide(
+                                width: 1, color: _buttonConfirmColor)),
                       ),
                       child: Text('인증 완료',
                           style: TextStyle(
@@ -594,52 +632,32 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                               fontWeight: FontWeight.w600,
                               height: 0.07)),
                     ),
-                    SizedBox(height: 50),
+                    SizedBox(height: 20),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.grey, width: 1.0),
-                          ),
-                          child: IconButton(
-                            icon: Image.asset('assets/kakao.png', width: 30, height: 30),
-                            onPressed: _loginWithKakao,
-                          ),
+                        IconButton(
+                          icon: Image.asset('assets/kakao.png',
+                              width: 30, height: 30),
+                          onPressed: _loginWithKakao,
                         ),
-                        // SizedBox(width: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.grey, width: 1.0),
-                          ),
-                          child: IconButton(
-                          icon: Image.asset('assets/naver.png', width: 20, height: 20),
+                        SizedBox(width: 8),
+                        IconButton(
+                          icon: Image.asset('assets/naver.png',
+                              width: 30, height: 30),
                           onPressed: _loginWithNaver,
                         ),
-                        ),
-                        //SizedBox(width: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.grey, width: 1.0),
-                          ),
-                          child: IconButton(
-                          icon: Image.asset('assets/apple.png', width: 25, height: 25),
+                        SizedBox(width: 8),
+                        IconButton(
+                          icon: Image.asset('assets/apple.png',
+                              width: 30, height: 30),
                           onPressed: _loginWithApple,
                         ),
-                        ),
-                        //SizedBox(width: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.grey, width: 1.0),
-                          ),
-                          child: IconButton(
-                          icon: Image.asset('assets/google.png', width: 25, height: 25),
+                        SizedBox(width: 8),
+                        IconButton(
+                          icon: Image.asset('assets/google.png',
+                              width: 30, height: 30),
                           onPressed: _loginWithGoogle,
-                        ),
                         ),
                       ],
                     ),

@@ -33,13 +33,12 @@ class AuthProvider with ChangeNotifier {
         final User? user = _auth.currentUser;
         if (user != null) {
           final token = await user.getIdToken();
-          setAccessToken(token);
+          // setAccessToken(token);
         }
       },
       verificationFailed: (FirebaseAuthException e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed to Verify Phone Number: ${e.message}"))
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text("Failed to Verify Phone Number: ${e.message}")));
       },
       codeSent: (String verificationId, int? resendToken) {
         _verificationId = verificationId;
@@ -65,7 +64,7 @@ class AuthProvider with ChangeNotifier {
       final User? user = _auth.currentUser;
       if (user != null) {
         final token = await user.getIdToken();
-        setAccessToken(token);
+        // setAccessToken(token);
       }
     } catch (e) {
       print('Verification Failed: $e');
