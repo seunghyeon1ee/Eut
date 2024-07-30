@@ -366,13 +366,13 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
                 FloatingActionButton(
                   onPressed: stopRecording,
                   backgroundColor: Color(0xFFEC295D),
-                  child: Icon(Icons.stop, size: 30, color: Colors.white,),
+                  child: Icon(Icons.stop, size: 30, color: Colors.white),
                 ),
               if (!isRecording && !isRecorded)
                 FloatingActionButton(
                   onPressed: startRecording,
                   backgroundColor: Color(0xFFEC295D),
-                  child: Icon(Icons.mic, size: 30, color: Colors.white,),
+                  child: Icon(Icons.mic, size: 30, color: Colors.white),
                 ),
               if (!isRecording && isRecorded)
                 IconButton(
@@ -391,7 +391,6 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
           ),
           SizedBox(height: 20),
         ],
-      ),
       ),
     );
   }
