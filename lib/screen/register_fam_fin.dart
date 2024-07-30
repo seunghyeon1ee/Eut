@@ -14,6 +14,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao_user;
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class MyApp3 extends StatelessWidget {
   @override
@@ -125,8 +126,6 @@ class _VerificationWidgetState extends State<VerificationWidget> {
       codeSent: (String verificationId, int? resendToken) {
         // verificationId를 저장하여 나중에 사용
         _verificationId = verificationId;
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('인증번호 발송')));
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('인증번호 발송')));
         startTimer();
@@ -287,26 +286,12 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     print('Member Type: $memberType');
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(_toggleTextField);
-    _confirmController.addListener(_toggleTextFieldConfirm);
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _controller.dispose();
-    _confirmController.dispose();
-    super.dispose();
-  }
-
   Future<void> _loginWithKakao() async {
     try {
       final result = await kakao_user.UserApi.instance.loginWithKakaoTalk();
       if (result != null) {
         print('Kakao login success: ${result.accessToken}');
+        // Handle the login success
       }
     } catch (e) {
       print('Kakao login error: $e');
@@ -319,6 +304,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
       if (result.status == NaverLoginStatus.loggedIn) {
         final token = result.accessToken;
         print('Naver login success: $token');
+        // Handle the login success
       }
     } catch (e) {
       print('Naver login error: $e');
@@ -326,7 +312,24 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   }
 
   Future<void> _loginWithApple() async {
-    print('Apple login clicked');
+    try {
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+      final firebase_auth.OAuthCredential credential =
+      firebase_auth.OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+      await firebase_auth.FirebaseAuth.instance.signInWithCredential(credential);
+      print('Apple login success');
+      // Handle the login success
+    } catch (e) {
+      print('Apple login error: $e');
+    }
   }
 
   Future<void> _loginWithGoogle() async {
@@ -344,6 +347,21 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     } catch (e) {
       print('Google login error: $e');
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_toggleTextField);
+    _confirmController.addListener(_toggleTextFieldConfirm);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    _confirmController.dispose();
+    super.dispose();
   }
 
   @override
@@ -496,7 +514,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 150),
+                        SizedBox(height: 20),
                         TextButton(
                           onPressed: _buttonConfirmColor == Color(0xFFEC295D)
                               ? () async {
@@ -608,30 +626,65 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                                   height: 0.07)),
                         ),
                         SizedBox(height: 20),
+                        Text(
+                          '소셜 로그인하기',
+                          style: TextStyle(
+                            color: Colors.grey, // Light gray color
+                            fontSize: 16,
+                            fontFamily: 'Noto Sans',
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            IconButton(
-                              icon: Image.asset('assets/kakao.png', width: 30, height: 30), // 아이콘 크기 설정
-                              onPressed: _loginWithKakao,
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.grey, width: 1.0),
+                              ),
+                              child: IconButton(
+                                icon: Image.asset('assets/kakao.png', width: 30, height: 30),
+                                onPressed: _loginWithKakao,
+                              ),
                             ),
-                            SizedBox(width: 8),
-                            IconButton(
-                              icon: Image.asset('assets/naver.png', width: 30, height: 30), // 아이콘 크기 설정
-                              onPressed: _loginWithNaver,
+                            SizedBox(width: 16), // Adjust the width value to control the spacing
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.grey, width: 1.0),
+                              ),
+                              child: IconButton(
+                                icon: Image.asset('assets/naver.png', width: 30, height: 30),
+                                onPressed: _loginWithNaver,
+                              ),
                             ),
-                            SizedBox(width: 8),
-                            IconButton(
-                              icon: Image.asset('assets/apple.png', width: 30, height: 30), // 아이콘 크기 설정
-                              onPressed: _loginWithApple,
+                            SizedBox(width: 16), // Adjust the width value to control the spacing
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.grey, width: 1.0),
+                              ),
+                              child: IconButton(
+                                icon: Image.asset('assets/apple.png', width: 30, height: 30),
+                                onPressed: _loginWithApple,
+                              ),
                             ),
-                            SizedBox(width: 8),
-                            IconButton(
-                              icon: Image.asset('assets/google.png', width: 30, height: 30), // 아이콘 크기 설정
-                              onPressed: _loginWithGoogle,
+                            SizedBox(width: 16), // Adjust the width value to control the spacing
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.grey, width: 1.0),
+                              ),
+                              child: IconButton(
+                                icon: Image.asset('assets/google.png', width: 30, height: 30),
+                                onPressed: _loginWithGoogle,
+                              ),
                             ),
                           ],
-                        ),
+                        )
+
                       ],
                     ),
                   ],
@@ -644,4 +697,3 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     );
   }
 }
-
