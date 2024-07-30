@@ -35,11 +35,14 @@ class _EditImagePageState extends State<EditImagePage> {
   @override
   void initState() {
     super.initState();
+    // 초기화 시 제공된 인덱스와 아이템에 따라 이름 설정
+    _name = widget.imageItems[widget.initialIndex].name;
+    _pageController = PageController(initialPage: widget.initialIndex);
+
     final provider = Provider.of<CreateImageProvider>(context, listen: false);
-    _name = widget.imageItems[provider.currentIndex].name;
+
     provider.updateImagePath(widget.imageItems[provider.currentIndex].imagePath);
     provider.updateImagePaths(widget.imageItems.map((item) => item.imagePath).toList());
-    _pageController = PageController(initialPage: provider.currentIndex);
   }
 
   void _editName() {
@@ -116,7 +119,7 @@ class _EditImagePageState extends State<EditImagePage> {
       try {
         final request = http.MultipartRequest(
           'POST',
-          Uri.parse('http://3.38.165.93:8080//characters/{characterId}'), // API URL을 여기에 추가하세요
+          Uri.parse('http://3.38.165.93:8080/api/v1/character/{characterId}'), // API URL을 여기에 추가하세요
         );
 
         request.headers['Content-Type'] = 'multipart/form-data';
@@ -254,7 +257,7 @@ class _EditImagePageState extends State<EditImagePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _submitEdit,
         child: Icon(Icons.save),
-        backgroundColor: Colors.blue,
+        backgroundColor: Color(0xFFEC295D),
       ),
     );
   }
@@ -416,7 +419,7 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
           Container(
             height: 50,
             decoration: BoxDecoration(
-              color: isRecording || isRecorded ? Colors.red[100] : Colors.grey[200],
+              color: isRecording || isRecorded ? Color(0xFFEC295D) : Colors.grey[200],
               borderRadius: BorderRadius.circular(10),
             ),
             child: Center(
@@ -434,27 +437,27 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: Text('취소', style: TextStyle(color: Colors.red, fontSize: 18)),
+                child: Text('취소', style: TextStyle(color: Color(0xFFEC295D), fontSize: 18)),
               ),
               if (isRecording)
                 FloatingActionButton(
                   onPressed: stopRecording,
-                  backgroundColor: Colors.red,
+                  backgroundColor: Color(0xFFEC295D),
                   child: Icon(Icons.stop, size: 30),
                 ),
               if (!isRecording && !isRecorded)
                 FloatingActionButton(
                   onPressed: startRecording,
-                  backgroundColor: Colors.red,
+                  backgroundColor: Color(0xFFEC295D),
                   child: Icon(Icons.mic, size: 30),
                 ),
               if (!isRecording && isRecorded)
                 IconButton(
-                  icon: Icon(Icons.refresh, color: Colors.red),
+                  icon: Icon(Icons.refresh, color: Color(0xFFEC295D)),
                   onPressed: resetRecording,
                 ),
               IconButton(
-                icon: Icon(Icons.send, color: (isRecorded || isRecording) ? Colors.red : Colors.grey),
+                icon: Icon(Icons.send, color: (isRecorded || isRecording) ? Color(0xFFEC295D) : Colors.grey),
                 onPressed: () {
                   // 녹음 파일 저장 기능 추가
                 },

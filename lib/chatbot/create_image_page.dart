@@ -244,11 +244,11 @@ class _CreateImagePageState extends State<CreateImagePage> {
                   decoration: InputDecoration(hintText: '이름을 입력해주세요.'),
                   keyboardType: TextInputType.text,
                 ),
-                TextField(
-                  controller: _codeController,
-                  decoration: InputDecoration(hintText: '코드를 입력해주세요.'),
-                  keyboardType: TextInputType.text,
-                ),
+                // TextField(
+                //   controller: _codeController,
+                //   decoration: InputDecoration(hintText: '코드를 입력해주세요.'),
+                //   keyboardType: TextInputType.text,
+                // ),
                 SizedBox(height: 16),
                 VoiceRecordWidget(
                   onAudioFilePathUpdated: (filePath) {
