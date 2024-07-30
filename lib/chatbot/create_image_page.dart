@@ -45,7 +45,7 @@ class _CreateImagePageState extends State<CreateImagePage> {
       try {
         final request = http.MultipartRequest(
           'POST',
-          Uri.parse('http://54.180.229.143:8080/character'),
+          Uri.parse('http://3.38.165.93:8080/api/v1/character'),
         );
         request.headers['Content-Type'] = 'multipart/form-data';
         request.headers['Authorization'] = 'Bearer ${authProvider.accessToken}'; // 토큰 포함
@@ -66,6 +66,8 @@ class _CreateImagePageState extends State<CreateImagePage> {
 
         final response = await request.send();
         final responseBody = await response.stream.bytesToString();
+
+        print('Response body: $responseBody');
 
         if (response.statusCode == 200) {
           final data = jsonDecode(responseBody);
@@ -391,7 +393,6 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
           ),
           SizedBox(height: 20),
         ],
-      ),
       ),
     );
   }
