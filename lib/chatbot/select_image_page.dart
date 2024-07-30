@@ -88,12 +88,20 @@ class _SelectImagePageState extends State<SelectImagePage> {
     final provider = Provider.of<CreateImageProvider>(context, listen: false);
     final characterId = provider.imageItems[index].characterId;
     if (characterId == null) {
-      _showErrorMessage('삭제할 캐릭터의 ID가 없습니다.');
+      _showErrorMessage('해당 캐릭터는 삭제할 수 없습니다.');
       return;
     }
 
+    final prefs = await SharedPreferences.getInstance();
+    String? accessToken = prefs.getString('access_token');
+
     final response = await http.delete(
-      Uri.parse('http://3.38.165.93:8080/character/$characterId'),
+      Uri.parse('http://3.38.165.93:8080/api/v1/character/$characterId'),
+      headers: <String, String>{
+        'Content-Type' : 'application/json; charset=UTF-8',
+        'Accept' : 'application/json',
+        'Authorization' : 'Bearer $accessToken',
+      },
     );
 
     if (response.statusCode == 200) {
@@ -104,7 +112,7 @@ class _SelectImagePageState extends State<SelectImagePage> {
         _showErrorMessage('서버 오류: ${data['message']}');
       }
     } else {
-      _showErrorMessage('삭제 요청 실패');
+      _showErrorMessage('삭제 요청 실패: 상태 코드 ${response.statusCode}');
     }
   }
 
