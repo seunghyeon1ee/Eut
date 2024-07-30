@@ -64,7 +64,7 @@ class _ChatTestState extends State<ChatTest> {
               'Authorization': 'Bearer $token',
             },
             body: jsonEncode({
-              'text': '독거노인에게 안부를 물어보는 말을 걸어줘. 날씨 얘기는 가급적 하지마',
+              'text': '독거노인에게 안부를 물어보는 말을 걸어줘. 날씨 얘기는 가급적 하지 마',
             }));
     print('response: ${utf8.decode(response.bodyBytes)}');
     if (response.statusCode == 200) {
@@ -280,12 +280,24 @@ class _ChatTestState extends State<ChatTest> {
             textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.black,
-              fontSize: isDesktop ? 28 : 22,
+              fontSize: isDesktop ? 32 : 26,
               fontFamily: 'Noto Sans',
               fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: isDesktop ? 180 : 120),
+          Stack(
+            alignment: Alignment.center,
+          children: [
+            RippleAnimation(
+                color: Color(0xFFFF7672),
+                delay: Duration(milliseconds: 300),
+                repeat: true,
+                minRadius: 90,
+                ripplesCount: 4,
+                duration: Duration(milliseconds: 6 * 300),
+                child: Container(),
+            ),
           GestureDetector(
             onTap: () {
               Navigator.push(
@@ -299,6 +311,8 @@ class _ChatTestState extends State<ChatTest> {
               height: isDesktop ? 400 : 300,
             ),
           ),
+    ],
+    ),
           SizedBox(height: 20),
         ],
       ),

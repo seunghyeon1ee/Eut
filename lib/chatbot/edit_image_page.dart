@@ -208,7 +208,7 @@ class _EditImagePageState extends State<EditImagePage> {
 
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(120.0),
+        preferredSize: const Size.fromHeight(140.0),
         child: AppBar(
           automaticallyImplyLeading: false,
           backgroundColor: Colors.white,
@@ -307,7 +307,7 @@ class _EditImagePageState extends State<EditImagePage> {
               IconButton(
                 icon: Icon(
                   provider.recordingFilePath != null ? Icons.play_arrow : Icons.play_disabled,
-                  color: provider.recordingFilePath != null ? Colors.red : Colors.grey,
+                  color: provider.recordingFilePath != null ? Color(0xFFEC295D) : Colors.grey,
                 ),
                 onPressed: _playAudio,
               ),
@@ -316,7 +316,7 @@ class _EditImagePageState extends State<EditImagePage> {
                 onPressed: _openVoiceRecordWidget,
                 child: Text('목소리 녹음'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
+                  backgroundColor: Color(0xFFEC295D),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),

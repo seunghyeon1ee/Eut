@@ -45,7 +45,7 @@ class _CreateImagePageState extends State<CreateImagePage> {
       try {
         final request = http.MultipartRequest(
           'POST',
-          Uri.parse('http://3.38.165.93:8080/character'),
+          Uri.parse('http://54.180.229.143:8080/character'),
         );
         request.headers['Content-Type'] = 'multipart/form-data';
         request.headers['Authorization'] = 'Bearer ${authProvider.accessToken}'; // 토큰 포함
@@ -342,7 +342,7 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
           Container(
             height: 50,
             decoration: BoxDecoration(
-              color: isRecording || isRecorded ? Color(0xFFEC295D).withOpacity(0.3) : Colors.grey[200],
+              color: isRecording || isRecorded ? Color(0xFFEC295D).withOpacity(0.1) : Colors.grey[200],
               borderRadius: BorderRadius.circular(10),
             ),
             child: Center(
@@ -391,6 +391,7 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
           ),
           SizedBox(height: 20),
         ],
+      ),
       ),
     );
   }
