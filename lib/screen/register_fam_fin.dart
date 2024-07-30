@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:taba_app_proj/screen/register_fam_1.dart';
 import 'package:taba_app_proj/screen/register_fin.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,7 +15,6 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao_user;
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class MyApp3 extends StatelessWidget {
   @override
@@ -286,12 +286,26 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     print('Member Type: $memberType');
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_toggleTextField);
+    _confirmController.addListener(_toggleTextFieldConfirm);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    _confirmController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loginWithKakao() async {
     try {
       final result = await kakao_user.UserApi.instance.loginWithKakaoTalk();
       if (result != null) {
         print('Kakao login success: ${result.accessToken}');
-        // Handle the login success
       }
     } catch (e) {
       print('Kakao login error: $e');
@@ -304,7 +318,6 @@ class _VerificationWidgetState extends State<VerificationWidget> {
       if (result.status == NaverLoginStatus.loggedIn) {
         final token = result.accessToken;
         print('Naver login success: $token');
-        // Handle the login success
       }
     } catch (e) {
       print('Naver login error: $e');
@@ -347,21 +360,6 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     } catch (e) {
       print('Google login error: $e');
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(_toggleTextField);
-    _confirmController.addListener(_toggleTextFieldConfirm);
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _controller.dispose();
-    _confirmController.dispose();
-    super.dispose();
   }
 
   @override
@@ -649,7 +647,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                                 onPressed: _loginWithKakao,
                               ),
                             ),
-                            SizedBox(width: 16), // Adjust the width value to control the spacing
+                            SizedBox(width: 20), // Adjust the width value to control the spacing
                             Container(
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
@@ -660,7 +658,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                                 onPressed: _loginWithNaver,
                               ),
                             ),
-                            SizedBox(width: 16), // Adjust the width value to control the spacing
+                            SizedBox(width: 20), // Adjust the width value to control the spacing
                             Container(
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
@@ -671,7 +669,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                                 onPressed: _loginWithApple,
                               ),
                             ),
-                            SizedBox(width: 16), // Adjust the width value to control the spacing
+                            SizedBox(width: 20), // Adjust the width value to control the spacing
                             Container(
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
