@@ -88,7 +88,7 @@ class _SelectImagePageState extends State<SelectImagePage> {
     final provider = Provider.of<CreateImageProvider>(context, listen: false);
     final characterId = provider.imageItems[index].characterId;
     if (characterId == null) {
-      _showErrorMessage('해당 캐릭터는 삭제할 수 없습니다.');
+      _showErrorMessage('기본 캐릭터는 삭제할 수 없습니다.');
       return;
     }
 
