@@ -23,6 +23,7 @@ class CreateImagePage extends StatefulWidget {
 
 class _CreateImagePageState extends State<CreateImagePage> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _codeController = TextEditingController();
 
   @override
   void initState() {
@@ -52,6 +53,7 @@ class _CreateImagePageState extends State<CreateImagePage> {
 
         // Add characterName field
         request.fields['characterName'] = _nameController.text;
+        request.fields['characterCode'] = _codeController.text;
 
         // Add voiceFile field
         final file = File(provider.recordingFilePath!);
@@ -240,6 +242,11 @@ class _CreateImagePageState extends State<CreateImagePage> {
                 TextField(
                   controller: _nameController,
                   decoration: InputDecoration(hintText: '이름을 입력해주세요.'),
+                  keyboardType: TextInputType.text,
+                ),
+                TextField(
+                  controller: _codeController,
+                  decoration: InputDecoration(hintText: '코드를 입력해주세요.'),
                   keyboardType: TextInputType.text,
                 ),
                 SizedBox(height: 16),
