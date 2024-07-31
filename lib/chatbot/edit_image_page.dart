@@ -11,7 +11,8 @@ import 'image_item.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
-
+import 'package:audio_waveforms/audio_waveforms.dart';
+import 'package:just_waveform/just_waveform.dart';
 
 class EditImagePage extends StatefulWidget {
   final List<ImageItem> imageItems;
@@ -349,6 +350,16 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
   int recordedTime = 0;
   late Timer timer;
   late String _recordingFilePath;
+  // late AudioWaveormsController _waveformController;
+  // // final AudioWaveformController _waveformController = AudioWaveformController();
+  // AudioWaveformController? _waveformController;
+
+
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _waveformController = AudioWaveformsController();
+  // }
 
   void startRecording() {
     setState(() {
@@ -367,13 +378,13 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
     });
   }
 
-  void stopRecording() {
+  void stopRecording() async {
     timer.cancel();
     setState(() {
       isRecording = false;
       isRecorded = true;
     });
-    _saveRecording();
+    await _saveRecording();
   }
 
   void resetRecording() {
@@ -391,6 +402,9 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
     setState(() {
       _recordingFilePath = file.path;
     });
+
+    // await _waveformController.loadWaveform(file.path);
+
     widget.onAudioFilePathUpdated(file.path);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('녹음 파일이 저장되었습니다: ${file.path}')),
@@ -415,6 +429,16 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
             '목소리 녹음',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
+          SizedBox(height: 20),
+          if (isRecorded)
+            SizedBox(
+              height: 100,
+              // child: AudioWaveforms(
+              //   controller: _waveformController,
+              //   waveformType: WaveformType.live,
+              //   color: Color(0xFFEC295D).withOpacity(0.1),
+              // ),
+            ),
           SizedBox(height: 20),
           Container(
             height: 50,

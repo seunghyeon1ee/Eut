@@ -680,7 +680,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                             border: Border.all(color: Colors.grey, width: 1.0),
                           ),
                           child: IconButton(
-                            icon: Image.asset('assets/naver.png', width: 30, height: 30),
+                            icon: Image.asset('assets/naver.png', width: 25, height: 25),
                             onPressed: _loginWithNaver,
                           ),
                         ),
@@ -702,7 +702,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                             border: Border.all(color: Colors.grey, width: 1.0),
                           ),
                           child: IconButton(
-                            icon: Image.asset('assets/google.png', width: 30, height: 30),
+                            icon: Image.asset('assets/google.png', width: 25, height: 25),
                             onPressed: _loginWithGoogle,
                           ),
                         ),

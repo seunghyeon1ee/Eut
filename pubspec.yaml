@@ -46,6 +46,8 @@ dependencies:
   firebase_messaging: ^15.0.1
   responsive_builder: ^0.4.3
   sign_in_with_apple: ^5.0.0
+  audio_waveforms: ^1.0.5
+  just_waveform: ^0.0.5
 
  # audioplayers: #^0.18.3   # 더 낮은 버전으로 조정
 
