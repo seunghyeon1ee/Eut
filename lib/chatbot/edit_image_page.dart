@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // SVG 패키지 임포트
 import 'dart:async';
 import 'package:flutter_sound/flutter_sound.dart';
@@ -11,8 +12,10 @@ import 'image_item.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
+// import 'package:waveform_flutter/waveform_flutter.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
-import 'package:just_waveform/just_waveform.dart';
+// import 'package:just_waveform/just_waveform.dart';
+
 
 class EditImagePage extends StatefulWidget {
   final List<ImageItem> imageItems;
@@ -32,6 +35,7 @@ class _EditImagePageState extends State<EditImagePage> {
   late String _name;
   late PageController _pageController;
   FlutterSoundPlayer _audioPlayer = FlutterSoundPlayer();
+  late Future<Waveform>? _waveform;
 
   @override
   void initState() {
@@ -44,7 +48,25 @@ class _EditImagePageState extends State<EditImagePage> {
 
     provider.updateImagePath(widget.imageItems[provider.currentIndex].imagePath);
     provider.updateImagePaths(widget.imageItems.map((item) => item.imagePath).toList());
+
+    // if (provider.recordingFilePath != null) {
+    //   _waveform = _loadWaveform(provider.recordingFilePath!);
+    // }
   }
+
+
+  // Future<Waveform> _loadWaveform(String filePath) async {
+  //   // final file = File(filePath);
+  //   final waveform = await Waveform.fromFile(File(filePath));
+  //   return waveform;
+  // }
+
+  // Future<Waveform> _loadWaveform(String filePath) async {
+  //   final file = File(filePath);
+  //   final waveform = await Waveform.fromFile(file);
+  //   return waveform;
+  // }
+
 
   void _editName() {
     showDialog(
@@ -93,6 +115,11 @@ class _EditImagePageState extends State<EditImagePage> {
     final provider = Provider.of<CreateImageProvider>(context, listen: false);
     if (provider.recordingFilePath != null) {
       await _audioPlayer.startPlayer(fromURI: provider.recordingFilePath!, codec: Codec.mp3);
+      // setState(() {
+      //   _waveform = _loadWaveform(provider.recordingFilePath!);
+      // });
+    } else {
+      _showOverlayMessage(context, '재생할 오디오가 없습니다.');
     }
   }
 
@@ -108,6 +135,9 @@ class _EditImagePageState extends State<EditImagePage> {
           onAudioFilePathUpdated: (filePath) {
             final provider = Provider.of<CreateImageProvider>(context, listen: false);
             provider.setRecordingFilePath(filePath);
+            // setState(() {
+            //   _waveform = _loadWaveform(filePath);
+            // });
           },
         );
       },
@@ -186,11 +216,10 @@ class _EditImagePageState extends State<EditImagePage> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
               decoration: BoxDecoration(
-                color: Colors.pink,
+                color: Colors.black.withOpacity(0.7),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                message,
+              child: Text(message,
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),
@@ -235,7 +264,7 @@ class _EditImagePageState extends State<EditImagePage> {
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
-                        '수정하기',
+                        '캐릭터 수정',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -243,6 +272,14 @@ class _EditImagePageState extends State<EditImagePage> {
                         ),
                       ),
                     ),
+                  ),
+                ),
+                TextButton.icon(
+                  onPressed: _submitEdit,
+                  icon: Icon(Icons.check, color: Color(0xFFEC295D)),
+                  label: Text('완료',
+                    style: TextStyle(color: Color(0xFFEC295D),
+                        fontSize: 20),
                   ),
                 ),
               ],
@@ -254,82 +291,204 @@ class _EditImagePageState extends State<EditImagePage> {
         mobile: _buildContent(provider),
         tablet: _buildContent(provider),
         desktop: _buildContent(provider),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _submitEdit,
-        child: Icon(Icons.save),
-        backgroundColor: Color(0xFFEC295D),
+        // body: ScreenTypeLayout(
+        //   mobile: _buildContent(provider),
+        //   tablet: _buildContent(provider),
+        //   desktop: _buildContent(provider),
+        // ),
       ),
     );
   }
 
   Widget _buildContent(CreateImageProvider provider) {
+    return Column(
+      // mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Expanded(child: _buildImageSlider(provider)),
+        _buildFixedControls(provider),
+      ],
+    );
+  }
+
+
+  Widget _buildImageSlider(CreateImageProvider provider) {
+    return PageView.builder(
+      controller: _pageController,
+      onPageChanged: _onImageChanged,
+      itemCount: provider.imagePaths.length,
+      itemBuilder: (context, index) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            SizedBox(height: 100,),
+            Center(
+              child: Image.asset(
+                provider.imagePaths[index],
+                fit: BoxFit.cover,
+                width: 250,
+                height: 250,
+              ),
+            ),
+          ],
+        );
+        Center(
+          child: Image.asset(
+            provider.imagePaths[index],
+            fit: BoxFit.cover,
+            width: 250,
+            height: 250,
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFixedControls(CreateImageProvider provider) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        // mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: _onImageChanged,
-              itemCount: provider.imagePaths.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  decoration: BoxDecoration(
-                    color: Colors.pink[50],
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                  child: Center(
-                    child: Image.asset(
-                      provider.imagePaths[index],
-                      fit: BoxFit.cover,
-                      width: 350,
-                      height: 350,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          SizedBox(height: 16),
+          // Expanded(
+          //   child: PageView.builder(
+          //     controller: _pageController,
+          //     onPageChanged: _onImageChanged,
+          //     itemCount: provider.imagePaths.length,
+          //     itemBuilder: (context, index) {
+          //       return Column(
+          //         mainAxisAlignment: MainAxisAlignment.center,
+          //         children: [
+          //
+          //           Image.asset(
+          //             provider.imagePaths[index],
+          //             fit: BoxFit.cover,
+          //             width: 250,
+          //             height: 250,
+          //           ),
+          //           SizedBox(height: 50),
           GestureDetector(
             onTap: _editName,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
+              // crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.edit, color: Colors.black),
+                Icon(Icons.edit, color: Colors.black, size: 20,),
                 SizedBox(width: 8),
-                Text('이름: $_name', style: TextStyle(fontSize: 18)),
+                Text('이름 : $_name', style: TextStyle(fontSize: 18,),
+                ),
               ],
             ),
           ),
-          SizedBox(height: 16),
+          SizedBox(height: 5,),
+          Container(
+            height: 1.5,
+            color: Colors.black,
+            width: 140,
+          ),
+        AudioWaveforms(
+          size: Size(MediaQuery.of(context).size.width, 200.0),
+          recorderController: controller,
+          enableGesture: true,
+          waveStyle: WaveStyle(
+          waveColor: Colors.white,
+          showDurationLabel: true,
+          spacing: 8.0,
+          showBottom: false,
+          extendWaveform: true,
+          showMiddleLine: false,
+          gradient: ui.Gradient.linear(
+          const Offset(70, 50),
+          Offset(MediaQuery.of(context).size.width / 2, 0),
+          [Colors.red, Colors.green],
+        ),
+    ),
+    ),
+
+
+          // SizedBox(height: 16),
+          // provider.recordingFilePath != null
+          //     ? FutureBuilder<Waveform>(
+          //     future: _waveform,
+          //     builder: (context, snapshot) {
+          //       if (snapshot.connectionState == ConnectionState.waiting) {
+          //         return Center(child: CircularProgressIndicator());
+          //       }
+          //       if (snapshot.hasError) {
+          //         return Center(child: Text('오류 발생'));
+          //       }
+          //       final waveformData = snapshot.data;
+          //       return Container(
+          //         height: 100,
+          //         child: Waveform(
+          //           waveformData: waveformData!,
+          //           color: Color(0xFFEC295D).withOpacity(0.1),
+          //           waveColor: Color(0xFFEC295D),
+          //         ),
+          //       );
+          //     },
+          // )
+          //    : Container(
+          //  height: 100,
+          //  color: Colors.grey[200],
+          //  child: Center(child: Text('녹음된 오디오 없음')),
+          // ),
+          SizedBox(height: 50),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
                 icon: Icon(
-                  provider.recordingFilePath != null ? Icons.play_arrow : Icons.play_disabled,
+                  provider.recordingFilePath != null ? Icons.play_circle_fill_outlined : Icons.play_disabled,
                   color: provider.recordingFilePath != null ? Color(0xFFEC295D) : Colors.grey,
+                  size: 55,
                 ),
                 onPressed: _playAudio,
               ),
-              SizedBox(width: 16),
-              ElevatedButton(
-                onPressed: _openVoiceRecordWidget,
-                child: Text('목소리 녹음'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFEC295D),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+              SizedBox(width: 30),
+              Container(
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white,
+                  border: Border.all(
+                      color: Color(0xFFEC295D), width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Color(0xFFEC295D).withOpacity(0.3), // 번짐 색상
+                      spreadRadius: 2, // 번짐 범위
+                      blurRadius: 5, // 번짐 강도
+                      offset: Offset(0, 2), // 번짐 위치
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  onPressed: _openVoiceRecordWidget,
+                  icon: Icon(Icons.mic,
+                    color: Color(0xFFEC295D),
+                    size: 30, // 아이콘 크기 조정
                   ),
-                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+
+                  // ElevatedButton(
+                  //   onPressed: _openVoiceRecordWidget,
+                  //   child: Text('목소리 녹음',
+                  //       style: TextStyle(
+                  //         color: Colors.white,
+                  //         fontSize: 18,
+                  //       ),),
+                  //   style: ElevatedButton.styleFrom(
+                  //     backgroundColor: Color(0xFFEC295D),
+                  //     shape: RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.circular(30),
+                  //     ),
+                  //     padding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
+                  //   ),
+                  // ),
                 ),
               ),
             ],
           ),
+          SizedBox(height: 70,),
         ],
+
       ),
     );
   }
@@ -350,6 +509,21 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
   int recordedTime = 0;
   late Timer timer;
   late String _recordingFilePath;
+  Waveform? _waveform;
+  late FlutterSoundRecorder _recorder;
+  String? _audioFilePath;
+
+  @override
+  void initState() {
+    super.initState();
+    _recorder = FlutterSoundRecorder();
+  }
+
+  @override
+  void dispose() {
+    _recorder.closeAudioSession();
+    super.dispose();
+  }
   // late AudioWaveormsController _waveformController;
   // // final AudioWaveformController _waveformController = AudioWaveformController();
   // AudioWaveformController? _waveformController;
@@ -358,17 +532,21 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
   // @override
   // void initState() {
   //   super.initState();
-  //   _waveformController = AudioWaveformsController();
+  //   _waveformController = WaveformController();
   // }
 
-  void startRecording() {
+  void startRecording() async {
+    await _recorder.startRecorder(
+      toFile: 'audio_${DateTime.now().millisecondsSinceEpoch}.mp3',
+      codec: Codec.mp3,
+    );
     setState(() {
       isRecording = true;
       isRecorded = false;
       recordedTime = 0;
     });
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (recordedTime >= 30) {
+      if (recordedTime >= 30) { // 30초 후 자동 정치
         stopRecording();
       } else {
         setState(() {
@@ -379,11 +557,15 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
   }
 
   void stopRecording() async {
+    _audioFilePath = await _recorder.stopRecorder();
     timer.cancel();
     setState(() {
       isRecording = false;
       isRecorded = true;
     });
+    if (_audioFilePath != null) {
+      widget.onAudioFilePathUpdated(_audioFilePath!);
+    }
     await _saveRecording();
   }
 
@@ -401,6 +583,8 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
     await file.writeAsBytes(List.generate(100, (index) => index));
     setState(() {
       _recordingFilePath = file.path;
+      // _waveform = Waveform.fromFile(file.path);
+      // _waveform = await loadWaveformFromFile(file.path);
     });
 
     // await _waveformController.loadWaveform(file.path);
@@ -429,21 +613,24 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
             '목소리 녹음',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 20),
-          if (isRecorded)
-            SizedBox(
-              height: 100,
-              // child: AudioWaveforms(
-              //   controller: _waveformController,
-              //   waveformType: WaveformType.live,
-              //   color: Color(0xFFEC295D).withOpacity(0.1),
-              // ),
-            ),
+          // SizedBox(height: 20),
+          // if (isRecorded)
+          //   SizedBox(
+          //     height: 100,
+          //     child: Waveform(
+          //       waveformData: _waveform!,
+          //       color: Color(0xFFEC295D).withOpacity(0.1),
+          //       waveColor: Color(0xFFEC295D),
+          //   ),
+          // controller: _waveform,
+          // waveformType: WaveformType.live,
+          // color: Color(0xFFEC295D).withOpacity(0.1),
+          // ),
           SizedBox(height: 20),
           Container(
             height: 50,
             decoration: BoxDecoration(
-              color: isRecording || isRecorded ? Color(0xFFEC295D) : Colors.grey[200],
+              color: isRecording || isRecorded ? Color(0xFFEC295D).withOpacity(0.1) : Colors.grey[200],
               borderRadius: BorderRadius.circular(10),
             ),
             child: Center(
@@ -467,13 +654,13 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
                 FloatingActionButton(
                   onPressed: stopRecording,
                   backgroundColor: Color(0xFFEC295D),
-                  child: Icon(Icons.stop, size: 30),
+                  child: Icon(Icons.stop, size: 30, color: Colors.white,),
                 ),
               if (!isRecording && !isRecorded)
                 FloatingActionButton(
                   onPressed: startRecording,
                   backgroundColor: Color(0xFFEC295D),
-                  child: Icon(Icons.mic, size: 30),
+                  child: Icon(Icons.mic, size: 30, color: Colors.white,),
                 ),
               if (!isRecording && isRecorded)
                 IconButton(
