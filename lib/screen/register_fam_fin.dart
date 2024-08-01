@@ -15,6 +15,16 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao_user;
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+import '../explanationscreen/family_explation_screen.dart';
+
+void main() async {
+  await dotenv.load(fileName: ".env");
+  String kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY']!;
+  kakao_user.KakaoSdk.init(nativeAppKey: kakaoNativeAppKey);
+  runApp(MyApp3());
+}
 
 class MyApp3 extends StatelessWidget {
   @override
@@ -80,8 +90,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   bool _isTextFieldVisible = false;
   String _buttonText = '인증번호 발송';
 
-  final TextEditingController _controller = TextEditingController(); // 전화번호 입력 컨트롤러
-  final TextEditingController _confirmController = TextEditingController(); // 인증번호 입력 컨트롤러
+  final TextEditingController _controller = TextEditingController();
+  final TextEditingController _confirmController = TextEditingController();
   Color _buttonColor = Color(0xFFE2E2E2);
   Color _buttonConfirmColor = Color(0xFFE2E2E2);
   Color _textColor = Color(0xFFAEAEAE);
@@ -115,16 +125,13 @@ class _VerificationWidgetState extends State<VerificationWidget> {
       phoneNumber: '+82${_controller.text}',
       timeout: const Duration(seconds: 60),
       verificationCompleted: (PhoneAuthCredential credential) async {
-        // 자동 완성 가능성
         await _auth.signInWithCredential(credential);
       },
       verificationFailed: (FirebaseAuthException e) {
-        // 에러 처리
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('휴대전화 인증 실패: ${e.message}')));
       },
       codeSent: (String verificationId, int? resendToken) {
-        // verificationId를 저장하여 나중에 사용
         _verificationId = verificationId;
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('인증번호 발송')));
@@ -139,7 +146,6 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     );
   }
 
-  // '인증번호' textfield 내 타이머
   void startTimer() {
     _timer = Timer.periodic(Duration(seconds: 1), (timer) {
       if (_remainingTime > 0) {
@@ -173,52 +179,35 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     }
   }
 
-  // 부양가족 회원가입을 처리하는 함수
   Future<bool> registerChild(String phone, String email, String parentPhone) async {
-    var url = Uri.parse('http://3.38.165.93:8080/api/v1/join'); // API 엔드포인트 URL
+    var url = Uri.parse('http://3.38.165.93:8080/api/v1/join');
     var response = await http.post(
       url,
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
       body: jsonEncode(<String, String>{
-        'phone': _controller.text,
+        'phone': phone,
         'email': email,
         'parentPhone': parentPhone,
         'type': 'C'
       }),
     );
-    print(response.statusCode);
 
     if (response.statusCode == 200) {
       Map<String, dynamic> decodedJson = jsonDecode(utf8.decode(response.bodyBytes));
-      print(decodedJson);
-      print(decodedJson['message']);
-
       if (decodedJson['message'] == 'SUCCESS') {
-        print('회원가입 완료 또는 이미 존재하는 회원입니다. 로그인 API 호출을 준비합니다.');
-
-        bool loginResult = await loginUser(_controller.text);
+        bool loginResult = await loginUser(phone);
         return loginResult;
-      } else {
-        print('회원가입은 성공했지만 예상치 못한 응답 메시지입니다: ${decodedJson['message']}');
       }
     } else if (response.statusCode == 400) {
       Map<String, dynamic> errorResponse = jsonDecode(utf8.decode(response.bodyBytes));
-      print('회원가입 실패 (잘못된 요청): ${errorResponse['message'] ?? 'No error message provided'}');
       if (errorResponse['message'].toString().contains('이미 존재하는 유저입니다')) {
-        print('이미 존재하는 유저입니다. 로그인을 시도합니다.');
-
-        bool loginResult = await loginUser(_controller.text);
+        bool loginResult = await loginUser(phone);
         if (loginResult) {
-          print('로그인 성공');
           return true;
-        } else {
-          print('로그인 실패');
         }
       }
-    } else {
-      print('회원가입 실패: ${response.body}');
     }
     return false;
   }
@@ -234,90 +223,67 @@ class _VerificationWidgetState extends State<VerificationWidget> {
         'phone': phone,
       }),
     );
-    print(response.body);
     if (response.statusCode == 200) {
-      print('로그인 성공');
       Map<String, dynamic> res = jsonDecode(response.body);
       final prefs = await SharedPreferences.getInstance();
       prefs.setString('access_token', res['result']['access_token']);
       return true;
-    } else {
-      var decodeResponse = utf8.decode(response.bodyBytes);
-      print('로그인 실패: $decodeResponse');
-      return false;
     }
+    return false;
   }
 
-  // JSON 응답을 처리하고 SharedPreferences에 데이터를 저장하는 함수
-  Future<bool> saveUserData(String jsonResponse) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final responseData = jsonDecode(jsonResponse);
-
-    if (responseData['code'] == "0000" && responseData['message'] == "SUCCESS") {
-      String accessToken = responseData['result']['access_token'];
-      String refreshToken = responseData['result']['refresh_token'];
-      String phone = responseData['result']['phone'];
-      String memberType = responseData['result']['memberType'];
-
-      await prefs.setString('access_token', accessToken);
-      await prefs.setString('refresh_token', refreshToken);
-      await prefs.setString('phone', phone);
-      await prefs.setString('member_type', memberType);
-
-      print('사용자 데이터 저장 성공');
-      return true;
-    } else {
-      print('사용자 데이터 저장 실패');
-      return false;
-    }
-  }
-
-  Future<void> loadUserData() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    String? accessToken = prefs.getString('access_token');
-    String? refreshToken = prefs.getString('refresh_token');
-    String? phone = prefs.getString('phone');
-    String? memberType = prefs.getString('member_type');
-
-    print('Access Token: $accessToken');
-    print('Refresh Token: $refreshToken');
-    print('Phone: $phone');
-    print('Member Type: $memberType');
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(_toggleTextField);
-    _confirmController.addListener(_toggleTextFieldConfirm);
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _controller.dispose();
-    _confirmController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loginWithKakao() async {
+  Future<void> _loginWithGoogle() async {
     try {
-      final result = await kakao_user.UserApi.instance.loginWithKakaoTalk();
-      if (result != null) {
-        print('Kakao login success: ${result.accessToken}');
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser != null) {
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        final firebase_auth.AuthCredential credential = firebase_auth.GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        await firebase_auth.FirebaseAuth.instance.signInWithCredential(credential);
+        final User? user = FirebaseAuth.instance.currentUser;
+        if (user != null && user.phoneNumber != null) {
+          String email = googleUser.email;
+          String parentPhone = 'parentPhoneNumber'; // replace with actual logic
+          bool registrationResult = await registerChild(user.phoneNumber!, email, parentPhone);
+          if (registrationResult) {
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => StatisticsScreen()));
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("회원가입 실패, 다시 시도해주세요")));
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("인증 실패: 사용자 정보가 없습니다.")));
+        }
       }
     } catch (e) {
-      print('Kakao login error: $e');
+      print('Google login error: $e');
     }
   }
-
   Future<void> _loginWithNaver() async {
     try {
       final NaverLoginResult result = await FlutterNaverLogin.logIn();
       if (result.status == NaverLoginStatus.loggedIn) {
         final token = result.accessToken;
-        print('Naver login success: $token');
+        final email = result.account.email; // Naver에서 제공하는 이메일
+        // Naver 로그인 후 사용자 정보를 가져오는 추가 작업이 필요할 수 있습니다.
+        final userPhoneNumber = '01012345678'; // 실제 전화번호를 가져오는 로직을 추가해야 합니다.
+
+        bool registrationResult = await registerChild(userPhoneNumber, email, 'parentPhoneNumber'); // 부모 전화번호는 실제 값으로 대체해야 합니다.
+        if (registrationResult) {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => StatisticsScreen()));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("회원가입 실패, 다시 시도해주세요")));
+        }
       }
     } catch (e) {
       print('Naver login error: $e');
@@ -338,28 +304,74 @@ class _VerificationWidgetState extends State<VerificationWidget> {
         accessToken: appleCredential.authorizationCode,
       );
       await firebase_auth.FirebaseAuth.instance.signInWithCredential(credential);
-      print('Apple login success');
-      // Handle the login success
+      final User? user = FirebaseAuth.instance.currentUser;
+      if (user != null && user.phoneNumber != null) {
+        String email = appleCredential.email ?? 'user@example.com';
+        String parentPhone = 'parentPhoneNumber'; // replace with actual logic
+        bool registrationResult = await registerChild(user.phoneNumber!, email, parentPhone);
+        if (registrationResult) {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => StatisticsScreen()));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("회원가입 실패, 다시 시도해주세요")));
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("인증 실패: 사용자 정보가 없습니다.")));
+      }
     } catch (e) {
       print('Apple login error: $e');
     }
   }
 
-  Future<void> _loginWithGoogle() async {
+  Future<void> _loginWithKakao() async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser != null) {
-        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-        final firebase_auth.AuthCredential credential = firebase_auth.GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
-        await firebase_auth.FirebaseAuth.instance.signInWithCredential(credential);
-        print('Google login success');
+      bool isKakaoTalkInstalled = await kakao_user.isKakaoTalkInstalled();
+      kakao_user.OAuthToken token;
+      if (isKakaoTalkInstalled) {
+        token = await kakao_user.UserApi.instance.loginWithKakaoTalk();
+      } else {
+        token = await kakao_user.UserApi.instance.loginWithKakaoAccount();
       }
+
+      print('Kakao login success: ${token.accessToken}');
+      final userPhoneNumber = '01012345678'; // 실제 전화번호를 가져오는 로직을 추가해야 합니다.
+      final email = 'user@example.com'; // Kakao에서 이메일을 가져오는 방법 추가 필요
+
+      bool registrationResult = await registerChild(userPhoneNumber, email, 'parentPhoneNumber'); // 부모 전화번호는 실제 값으로 대체해야 합니다.
+      if (registrationResult) {
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => StatisticsScreen()));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("회원가입 실패, 다시 시도해주세요")));
+      }
+
     } catch (e) {
-      print('Google login error: $e');
+      print('Kakao login error: $e');
     }
+  }
+
+
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_toggleTextField);
+    _confirmController.addListener(_toggleTextFieldConfirm);
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    _confirmController.dispose();
+    super.dispose();
   }
 
   @override
@@ -376,7 +388,15 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   SizedBox(width: 10),
-                  SvgPicture.asset('assets/icon_eut.svg'),
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => FamilyExplanationScreen()),
+                      );
+                    },
+                    child: SvgPicture.asset('assets/icon_eut.svg'),
+                  ),
                 ],
               ),
               Padding(
@@ -516,60 +536,45 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                         TextButton(
                           onPressed: _buttonConfirmColor == Color(0xFFEC295D)
                               ? () async {
-                            // 사용자로부터 입력받은 인증번호와 Firebase에서 받은 verificationId 사용
-                            String smsCode = _confirmController.text; // 사용자가 입력한 인증번호
+                            String smsCode = _confirmController.text;
                             if (smsCode.isNotEmpty && _verificationId.isNotEmpty) {
                               try {
-                                // 입력받은 인증번호로 PhoneAuthCredential 객체 생성
                                 PhoneAuthCredential credential =
                                 PhoneAuthProvider.credential(
                                     verificationId: _verificationId, smsCode: smsCode);
 
-                                // 생성된 credential로 로그인 시도
                                 final UserCredential userCredential =
                                 await FirebaseAuth.instance
                                     .signInWithCredential(credential);
 
-                                // 로그인 성공 시 User 객체 사용 가능
                                 User? user = userCredential.user;
                                 if (user != null && user.phoneNumber != null) {
-                                  print("휴대전화 확인 및 로그인: ${user.uid}");
                                   ScaffoldMessenger.of(context)
                                       .showSnackBar(SnackBar(content: Text('인증 완료')));
 
-                                  // 회원가입 API 호출
-                                  String email = 'user@example.com'; // 예시 값
-                                  String parentPhone = 'parentPhoneNumber'; // 예시 값
+                                  String email = 'user@example.com';
+                                  String parentPhone = 'parentPhoneNumber';
 
                                   bool registrationResult =
                                   await registerChild(user.phoneNumber!, email, parentPhone);
                                   if (registrationResult) {
-                                    print('회원가입 완료');
                                     ScaffoldMessenger.of(context)
                                         .showSnackBar(SnackBar(content: Text("회원가입 및 로그인 성공")));
 
-                                    // 로그인 성공 처리 로직 (홈 화면으로 이동)
                                     Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
                                             builder: (context) => StatisticsScreen()));
                                   } else {
-                                    print("Registration failed, try again");
                                     ScaffoldMessenger.of(context)
                                         .showSnackBar(SnackBar(
                                         content: Text("회원가입 실패, 다시 시도해주세요")));
-                                    // 실패 처리 로직 (예: 입력 필드 초기화)
                                   }
                                 } else {
-                                  print("Failed to verify phone number: User is null");
                                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                                       content: Text("인증 실패: 사용자 정보가 없습니다.")));
                                 }
                               } on FirebaseAuthException catch (e) {
-                                // 예외 처리: 인증 실패
-                                print("Failed to verify phone number: ${e.message}");
-
-                                print("login credential error : ${e.code}");
                                 String errorMessage;
                                 switch (e.code) {
                                   case "invalid-verification-code":
@@ -627,7 +632,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                         Text(
                           '소셜 로그인하기',
                           style: TextStyle(
-                            color: Colors.grey, // Light gray color
+                            color: Colors.grey,
                             fontSize: 16,
                             fontFamily: 'Noto Sans',
                             fontWeight: FontWeight.w500,
@@ -643,11 +648,11 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                                 border: Border.all(color: Colors.grey, width: 1.0),
                               ),
                               child: IconButton(
-                                icon: Image.asset('assets/kakao.png', width: 30, height: 30),
-                                onPressed: _loginWithKakao,
+                                icon: Image.asset('assets/google.png', width: 30, height: 30),
+                                onPressed: _loginWithGoogle,
                               ),
                             ),
-                            SizedBox(width: 20), // Adjust the width value to control the spacing
+                            SizedBox(width: 20),
                             Container(
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
@@ -658,7 +663,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                                 onPressed: _loginWithNaver,
                               ),
                             ),
-                            SizedBox(width: 20), // Adjust the width value to control the spacing
+                            SizedBox(width: 20),
                             Container(
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
@@ -669,20 +674,19 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                                 onPressed: _loginWithApple,
                               ),
                             ),
-                            SizedBox(width: 20), // Adjust the width value to control the spacing
+                            SizedBox(width: 20),
                             Container(
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(color: Colors.grey, width: 1.0),
                               ),
                               child: IconButton(
-                                icon: Image.asset('assets/google.png', width: 30, height: 30),
-                                onPressed: _loginWithGoogle,
+                                icon: Image.asset('assets/kakao.png', width: 30, height: 30),
+                                onPressed: _loginWithKakao,
                               ),
                             ),
                           ],
                         )
-
                       ],
                     ),
                   ],

@@ -41,7 +41,7 @@ class _ChatTestState extends State<ChatTest> {
   String _sttResult = '녹음 버튼을 누르세요.';
   final String _sttApiUrl = 'http://3.38.165.93:8080/api/v1/chat/stt';
   final String _ttsApiUrl = 'https://api.elevenlabs.io/v1/text-to-speech';
-  final String _apiKey = 'cef4d9cb6ac0ca3bf613183df847472c';
+  final String _apiKey = 'sk_d29ccae02982c4176eaa2bbe63b5e6d783fc771b042f790f';
   String topEmotion = '중립'; // 감정을 나타내는 변수
   bool _useGirlImages = false; // 이미지 세트 선택 변수
 
@@ -226,12 +226,10 @@ class _ChatTestState extends State<ChatTest> {
   Widget build(BuildContext context) {
     final greetingProvider = Provider.of<GreetingProvider>(context);
     String recordImagePath =
-        _isRecording ? 'assets/record_stop_icon.svg' : 'assets/record_icon.svg';
+    _isRecording ? 'assets/record_stop_icon.svg' : 'assets/record_icon.svg';
     Map<String, String> currentEmotionImages = widget.emotionImages;
-    // String emotionImagePath =
-    //     currentEmotionImages[topEmotion] ?? 'assets/neutral.png';
     final imageProvider =
-        Provider.of<CreateImageProvider>(context, listen: false);
+    Provider.of<CreateImageProvider>(context, listen: false);
 
     int botImageListIndex =
         imageProvider.selectedIndex ?? imageProvider.currentIndex;
@@ -242,14 +240,64 @@ class _ChatTestState extends State<ChatTest> {
 
     return SafeArea(
       child: Scaffold(
-        body: ScreenTypeLayout.builder(
-          mobile: (_) => buildContent(
-              context, emotionImagePath, greetingProvider.greeting),
-          tablet: (_) => buildContent(
-              context, emotionImagePath, greetingProvider.greeting),
-          desktop: (_) => buildContent(
-              context, emotionImagePath, greetingProvider.greeting,
-              isDesktop: true),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            double padding = constraints.maxWidth * 0.05;
+            double fontSize = constraints.maxWidth * 0.07;
+            double imageWidth = constraints.maxWidth * 0.8;
+            double imageHeight = constraints.maxWidth * 0.6;
+
+            return Padding(
+              padding: EdgeInsets.all(padding),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(height: padding * 2),
+                  Text(
+                    greetingProvider.greeting,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: fontSize,
+                      fontFamily: 'Noto Sans',
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(height: padding * 4),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      RippleAnimation(
+                        color: Color(0xFFFF7672),
+                        delay: Duration(milliseconds: 300),
+                        repeat: true,
+                        minRadius: 90,
+                        ripplesCount: 4,
+                        duration: Duration(milliseconds: 6 * 300),
+                        child: Container(),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SelectImagePage()),
+                          );
+                        },
+                        child: Image.asset(
+                          emotionImagePath ?? 'assets/neutral.png',
+                          width: imageWidth,
+                          height: imageHeight,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: padding),
+                ],
+              ),
+            );
+          },
         ),
         floatingActionButton: IconButton(
           icon: SvgPicture.asset(
@@ -264,6 +312,7 @@ class _ChatTestState extends State<ChatTest> {
       ),
     );
   }
+}
 
   Widget buildContent(
       BuildContext context, String? emotionImagePath, String greetingMessage,
@@ -318,4 +367,4 @@ class _ChatTestState extends State<ChatTest> {
       ),
     );
   }
-}
+

@@ -3,24 +3,36 @@ import 'package:expandable_page_view/expandable_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:provider/provider.dart'; // 추가된 부분
+import 'package:provider/provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import '../chatbot/select_image_page.dart';
 import '../provider/auth_provider.dart'; // 추가된 부분
 
 // 2. Statistics 클래스
-class Statistics extends StatelessWidget {
+class StatisticsScreen extends StatefulWidget {
+  const StatisticsScreen({Key? key}) : super(key: key);
+
   @override
-  Widget build(BuildContext context) {
-    return const StatisticsScreen();
-  }
+  _StatisticsScreenState createState() => _StatisticsScreenState();
 }
 
-// 3. StatisticsScreen 클래스
-class StatisticsScreen extends StatelessWidget {
-  const StatisticsScreen({Key? key}) : super(key: key);
+class _StatisticsScreenState extends State<StatisticsScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,12 +56,26 @@ class StatisticsScreen extends StatelessWidget {
                   child: Row(
                     children: [
                       const SizedBox(width: 10),
-                      SvgPicture.asset('assets/icon_eut.svg', height: 80),
+                      GestureDetector(
+                        onTap: () {
+                          if (_tabController.index == 0) { // "오늘" 탭이 선택되었는지 확인
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SelectImagePage(),
+                                settings: RouteSettings(arguments: {'fromStatisticsScreen': true}), // 추가된 부분
+                              ),
+                            );
+                          }
+                        },
+                        child: SvgPicture.asset('assets/icon_eut.svg', height: 80),
+                      ),
                     ],
                   ),
                 ),
               ),
-              bottom: const TabBar(
+              bottom: TabBar(
+                controller: _tabController,
                 labelColor: Colors.black,
                 indicatorColor: Colors.pinkAccent,
                 labelStyle: TextStyle(fontWeight: FontWeight.bold),
@@ -63,8 +89,9 @@ class StatisticsScreen extends StatelessWidget {
             ),
           ),
           body: TabBarView(
+            controller: _tabController,
             children: [
-              const DayView(),
+              DayView(),
               WeekView(),
               MonthView(),
             ],
@@ -74,6 +101,11 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 }
+
+// 나머지 DayView, WeekView, MonthView 클래스들은 기존과 동일하게 유지됩니다.
+
+
+
 
 // 4. DayView 클래스
 class DayView extends StatefulWidget {

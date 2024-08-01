@@ -26,6 +26,7 @@ dependencies:
   flutter_facebook_auth: ^7.0.1
   flutter_naver_login: 1.8.0
   kakao_flutter_sdk: 1.9.5
+  flutter_dotenv: ^5.0.2
   avatar_glow:
     git:
       url: https://github.com/apgapg/avatar_glow
