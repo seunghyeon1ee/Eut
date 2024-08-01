@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_audio_waveforms/flutter_audio_waveforms.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // SVG 패키지 임포트
 import 'dart:async';
 import 'package:flutter_sound/flutter_sound.dart';
@@ -15,6 +16,8 @@ import 'package:provider/provider.dart';
 // import 'package:waveform_flutter/waveform_flutter.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
 // import 'package:just_waveform/just_waveform.dart';
+import 'dart:ui' as ui;
+
 
 
 class EditImagePage extends StatefulWidget {
@@ -35,7 +38,11 @@ class _EditImagePageState extends State<EditImagePage> {
   late String _name;
   late PageController _pageController;
   FlutterSoundPlayer _audioPlayer = FlutterSoundPlayer();
-  late Future<Waveform>? _waveform;
+  late RecorderController _waveformController;
+  bool _isPlaying = false;
+  // late AudioWaveforms _waveformController;
+  // late Future<Waveform>? _waveform;
+
 
   @override
   void initState() {
@@ -43,6 +50,11 @@ class _EditImagePageState extends State<EditImagePage> {
     // 초기화 시 제공된 인덱스와 아이템에 따라 이름 설정
     _name = widget.imageItems[widget.initialIndex].name;
     _pageController = PageController(initialPage: widget.initialIndex);
+    _waveformController = RecorderController()
+      ..androidEncoder = AndroidEncoder.aac
+      ..androidOutputFormat = AndroidOutputFormat.mpeg4
+      ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
+      ..sampleRate = 44100;
 
     final provider = Provider.of<CreateImageProvider>(context, listen: false);
 
@@ -111,17 +123,36 @@ class _EditImagePageState extends State<EditImagePage> {
     });
   }
 
-  void _playAudio() async {
+  Future<void> _playAudio() async {
     final provider = Provider.of<CreateImageProvider>(context, listen: false);
     if (provider.recordingFilePath != null) {
-      await _audioPlayer.startPlayer(fromURI: provider.recordingFilePath!, codec: Codec.mp3);
-      // setState(() {
-      //   _waveform = _loadWaveform(provider.recordingFilePath!);
-      // });
+      if (_isPlaying) {
+        await _audioPlayer.stopPlayer();
+      } else {
+        await _audioPlayer.startPlayer(
+          fromURI: provider.recordingFilePath!,
+          codec: Codec.mp3,
+        );
+      }
+      setState(() {
+        _isPlaying = !_isPlaying;
+      });
     } else {
       _showOverlayMessage(context, '재생할 오디오가 없습니다.');
     }
   }
+
+  // void _playAudio() async {
+  //   final provider = Provider.of<CreateImageProvider>(context, listen: false);
+  //   if (provider.recordingFilePath != null) {
+  //     await _audioPlayer.startPlayer(fromURI: provider.recordingFilePath!, codec: Codec.mp3);
+  //     // setState(() {
+  //     //   _waveform = _loadWaveform(provider.recordingFilePath!);
+  //     // });
+  //   } else {
+  //     _showOverlayMessage(context, '재생할 오디오가 없습니다.');
+  //   }
+  // }
 
   void _openVoiceRecordWidget() {
     showModalBottomSheet(
@@ -135,6 +166,10 @@ class _EditImagePageState extends State<EditImagePage> {
           onAudioFilePathUpdated: (filePath) {
             final provider = Provider.of<CreateImageProvider>(context, listen: false);
             provider.setRecordingFilePath(filePath);
+            // setState(() {
+            //   // Update the waveform controller with the new file path
+            //   _waveformController.load(path: filePath);
+            // });
             // setState(() {
             //   _waveform = _loadWaveform(filePath);
             // });
@@ -385,24 +420,7 @@ class _EditImagePageState extends State<EditImagePage> {
             color: Colors.black,
             width: 140,
           ),
-        AudioWaveforms(
-          size: Size(MediaQuery.of(context).size.width, 200.0),
-          recorderController: controller,
-          enableGesture: true,
-          waveStyle: WaveStyle(
-          waveColor: Colors.white,
-          showDurationLabel: true,
-          spacing: 8.0,
-          showBottom: false,
-          extendWaveform: true,
-          showMiddleLine: false,
-          gradient: ui.Gradient.linear(
-          const Offset(70, 50),
-          Offset(MediaQuery.of(context).size.width / 2, 0),
-          [Colors.red, Colors.green],
-        ),
-    ),
-    ),
+
 
 
           // SizedBox(height: 16),
@@ -436,7 +454,8 @@ class _EditImagePageState extends State<EditImagePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              IconButton(
+              Expanded(
+                  child: IconButton(
                 icon: Icon(
                   provider.recordingFilePath != null ? Icons.play_circle_fill_outlined : Icons.play_disabled,
                   color: provider.recordingFilePath != null ? Color(0xFFEC295D) : Colors.grey,
@@ -444,7 +463,44 @@ class _EditImagePageState extends State<EditImagePage> {
                 ),
                 onPressed: _playAudio,
               ),
-              SizedBox(width: 30),
+              ),
+              Expanded(
+                  child: AudioWaveforms(
+                size: Size(MediaQuery.of(context).size.width, 100.0),
+                recorderController: _waveformController,
+                enableGesture: true,
+                waveStyle: WaveStyle(
+                  waveColor: Color(0xFFEC295D),
+                  showDurationLabel: true,
+                  spacing: 5.0,
+                  showBottom: false,
+                  extendWaveform: true,
+                  showMiddleLine: false,
+                    gradient: ui.Gradient.linear(
+                    const Offset(70, 50),
+                    Offset(MediaQuery.of(context).size.width / 2, 0),
+                    [Colors.red, Colors.green],
+                  ),
+                ),
+              ),
+              ),
+              // Display waveform
+              // Container(
+              //   height: 100,
+              //   child: AudioWaveforms(
+              //     recorderController: _waveformController,
+              //     waveStyle: WaveStyle(
+              //       waveColor: Colors.blueAccent,
+              //     ),
+              //   ),
+              // ),
+              // SizedBox(height: 10),
+              // // Play/Pause button
+              // ElevatedButton(
+              //   onPressed: _playAudio,
+              //   child: Text(_isPlaying ? '중지' : '재생'),
+              // ),
+              // SizedBox(width: 30),
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
@@ -509,7 +565,7 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
   int recordedTime = 0;
   late Timer timer;
   late String _recordingFilePath;
-  Waveform? _waveform;
+  // Waveform? _waveform;
   late FlutterSoundRecorder _recorder;
   String? _audioFilePath;
 
@@ -522,6 +578,7 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
   @override
   void dispose() {
     _recorder.closeAudioSession();
+    // _waveformController.dispose();
     super.dispose();
   }
   // late AudioWaveormsController _waveformController;
