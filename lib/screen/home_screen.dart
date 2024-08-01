@@ -1,4 +1,3 @@
-//todo: 이거 어케건들지 몰라서 그냥 fcm_controller 사용함
 import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';

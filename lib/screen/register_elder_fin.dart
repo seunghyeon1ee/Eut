@@ -477,7 +477,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                     MaterialPageRoute(builder: (context) => ElderlyExplanationScreen()), // Update here
                   );
                 },
-                child: SvgPicture.asset('assets/icon_eut.svg'),
+              //  child: SvgPicture.asset('assets/icon_eut.svg'),
               ),
             ],
           ),
@@ -767,8 +767,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                             border: Border.all(color: Colors.grey, width: 1.0),
                           ),
                           child: IconButton(
-                            icon: Image.asset('assets/naver.png',
-                                width: 25, height: 25),
+                            icon: Image.asset('assets/naver.png', width: 25, height: 25),
                             onPressed: _loginWithNaver,
                           ),
                         ),
@@ -779,8 +778,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                             border: Border.all(color: Colors.grey, width: 1.0),
                           ),
                           child: IconButton(
-                            icon: Image.asset('assets/apple.png',
-                                width: 30, height: 30),
+                            icon: Image.asset('assets/apple.png', width: 30, height: 30),
                             onPressed: _loginWithApple,
                           ),
                         ),
@@ -791,13 +789,13 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                             border: Border.all(color: Colors.grey, width: 1.0),
                           ),
                           child: IconButton(
-                            icon: Image.asset('assets/kakao.png',
-                                width: 30, height: 30),
+                            icon: Image.asset('assets/kakao.png', width: 25, height: 25),
                             onPressed: _loginWithKakao,
                           ),
                         ),
                       ],
                     )
+
                   ],
                 ),
               ],

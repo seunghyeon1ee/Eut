@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // SVG 패키지 임포트
+import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:async';
-import 'package:provider/provider.dart'; // Provider 패키지 임포트
+import 'package:provider/provider.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:http_parser/http_parser.dart';
 import '../provider/create_image_provider.dart';
-import '../provider/auth_provider.dart'; // AuthProvider 임포트
+import '../provider/auth_provider.dart';
 import 'image_item.dart';
 
 class CreateImagePage extends StatefulWidget {
@@ -42,7 +42,10 @@ class _CreateImagePageState extends State<CreateImagePage> {
     final provider = Provider.of<CreateImageProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-    if (provider.selectedImagePath != null && _nameController.text.isNotEmpty && provider.recordingFilePath != null) {
+    if (provider.selectedImagePath != null &&
+        _nameController.text.isNotEmpty &&
+        _codeController.text.isNotEmpty &&
+        provider.recordingFilePath != null) {
       try {
         final request = http.MultipartRequest(
           'POST',
@@ -51,7 +54,7 @@ class _CreateImagePageState extends State<CreateImagePage> {
         request.headers['Content-Type'] = 'multipart/form-data';
         request.headers['Authorization'] = 'Bearer ${authProvider.accessToken}'; // 토큰 포함
 
-        // Add characterName field
+        // Add characterName and characterCode fields
         request.fields['characterName'] = _nameController.text;
         request.fields['characterCode'] = _codeController.text;
 
@@ -101,7 +104,7 @@ class _CreateImagePageState extends State<CreateImagePage> {
         _showOverlayMessage(context, '네트워크 오류가 발생했습니다.');
       }
     } else {
-      _showOverlayMessage(context, '이미지와 이름, 음성 파일을 모두 입력해주세요.');
+      _showOverlayMessage(context, '이미지, 이름, 코드, 음성 파일을 모두 입력해주세요.');
     }
   }
 
@@ -244,11 +247,11 @@ class _CreateImagePageState extends State<CreateImagePage> {
                   decoration: InputDecoration(hintText: '이름을 입력해주세요.'),
                   keyboardType: TextInputType.text,
                 ),
-                // TextField(
-                //   controller: _codeController,
-                //   decoration: InputDecoration(hintText: '코드를 입력해주세요.'),
-                //   keyboardType: TextInputType.text,
-                // ),
+                TextField(
+                  controller: _codeController,
+                  decoration: InputDecoration(hintText: '캐릭터 코드를 입력해주세요. (남자: boy, 여자: girl)'),
+                  keyboardType: TextInputType.text,
+                ),
                 SizedBox(height: 16),
                 VoiceRecordWidget(
                   onAudioFilePathUpdated: (filePath) {
