@@ -6,8 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart'
-as kakao_user;
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao_user;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:responsive_builder/responsive_builder.dart';
@@ -45,7 +44,7 @@ class _LogInElder2State extends State<LogInElder2> {
             '시작하기',
             style: TextStyle(
                 color: Colors.black,
-                fontSize: 18,
+                fontSize: MediaQuery.of(context).size.width * 0.05,
                 fontFamily: 'Noto Sans',
                 fontWeight: FontWeight.w400,
                 height: 0.07),
@@ -61,7 +60,7 @@ class _LogInElder2State extends State<LogInElder2> {
             highlightColor: Colors.white30,
             borderRadius: BorderRadius.circular(10),
             child: Padding(
-              padding: const EdgeInsets.all(15.0),
+              padding: EdgeInsets.all(MediaQuery.of(context).size.width * 0.03),
               child: SvgPicture.asset('assets/back_button.svg'),
             ),
           ),
@@ -377,23 +376,27 @@ class _VerificationWidgetState extends State<VerificationWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+
     return ScreenTypeLayout(
       mobile: _buildMobileLayout(),
     );
   }
 
   Widget _buildMobileLayout() {
+    final screenSize = MediaQuery.of(context).size;
+
     return SingleChildScrollView(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 50),
+          SizedBox(height: screenSize.height * 0.05),
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              SizedBox(width: 10),
-              SvgPicture.asset('assets/icon_eut.svg'),
+              SizedBox(width: screenSize.width * 0.03,),
+              SvgPicture.asset('assets/icon_eut.svg', width: screenSize.width * 0.2,),
             ],
           ),
           Padding(
@@ -401,23 +404,23 @@ class _VerificationWidgetState extends State<VerificationWidget> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 80),
+                SizedBox(height: screenSize.height * 0.1),
                 Row(
                   children: [
-                    SizedBox(width: 10),
+                    SizedBox(width: screenSize.width * 0.02),
                     Text('환영합니다!',
                         style: TextStyle(
                             color: Colors.black,
-                            fontSize: 24,
+                            fontSize: screenSize.width * 0.07,
                             fontFamily: 'Noto Sans',
                             fontWeight: FontWeight.w600,
                             height: 0.06)),
                   ],
                 ),
-                SizedBox(height: 30.0),
+                SizedBox(height: screenSize.height * 0.05),
                 Row(
                   children: [
-                    SizedBox(width: 10),
+                    SizedBox(width: screenSize.width * 0.03),
                     Text('이웃이 있으면 가깝고, 웃음이 있으면 밝고\n이웃을 지금 시작해보세요!',
                         textAlign: TextAlign.left,
                         style: TextStyle(
@@ -427,12 +430,12 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                             fontWeight: FontWeight.w500)),
                   ],
                 ),
-                SizedBox(height: 86),
+                SizedBox(height: screenSize.height * 0.07),
                 Column(
                   children: [
                     Row(
                       children: [
-                        SizedBox(width: 10),
+                        SizedBox(width: screenSize.width * 0.03),
                         Container(
                           width: 195,
                           height: 52,
@@ -645,7 +648,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                       child: Text('인증 완료',
                           style: TextStyle(
                               color: _textConfirmColor,
-                              fontSize: 18,
+                              fontSize: screenSize.width * 0.05,
                               fontFamily: 'Noto Sans',
                               fontWeight: FontWeight.w600,
                               height: 0.07)),
@@ -655,7 +658,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                       '소셜 로그인하기',
                       style: TextStyle(
                           color: Colors.grey, // Light gray color
-                          fontSize: 16,
+                          fontSize: screenSize.width * 0.04,
                           fontFamily: 'Noto Sans',
                           fontWeight: FontWeight.w500),
                     ),

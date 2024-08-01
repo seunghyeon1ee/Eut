@@ -91,43 +91,47 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildMobileLayout(BuildContext context, String? accessToken) {
+    final screenSize = MediaQuery.of(context).size;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Column(
           children: [
-            const SizedBox(height: 100),
+            SizedBox(height: screenSize.height * 0.1),
             Row(
               children: [
                 SvgPicture.asset(
                   'assets/icon_eut.svg',
+                  width: screenSize.width * 0.3, //
                 ),
               ],
             ),
-            const SizedBox(height: 50),
-            const Row(
+              SizedBox(height: screenSize.height * 0.05),
+              Row(
               children: [
                 SizedBox(width: 15.0, height: 50.0),
                 Text(
                   '환영합니다!',
                   style: TextStyle(
                       color: Colors.black,
-                      fontSize: 36,
+                      fontSize: screenSize.width * 0.07,
                       fontFamily: 'Noto Sans',
                       fontWeight: FontWeight.w600,
-                      height: 0.06),
+                      height: 1.2,
+                  ),
                 ),
               ],
             ),
-            const Row(
+            Row(
               children: [
                 SizedBox(width: 15.0, height: 100.0),
                 Text(
                   '이웃이 있으면 가깝고, 웃음이 있으면 밝고\n이웃을 지금 시작해보세요!',
                   style: TextStyle(
                       color: Color(0xFF4D4D4D),
-                      fontSize: 16,
+                      fontSize: screenSize.width * 0.04,
                       fontFamily: 'Noto Sans',
                       fontWeight: FontWeight.w500),
                 ),
@@ -148,8 +152,8 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(10),
               child: Center(
                   child: Ink(
-                width: 350,
-                height: 52,
+                    width: screenSize.width * 0.9,
+                    height: screenSize.height * 0.07,
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     gradient: LinearGradient(
@@ -159,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     '시작하기',
                     style: TextStyle(
                         color: Colors.white,
-                        fontSize: 18,
+                        fontSize: screenSize.width * 0.05,
                         fontFamily: 'Noto Sans',
                         fontWeight: FontWeight.w600,
                         height: 0.07),
@@ -167,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               )),
             ),
-            const SizedBox(height: 15.0),
+            SizedBox(height: screenSize.height * 0.03),
             Center(
               child: OutlinedButton(
                 onPressed: () {
@@ -177,8 +181,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
                 style: OutlinedButton.styleFrom(
-                  minimumSize: Size(350, 52), // width: 200, height: 60
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  minimumSize: Size(screenSize.width * 0.9, screenSize.height * 0.07), // width: 200, height: 60
+                  padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.04, vertical: screenSize.height * 0.02),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -188,14 +192,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   '가족으로 시작하기',
                   style: TextStyle(
                       color: Color(0xFF4D4D4D),
-                      fontSize: 14,
+                      fontSize: screenSize.width * 0.04,
                       fontFamily: 'Noto Sans',
                       fontWeight: FontWeight.w400,
                       height: 0.09),
                 ),
               ),
             ),
-            SizedBox(height: 60),
+            SizedBox(height: screenSize.height * 0.05),
           ],
         )
       ],

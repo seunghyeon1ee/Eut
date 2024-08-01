@@ -193,9 +193,9 @@ class _EditImagePageState extends State<EditImagePage> {
           onAudioFilePathUpdated: (filePath) {
             final provider = Provider.of<CreateImageProvider>(context, listen: false);
             provider.setRecordingFilePath(filePath);
-            setState(() {
-              _waveformController.load(path: filePath);
-            });
+            // setState(() {
+            //   _waveformController.load(path: filePath);
+            // });
             // setState(() {
             //   // Update the waveform controller with the new file path
             //   _waveformController.load(path: filePath);
