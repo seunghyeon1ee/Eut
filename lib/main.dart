@@ -1,10 +1,12 @@
 import 'dart:convert';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -18,6 +20,7 @@ import 'provider/auth_provider.dart';
 import 'provider/greeting.dart';
 import 'provider/create_image_provider.dart';
 import 'chatbot/chat_test.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';  // 추가
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +45,18 @@ void main() async {
   final prefs = await SharedPreferences.getInstance();
   String? accessToken = prefs.getString('access_token');
 
+  try {
+    await dotenv.load(fileName: ".env"); // 추가
+    String? kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY']; // 추가
+    if (kakaoNativeAppKey != null) {
+      KakaoSdk.init(nativeAppKey: kakaoNativeAppKey); // 추가
+    } else {
+      print("KAKAO_NATIVE_APP_KEY is not set in .env file");
+    }
+  } catch (e) {
+    print("Error loading .env file: $e");
+  }
+
   runApp(
     MultiProvider(
       providers: [
@@ -61,8 +76,6 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Provider.of<AuthProvider>(context, listen: false).setAccessToken(accessToken);
-
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       home: ResponsiveBuilder(
@@ -113,7 +126,7 @@ void onSelectNotification(NotificationResponse notificationResponse) async {
   if (notificationResponse.payload != null &&
       notificationResponse.payload.toString().isNotEmpty) {
     final Map<String, dynamic> payload =
-        jsonDecode(notificationResponse.payload!);
+    jsonDecode(notificationResponse.payload!);
     debugPrint('notification payload: $payload');
   }
 }
@@ -136,9 +149,9 @@ Future<void> setupFlutterNotifications() async {
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   const AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('app_icon');
+  AndroidInitializationSettings('app_icon');
   final DarwinInitializationSettings initializationSettingsDarwin =
-      DarwinInitializationSettings(
+  DarwinInitializationSettings(
     requestSoundPermission: false,
     requestBadgePermission: false,
     requestAlertPermission: false,
@@ -169,7 +182,7 @@ Future<void> setupFlutterNotifications() async {
     ],
   );
   final LinuxInitializationSettings initializationSettingsLinux =
-      LinuxInitializationSettings(defaultActionName: 'Open notification');
+  LinuxInitializationSettings(defaultActionName: 'Open notification');
   final InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsDarwin,
@@ -184,7 +197,7 @@ Future<void> setupFlutterNotifications() async {
 
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
+      AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(

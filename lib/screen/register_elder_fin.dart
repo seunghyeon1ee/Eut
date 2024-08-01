@@ -6,16 +6,25 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart'
-as kakao_user;
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao_user;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import 'package:flutter_naver_login/flutter_naver_login.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:taba_app_proj/chatbot/chat_test.dart';
 import 'package:taba_app_proj/screen/home_screen.dart';
+
+import '../explanationscreen/elderly_explanation_screen.dart';
+
+void main() async {
+  await dotenv.load(fileName: ".env");
+  String kakaoNativeAppKey = dotenv.env['KAKAO_NATIVE_APP_KEY']!;
+  kakao_user.KakaoSdk.init(nativeAppKey: kakaoNativeAppKey);
+  runApp(MyApp2());
+}
 
 class MyApp2 extends StatelessWidget {
   @override
@@ -84,10 +93,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
   bool _isTextFieldVisible = false;
   String _buttonText = '인증번호 발송';
 
-  final TextEditingController _controller =
-  TextEditingController(); // 전화번호 입력 컨트롤러
-  final TextEditingController _confirmController =
-  TextEditingController(); // 인증번호 입력 컨트롤러
+  final TextEditingController _controller = TextEditingController(); // 전화번호 입력 컨트롤러
+  final TextEditingController _confirmController = TextEditingController(); // 인증번호 입력 컨트롤러
   Color _buttonColor = Color(0xFFE2E2E2);
   Color _buttonConfirmColor = Color(0xFFE2E2E2);
   Color _textColor = Color(0xFFAEAEAE);
@@ -102,8 +109,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     await _auth.verifyPhoneNumber(
       phoneNumber: '+82${_controller.text}',
       timeout: const Duration(seconds: 60),
-      verificationCompleted:
-          (firebase_auth.PhoneAuthCredential credential) async {
+      verificationCompleted: (firebase_auth.PhoneAuthCredential credential) async {
         await _auth.signInWithCredential(credential);
       },
       verificationFailed: (firebase_auth.FirebaseAuthException e) {
@@ -149,8 +155,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
 
   void _toggleTextField() {
     if (_controller.text.length == 11 &&
-        _controller.text.runes
-            .every((r) => r >= '0'.runes.first && r <= '9'.runes.first)) {
+        _controller.text.runes.every((r) => r >= '0'.runes.first && r <= '9'.runes.first)) {
       setState(() {
         _buttonColor = Color(0xFFEC295D);
         _textColor = Color(0xFFEC295D);
@@ -191,8 +196,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
 
   void _toggleTextFieldConfirm() {
     if (_confirmController.text.length == 6 &&
-        _confirmController.text.runes
-            .every((r) => r >= '0'.runes.first && r <= '9'.runes.first)) {
+        _confirmController.text.runes.every((r) => r >= '0'.runes.first && r <= '9'.runes.first)) {
       setState(() {
         _buttonConfirmColor = Color(0xFFEC295D);
         _textConfirmColor = Colors.white;
@@ -212,24 +216,21 @@ class _VerificationWidgetState extends State<VerificationWidget> {
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body:
-      jsonEncode(<String, String>{'phone': _controller.text, 'type': 'P'}),
+      body: jsonEncode(<String, String>{'phone': phone, 'type': 'P'}),
     );
 
     if (response.statusCode == 200) {
-      Map<String, dynamic> decodedJson =
-      jsonDecode(utf8.decode(response.bodyBytes));
+      Map<String, dynamic> decodedJson = jsonDecode(utf8.decode(response.bodyBytes));
       if (decodedJson['message'] == 'SUCCESS') {
-        bool loginResult = await loginUser(_controller.text);
+        bool loginResult = await loginUser(phone);
         return loginResult;
       } else {
         print('회원가입은 성공했지만, 예상치 못한 응답 메시지입니다: ${decodedJson['message']}');
       }
     } else if (response.statusCode == 400) {
-      Map<String, dynamic> errorResponse =
-      jsonDecode(utf8.decode(response.bodyBytes));
+      Map<String, dynamic> errorResponse = jsonDecode(utf8.decode(response.bodyBytes));
       if (errorResponse['message'].toString().contains('이미 존재하는 유저입니다')) {
-        bool loginResult = await loginUser(_controller.text);
+        bool loginResult = await loginUser(phone);
         if (loginResult) {
           return true;
         }
@@ -253,9 +254,6 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     if (response.statusCode == 200) {
       await saveUserData(response.body);
 
-      // Map<String, dynamic> res = jsonDecode(response.body);
-      // final prefs = await SharedPreferences.getInstance();
-      // prefs.setString('access_token', res['result']['access_token']);
       return true;
     }
     return false;
@@ -265,8 +263,7 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final responseData = jsonDecode(jsonResponse);
 
-    if (responseData['code'] == "0000" &&
-        responseData['message'] == "SUCCESS") {
+    if (responseData['code'] == "0000" && responseData['message'] == "SUCCESS") {
       String accessToken = responseData['result']['access_token'];
       String refreshToken = responseData['result']['refresh_token'];
       String phone = responseData['result']['phone'];
@@ -313,9 +310,31 @@ class _VerificationWidgetState extends State<VerificationWidget> {
 
   Future<void> _loginWithKakao() async {
     try {
-      final result = await kakao_user.UserApi.instance.loginWithKakaoTalk();
-      if (result != null) {
-        print('Kakao login success: ${result.accessToken}');
+      bool isKakaoTalkInstalled = await kakao_user.isKakaoTalkInstalled();
+      kakao_user.OAuthToken token;
+      if (isKakaoTalkInstalled) {
+        token = await kakao_user.UserApi.instance.loginWithKakaoTalk();
+      } else {
+        token = await kakao_user.UserApi.instance.loginWithKakaoAccount();
+      }
+
+      print('Kakao login success: ${token.accessToken}');
+      // 실제 전화번호를 가져오는 로직을 추가해야 합니다.
+      final userPhoneNumber = '01012345678'; // 예시 전화번호, 실제 로직 필요
+      final email = 'user@example.com'; // Kakao에서 이메일을 가져오는 방법 추가 필요
+
+      bool registrationResult = await registerParent(userPhoneNumber);
+      if (registrationResult) {
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+                builder: (context) => ChatTest(
+                  imagePath: 'assets/sample.png',
+                  emotionImages: {},
+                )));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("회원가입 실패, 다시 시도해주세요")));
       }
     } catch (e) {
       print('Kakao login error: $e');
@@ -327,7 +346,23 @@ class _VerificationWidgetState extends State<VerificationWidget> {
       final NaverLoginResult result = await FlutterNaverLogin.logIn();
       if (result.status == NaverLoginStatus.loggedIn) {
         final token = result.accessToken;
-        print('Naver login success: $token');
+        final email = result.account.email; // Naver에서 제공하는 이메일
+        // Naver 로그인 후 사용자 정보를 가져오는 추가 작업이 필요할 수 있습니다.
+        final userPhoneNumber = '01012345678'; // 실제 전화번호를 가져오는 로직을 추가해야 합니다.
+
+        bool registrationResult = await registerParent(userPhoneNumber);
+        if (registrationResult) {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ChatTest(
+                    imagePath: 'assets/sample.png',
+                    emotionImages: {},
+                  )));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("회원가입 실패, 다시 시도해주세요")));
+        }
       }
     } catch (e) {
       print('Naver login error: $e');
@@ -348,8 +383,27 @@ class _VerificationWidgetState extends State<VerificationWidget> {
         accessToken: appleCredential.authorizationCode,
       );
       await firebase_auth.FirebaseAuth.instance.signInWithCredential(credential);
-      print('Apple login success');
-      // Handle the login success
+      final firebase_auth.User? user = firebase_auth.FirebaseAuth.instance.currentUser;
+      if (user != null && user.phoneNumber != null) {
+        String email = appleCredential.email ?? 'user@example.com';
+        String parentPhone = 'parentPhoneNumber'; // replace with actual logic
+        bool registrationResult = await registerParent(user.phoneNumber!);
+        if (registrationResult) {
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => ChatTest(
+                    imagePath: 'assets/sample.png',
+                    emotionImages: {},
+                  )));
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("회원가입 실패, 다시 시도해주세요")));
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("인증 실패: 사용자 정보가 없습니다.")));
+      }
     } catch (e) {
       print('Apple login error: $e');
     }
@@ -359,16 +413,33 @@ class _VerificationWidgetState extends State<VerificationWidget> {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser != null) {
-        final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
-        final firebase_auth.AuthCredential credential =
-        firebase_auth.GoogleAuthProvider.credential(
+        final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+        final firebase_auth.AuthCredential credential = firebase_auth.GoogleAuthProvider.credential(
           accessToken: googleAuth.accessToken,
           idToken: googleAuth.idToken,
         );
-        await firebase_auth.FirebaseAuth.instance
-            .signInWithCredential(credential);
-        print('Google login success');
+        await firebase_auth.FirebaseAuth.instance.signInWithCredential(credential);
+        final firebase_auth.User? user = firebase_auth.FirebaseAuth.instance.currentUser;
+        if (user != null && user.phoneNumber != null) {
+          String parentPhone = googleUser.email;
+         // String parentPhone = 'parentPhoneNumber'; // replace with actual logic
+          bool registrationResult = await registerParent(user.phoneNumber!);
+          if (registrationResult) {
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => ChatTest(
+                      imagePath: 'assets/sample.png',
+                      emotionImages: {},
+                    )));
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("회원가입 실패, 다시 시도해주세요")));
+          }
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("인증 실패: 사용자 정보가 없습니다.")));
+        }
       }
     } catch (e) {
       print('Google login error: $e');
@@ -393,7 +464,15 @@ class _VerificationWidgetState extends State<VerificationWidget> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               SizedBox(width: 10),
-              SvgPicture.asset('assets/icon_eut.svg'),
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ElderlyExplanationScreen()), // Update here
+                  );
+                },
+                child: SvgPicture.asset('assets/icon_eut.svg'),
+              ),
             ],
           ),
           Padding(
@@ -553,8 +632,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                                 smsCode: smsCode);
 
                             final firebase_auth.UserCredential
-                            userCredential = await firebase_auth
-                                .FirebaseAuth.instance
+                            userCredential =
+                            await firebase_auth.FirebaseAuth.instance
                                 .signInWithCredential(credential);
 
                             firebase_auth.User? user =
@@ -565,11 +644,13 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                                   SnackBar(content: Text('인증 완료')));
 
                               bool registrationResult =
-                              await registerParent(user.phoneNumber!);
+                              await registerParent(
+                                  user.phoneNumber!);
                               if (registrationResult) {
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(SnackBar(
-                                    content: Text("회원가입 및 로그인 성공")));
+                                    content: Text(
+                                        "회원가입 및 로그인 성공")));
 
                                 Navigator.pushReplacement(
                                     context,
@@ -582,17 +663,16 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                               } else {
                                 ScaffoldMessenger.of(context)
                                     .showSnackBar(SnackBar(
-                                    content:
-                                    Text("회원가입 실패, 다시 시도해주세요")));
+                                    content: Text(
+                                        "회원가입 실패, 다시 시도해주세요")));
                               }
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                      content:
-                                      Text("인증 실패: 사용자 정보가 없습니다.")));
+                                      content: Text(
+                                          "인증 실패: 사용자 정보가 없습니다.")));
                             }
-                          } on firebase_auth
-                              .FirebaseAuthException catch (e) {
+                          } on firebase_auth.FirebaseAuthException catch (e) {
                             String errorMessage;
                             switch (e.code) {
                               case "invalid-verification-code":
@@ -622,8 +702,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
 
                             ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                    content:
-                                    Text("인증 실패: $errorMessage")));
+                                    content: Text(
+                                        "인증 실패: $errorMessage")));
                           }
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -669,8 +749,9 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                             border: Border.all(color: Colors.grey, width: 1.0),
                           ),
                           child: IconButton(
-                            icon: Image.asset('assets/kakao.png', width: 30, height: 30),
-                            onPressed: _loginWithKakao,
+                            icon: Image.asset('assets/google.png',
+                                width: 25, height: 25),
+                            onPressed: _loginWithGoogle,
                           ),
                         ),
                         SizedBox(width: 20), // Adjust the width value to control the spacing
@@ -680,7 +761,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                             border: Border.all(color: Colors.grey, width: 1.0),
                           ),
                           child: IconButton(
-                            icon: Image.asset('assets/naver.png', width: 25, height: 25),
+                            icon: Image.asset('assets/naver.png',
+                                width: 25, height: 25),
                             onPressed: _loginWithNaver,
                           ),
                         ),
@@ -691,7 +773,8 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                             border: Border.all(color: Colors.grey, width: 1.0),
                           ),
                           child: IconButton(
-                            icon: Image.asset('assets/apple.png', width: 30, height: 30),
+                            icon: Image.asset('assets/apple.png',
+                                width: 30, height: 30),
                             onPressed: _loginWithApple,
                           ),
                         ),
@@ -702,13 +785,13 @@ class _VerificationWidgetState extends State<VerificationWidget> {
                             border: Border.all(color: Colors.grey, width: 1.0),
                           ),
                           child: IconButton(
-                            icon: Image.asset('assets/google.png', width: 25, height: 25),
-                            onPressed: _loginWithGoogle,
+                            icon: Image.asset('assets/kakao.png',
+                                width: 30, height: 30),
+                            onPressed: _loginWithKakao,
                           ),
                         ),
                       ],
                     )
-
                   ],
                 ),
               ],
