@@ -49,10 +49,10 @@ class _HomeScreenState extends State<HomeScreen> {
   /// 앱 종료시 로컬 푸시를 클릭해 앱을 켰는지 체크
   Future<void> _listenerWithTerminated() async {
     FlutterLocalNotificationsPlugin localNotification =
-        FlutterLocalNotificationsPlugin();
+    FlutterLocalNotificationsPlugin();
 
     NotificationAppLaunchDetails? details =
-        await localNotification.getNotificationAppLaunchDetails();
+    await localNotification.getNotificationAppLaunchDetails();
     if (details != null) {
       if (details.didNotificationLaunchApp) {
         debugPrint(
@@ -91,47 +91,43 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget buildMobileLayout(BuildContext context, String? accessToken) {
-    final screenSize = MediaQuery.of(context).size;
-
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Column(
           children: [
-            SizedBox(height: screenSize.height * 0.1),
+            const SizedBox(height: 100),
             Row(
               children: [
                 SvgPicture.asset(
                   'assets/icon_eut.svg',
-                  width: screenSize.width * 0.3, //
                 ),
               ],
             ),
-              SizedBox(height: screenSize.height * 0.05),
-              Row(
+            const SizedBox(height: 50),
+            const Row(
               children: [
                 SizedBox(width: 15.0, height: 50.0),
                 Text(
                   '환영합니다!',
                   style: TextStyle(
                       color: Colors.black,
-                      fontSize: screenSize.width * 0.07,
+                      fontSize: 36,
                       fontFamily: 'Noto Sans',
                       fontWeight: FontWeight.w600,
-                      height: 1.2,
-                  ),
+                      height: 0.06),
                 ),
               ],
             ),
-            Row(
+            const Row(
               children: [
                 SizedBox(width: 15.0, height: 100.0),
                 Text(
                   '이웃이 있으면 가깝고, 웃음이 있으면 밝고\n이웃을 지금 시작해보세요!',
                   style: TextStyle(
                       color: Color(0xFF4D4D4D),
-                      fontSize: screenSize.width * 0.04,
+                      fontSize: 16,
                       fontFamily: 'Noto Sans',
                       fontWeight: FontWeight.w500),
                 ),
@@ -152,26 +148,26 @@ class _HomeScreenState extends State<HomeScreen> {
               borderRadius: BorderRadius.circular(10),
               child: Center(
                   child: Ink(
-                    width: screenSize.width * 0.9,
-                    height: screenSize.height * 0.07,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    gradient: LinearGradient(
-                        colors: [Color(0xFFEC295D), Color(0xFFFF7672)])),
-                child: Center(
-                  child: Text(
-                    '시작하기',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: screenSize.width * 0.05,
-                        fontFamily: 'Noto Sans',
-                        fontWeight: FontWeight.w600,
-                        height: 0.07),
-                  ),
-                ),
-              )),
+                    width: 350,
+                    height: 52,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        gradient: LinearGradient(
+                            colors: [Color(0xFFEC295D), Color(0xFFFF7672)])),
+                    child: Center(
+                      child: Text(
+                        '시작하기',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontFamily: 'Noto Sans',
+                            fontWeight: FontWeight.w600,
+                            height: 0.07),
+                      ),
+                    ),
+                  )),
             ),
-            SizedBox(height: screenSize.height * 0.03),
+            const SizedBox(height: 15.0),
             Center(
               child: OutlinedButton(
                 onPressed: () {
@@ -181,8 +177,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
                 style: OutlinedButton.styleFrom(
-                  minimumSize: Size(screenSize.width * 0.9, screenSize.height * 0.07), // width: 200, height: 60
-                  padding: EdgeInsets.symmetric(horizontal: screenSize.width * 0.04, vertical: screenSize.height * 0.02),
+                  minimumSize: Size(350, 52), // width: 200, height: 60
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -192,14 +188,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   '가족으로 시작하기',
                   style: TextStyle(
                       color: Color(0xFF4D4D4D),
-                      fontSize: screenSize.width * 0.04,
+                      fontSize: 14,
                       fontFamily: 'Noto Sans',
                       fontWeight: FontWeight.w400,
                       height: 0.09),
                 ),
               ),
             ),
-            SizedBox(height: screenSize.height * 0.05),
+            SizedBox(height: 60),
           ],
         )
       ],
