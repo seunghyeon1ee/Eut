@@ -39,6 +39,7 @@ class _EditImagePageState extends State<EditImagePage> {
   late PageController _pageController;
   FlutterSoundPlayer _audioPlayer = FlutterSoundPlayer();
   late RecorderController _waveformController;
+  bool _isWaveformInitialized = false;
   bool _isPlaying = false;
   // late AudioWaveforms _waveformController;
   // late Future<Waveform>? _waveform;
@@ -133,6 +134,12 @@ class _EditImagePageState extends State<EditImagePage> {
           fromURI: provider.recordingFilePath!,
           codec: Codec.mp3,
         );
+        // 웨이브폼 초기화
+        if (!_isWaveformInitialized) {
+          setState(() {
+            _isWaveformInitialized = true;
+          });
+        }
       }
       setState(() {
         _isPlaying = !_isPlaying;
@@ -141,6 +148,26 @@ class _EditImagePageState extends State<EditImagePage> {
       _showOverlayMessage(context, '재생할 오디오가 없습니다.');
     }
   }
+
+  // Future<void> _playAudio() async {
+  //   final provider = Provider.of<CreateImageProvider>(context, listen: false);
+  //   if (provider.recordingFilePath != null) {
+  //     if (_isPlaying) {
+  //       await _audioPlayer.stopPlayer();
+  //     } else {
+  //       await _audioPlayer.startPlayer(
+  //         fromURI: provider.recordingFilePath!,
+  //         codec: Codec.mp3,
+  //       );
+  //     }
+  //
+  //     setState(() {
+  //       _isPlaying = !_isPlaying;
+  //     });
+  //   } else {
+  //     _showOverlayMessage(context, '재생할 오디오가 없습니다.');
+  //   }
+  // }
 
   // void _playAudio() async {
   //   final provider = Provider.of<CreateImageProvider>(context, listen: false);
@@ -166,6 +193,9 @@ class _EditImagePageState extends State<EditImagePage> {
           onAudioFilePathUpdated: (filePath) {
             final provider = Provider.of<CreateImageProvider>(context, listen: false);
             provider.setRecordingFilePath(filePath);
+            setState(() {
+              _waveformController.load(path: filePath);
+            });
             // setState(() {
             //   // Update the waveform controller with the new file path
             //   _waveformController.load(path: filePath);
@@ -454,8 +484,32 @@ class _EditImagePageState extends State<EditImagePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Expanded(
-                  child: IconButton(
+          Container(
+          decoration: BoxDecoration(
+          shape: BoxShape.circle,
+            color: Colors.white,
+            border: Border.all(
+                color: Color(0xFFEC295D), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0xFFEC295D).withOpacity(0.3), // 번짐 색상
+                spreadRadius: 2, // 번짐 범위
+                blurRadius: 5, // 번짐 강도
+                offset: Offset(0, 2), // 번짐 위치
+              ),
+            ],
+          ),
+      child: IconButton(
+          onPressed: _openVoiceRecordWidget,
+          icon: Icon(Icons.mic,
+            color: Color(0xFFEC295D),
+            size: 30, // 아이콘 크기 조정
+          ),
+      ),
+    ),
+    SizedBox(width: 20),
+
+          IconButton(
                 icon: Icon(
                   provider.recordingFilePath != null ? Icons.play_circle_fill_outlined : Icons.play_disabled,
                   color: provider.recordingFilePath != null ? Color(0xFFEC295D) : Colors.grey,
@@ -463,8 +517,11 @@ class _EditImagePageState extends State<EditImagePage> {
                 ),
                 onPressed: _playAudio,
               ),
-              ),
+                SizedBox(width: 20),
+
+              if (_isWaveformInitialized)
               Expanded(
+                flex: 2,
                   child: AudioWaveforms(
                 size: Size(MediaQuery.of(context).size.width, 100.0),
                 recorderController: _waveformController,
@@ -500,28 +557,6 @@ class _EditImagePageState extends State<EditImagePage> {
               //   onPressed: _playAudio,
               //   child: Text(_isPlaying ? '중지' : '재생'),
               // ),
-              // SizedBox(width: 30),
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                  border: Border.all(
-                      color: Color(0xFFEC295D), width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Color(0xFFEC295D).withOpacity(0.3), // 번짐 색상
-                      spreadRadius: 2, // 번짐 범위
-                      blurRadius: 5, // 번짐 강도
-                      offset: Offset(0, 2), // 번짐 위치
-                    ),
-                  ],
-                ),
-                child: IconButton(
-                  onPressed: _openVoiceRecordWidget,
-                  icon: Icon(Icons.mic,
-                    color: Color(0xFFEC295D),
-                    size: 30, // 아이콘 크기 조정
-                  ),
 
                   // ElevatedButton(
                   //   onPressed: _openVoiceRecordWidget,
@@ -538,8 +573,6 @@ class _EditImagePageState extends State<EditImagePage> {
                   //     padding: EdgeInsets.symmetric(horizontal: 25, vertical: 10),
                   //   ),
                   // ),
-                ),
-              ),
             ],
           ),
           SizedBox(height: 70,),
@@ -566,21 +599,25 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
   late Timer timer;
   late String _recordingFilePath;
   // Waveform? _waveform;
-  late FlutterSoundRecorder _recorder;
-  String? _audioFilePath;
+  // late FlutterSoundRecorder _recorder;
+  // String? _audioFilePath;
 
-  @override
-  void initState() {
-    super.initState();
-    _recorder = FlutterSoundRecorder();
-  }
-
-  @override
-  void dispose() {
-    _recorder.closeAudioSession();
-    // _waveformController.dispose();
-    super.dispose();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _recorder = FlutterSoundRecorder();
+  //   _openAudioSession();
+  // }
+  // Future<void> _openAudioSession() async {
+  //   await _recorder.openAudioSession();
+  // }
+  //
+  // @override
+  // void dispose() {
+  //   _recorder.closeAudioSession();
+  //   // _waveformController.dispose();
+  //   super.dispose();
+  // }
   // late AudioWaveormsController _waveformController;
   // // final AudioWaveformController _waveformController = AudioWaveformController();
   // AudioWaveformController? _waveformController;
@@ -592,18 +629,14 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
   //   _waveformController = WaveformController();
   // }
 
-  void startRecording() async {
-    await _recorder.startRecorder(
-      toFile: 'audio_${DateTime.now().millisecondsSinceEpoch}.mp3',
-      codec: Codec.mp3,
-    );
+  void startRecording() {
     setState(() {
       isRecording = true;
       isRecorded = false;
       recordedTime = 0;
     });
     timer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (recordedTime >= 30) { // 30초 후 자동 정치
+      if (recordedTime >= 30) {
         stopRecording();
       } else {
         setState(() {
@@ -613,17 +646,13 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
     });
   }
 
-  void stopRecording() async {
-    _audioFilePath = await _recorder.stopRecorder();
+  void stopRecording() {
     timer.cancel();
     setState(() {
       isRecording = false;
       isRecorded = true;
     });
-    if (_audioFilePath != null) {
-      widget.onAudioFilePathUpdated(_audioFilePath!);
-    }
-    await _saveRecording();
+    _saveRecording();
   }
 
   void resetRecording() {
@@ -633,6 +662,104 @@ class _VoiceRecordWidgetState extends State<VoiceRecordWidget> {
       recordedTime = 0;
     });
   }
+
+  // void startRecording() async {
+  //   try {
+  //     // Ensure the audio session is open
+  //     if (!_recorder.isRecording) {
+  //       await _openAudioSession();
+  //     }
+  //
+  //     // Start recording
+  //     await _recorder.startRecorder(
+  //       toFile: 'audio_${DateTime.now().millisecondsSinceEpoch}.mp3',
+  //       codec: Codec.mp3,
+  //     );
+  //
+  //     // Update UI state
+  //     setState(() {
+  //       isRecording = true;
+  //       isRecorded = false;
+  //       recordedTime = 0;
+  //     });
+  //
+  //     // Timer for auto-stop
+  //     timer = Timer.periodic(Duration(seconds: 1), (timer) {
+  //       if (recordedTime >= 30) { // Stop recording after 30 seconds
+  //         stopRecording();
+  //       } else {
+  //         setState(() {
+  //           recordedTime++;
+  //         });
+  //       }
+  //     });
+  //
+  //   } catch (e) {
+  //     print("Error starting recorder: $e");
+  //     // Handle the error appropriately
+  //   }
+  // }
+
+  // void startRecording() async {
+  //   await _recordervoid startRecording() async {
+  //     await _recorder.startRecorder(
+  //       toFile: 'audio_${DateTime.now().millisecondsSinceEpoch}.mp3',
+  //       codec: Codec.mp3,
+  //     );
+  //     setState(() {
+  //       isRecording = true;
+  //       isRecorded = false;
+  //       recordedTime = 0;
+  //     });
+  //     timer = Timer.periodic(Duration(seconds: 1), (timer) {
+  //       if (recordedTime >= 30) { // 30초 후 자동 정치
+  //         stopRecording();
+  //       } else {
+  //         setState(() {
+  //           recordedTime++;
+  //         });
+  //       }
+  //     });
+  //   }.startRecorder(
+  //     toFile: 'audio_${DateTime.now().millisecondsSinceEpoch}.mp3',
+  //     codec: Codec.mp3,
+  //   );
+  //   setState(() {
+  //     isRecording = true;
+  //     isRecorded = false;
+  //     recordedTime = 0;
+  //   });
+  //   timer = Timer.periodic(Duration(seconds: 1), (timer) {
+  //     if (recordedTime >= 30) { // 30초 후 자동 정치
+  //       stopRecording();
+  //     } else {
+  //       setState(() {
+  //         recordedTime++;
+  //       });
+  //     }
+  //   });
+  // }
+
+  // void stopRecording() async {
+  //   _audioFilePath = await _recorder.stopRecorder();
+  //   timer.cancel();
+  //   setState(() {
+  //     isRecording = false;
+  //     isRecorded = true;
+  //   });
+  //   if (_audioFilePath != null) {
+  //     widget.onAudioFilePathUpdated(_audioFilePath!);
+  //   }
+  //   await _saveRecording();
+  // }
+  //
+  // void resetRecording() {
+  //   setState(() {
+  //     isRecording = false;
+  //     isRecorded = false;
+  //     recordedTime = 0;
+  //   });
+  // }
 
   Future<void> _saveRecording() async {
     final directory = Directory.systemTemp;
