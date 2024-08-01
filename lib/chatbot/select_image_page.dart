@@ -12,6 +12,7 @@ import '../provider/auth_provider.dart';
 import '../provider/create_image_provider.dart';
 import 'create_image_page.dart';
 import 'edit_image_page.dart';
+//import 'package:taba_app_proj/chatbot/statistics.dart'; // 추가된 부분
 import 'chat_test.dart';
 import 'image_item.dart';
 
@@ -21,10 +22,22 @@ class SelectImagePage extends StatefulWidget {
 }
 
 class _SelectImagePageState extends State<SelectImagePage> {
+  bool fromStatisticsScreen = false; // 추가된 부분
+
   @override
   void initState() {
     super.initState();
     _fetchCharacterList();
+
+    // 추가된 부분: arguments 확인
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map?;
+      if (args != null && args.containsKey('fromStatisticsScreen')) {
+        setState(() {
+          fromStatisticsScreen = args['fromStatisticsScreen'] as bool;
+        });
+      }
+    });
   }
 
   Future<void> _fetchCharacterList() async {
@@ -123,6 +136,8 @@ class _SelectImagePageState extends State<SelectImagePage> {
   }
 
   void _onImageTap(int index) {
+    if (fromStatisticsScreen) return; // 추가된 부분
+
     final provider = Provider.of<CreateImageProvider>(context, listen: false);
     if (provider.isEditing) return;
 
@@ -274,99 +289,6 @@ class _SelectImagePageState extends State<SelectImagePage> {
     );
   }
 
-
-  // Widget _buildImageItem(int index) {
-  //   final provider = Provider.of<CreateImageProvider>(context);
-  //   final isSelected = provider.selectedIndex == index;
-  //   return GestureDetector(
-  //     onTap: () => _onImageTap(index),
-  //     child: Padding(
-  //       padding: const EdgeInsets.all(8.0),
-  //       child: Container(
-  //         padding: const EdgeInsets.all(16.0),
-  //         decoration: BoxDecoration(
-  //             color: provider.isEditing
-  //                 ? Colors.grey[200]
-  //                 : (isSelected ? Color(0xFFEC295D).withOpacity(0.1) : Colors.grey[200]),
-  //             borderRadius: BorderRadius.circular(8.0),
-  //           ),
-  //           // child: Column(
-  //           //     mainAxisAlignment: MainAxisAlignment.center,
-  //           //     children: [
-  //           //         Container(
-  //           //           width: 150, height: 150,
-  //           //           decoration: BoxDecoration(
-  //           //             color: Colors.grey[300],
-  //           //             borderRadius: BorderRadius.circular(8.0),
-  //           //           ),
-  //                   child: Center(
-  //                     child: Opacity(
-  //                       opacity: provider.isEditing ? 0.3 : 1.0,
-  //                       child: provider.imageItems[index].imagePath.endsWith('.svg')
-  //                             ? SvgPicture.asset(provider.imageItems[index].imagePath,
-  //                     // width: 150, height: 150,
-  //                             fit: BoxFit.contain)
-  //                             : Image.asset(provider.imageItems[index].imagePath,
-  //                     // width: 150, height: 150,
-  //                             fit: BoxFit.contain),
-  //             ),
-  //           ),
-  //                   ),
-  //                 const SizedBox(height: 8.0,),
-  //                 Text(
-  //                   provider.imageItems[index].characterName ?? '이름 없음',
-  //                   textAlign: TextAlign.center,
-  //                   style: const TextStyle(color: Colors.black, fontSize: 16),
-  //                 ),
-  //           if (provider.isEditing) ...[
-  //           Positioned(
-  //             top: 8,
-  //             right: 8,
-  //             child: GestureDetector(
-  //               onTap: () => _onDeleteIconTap(index),
-  //               child: const CircleAvatar(
-  //                 radius: 15,
-  //                 backgroundColor: Colors.white,
-  //                 child: Icon(Icons.delete, color: Color(0xFFEC295D), size: 20),
-  //               ),
-  //             ),
-  //           ),
-  //           if (provider.isEditing)
-  //           Positioned.fill(
-  //             child: Align(
-  //               alignment: Alignment.center,
-  //               child: GestureDetector(
-  //                 onTap: () => _onEditIconTap(index),
-  //                 child: const CircleAvatar(
-  //                   radius: 20,
-  //                    backgroundColor: Colors.white,
-  //                   child: Icon(Icons.edit, color: Color(0xFFEC295D), size: 16),
-  //                 ),
-  //               ),
-  //             ),
-  //           ),
-  //         ],
-  //         if (!provider.isEditing && isSelected)
-  //           Positioned(
-  //             top: 8,
-  //             right: 8,
-  //             child: const Icon(Icons.check_circle, color: Color(0xFFEC295D),),
-  //           ),
-  //         // Positioned(
-  //         //   bottom: 1,
-  //         //   left: 8,
-  //         //   right: 8,
-  //         //   child: Text(
-  //         //     provider.imageItems[index].characterName ?? '이름 없음',
-  //         //     textAlign: TextAlign.center,
-  //         //     style: const TextStyle(color: Colors.black, fontSize: 16),
-  //       ],
-  //     ),
-  //   );
-  //   //   ),
-  //   // );
-  // }
-
   Widget _buildAddButton() {
     return GestureDetector(
       onTap: _onAddButtonTap,
@@ -405,15 +327,19 @@ class _SelectImagePageState extends State<SelectImagePage> {
                       const SizedBox(width: 10,),
                       GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChatTest(
-                                imagePath: 'assets/neutral.png',
-                                emotionImages: {},
+                          if (fromStatisticsScreen) { // 추가된 부분
+                            Navigator.pop(context);
+                          } else {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ChatTest(
+                                  imagePath: 'assets/neutral.png',
+                                  emotionImages: {},
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          }
                         },
                         child:
                         SvgPicture.asset('assets/icon_eut.svg', height: 80),
@@ -423,7 +349,6 @@ class _SelectImagePageState extends State<SelectImagePage> {
                   Container(
                     padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 4.0),
                     decoration: BoxDecoration(
-                      // border: Border.all(color: Colors.grey, width: 1.0),
                       borderRadius: BorderRadius.circular(20),
                       color: Colors.white,
                     ),
@@ -434,7 +359,7 @@ class _SelectImagePageState extends State<SelectImagePage> {
                       label: Text(
                         provider.isEditing ? '완료' : '수정하기',
                         style: TextStyle(color: Colors.black,
-                        fontSize: 20.0,),
+                          fontSize: 20.0,),
                       ),
                       onPressed: () {
                         provider.toggleEditing();
