@@ -48,6 +48,7 @@ dependencies:
   sign_in_with_apple: ^5.0.0
   audio_waveforms: ^1.0.5
   just_waveform: ^0.0.5
+  waveform_flutter: ^1.0.1
 
  # audioplayers: #^0.18.3   # 더 낮은 버전으로 조정
 

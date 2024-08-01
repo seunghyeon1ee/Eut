@@ -1190,6 +1190,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "14.2.1"
+  waveform_flutter:
+    dependency: "direct main"
+    description:
+      name: waveform_flutter
+      sha256: "6d3324cd3170f89e13b7da5083d1b5aaf6141d82ca08026568de569561ae6b68"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   web:
     dependency: transitive
     description:
